@@ -6,10 +6,10 @@ use std::io;
 use super::*;
 
 pub async fn mastodon_register() -> Result<MastodonConfig> {
-    let url = console_input(
+    let base_url = console_input(
         "Provide the URL of your Mastodon instance, for example https://mastodon.social ",
     )?;
-    let client = generator(megalodon::SNS::Mastodon, url, None, None);
+    let client = generator(megalodon::SNS::Mastodon, base_url.clone(), None, None);
     let options = megalodon::megalodon::AppInputOptions {
         scopes: Some(["read".to_string(), "write".to_string()].to_vec()),
         website: Some("https://github.com/klausi/mastodon-bluesky-sync".to_string()),
@@ -36,6 +36,7 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
         .await?;
 
     Ok(MastodonConfig {
+        base_url,
         client_id,
         client_secret,
         access_token: token_data.access_token,
