@@ -14,10 +14,12 @@ use crate::args::*;
 use crate::config::*;
 use crate::registration::bluesky_register;
 use crate::registration::mastodon_register;
+use crate::sync::*;
 
 pub mod args;
 mod config;
 mod registration;
+mod sync;
 
 pub async fn run(args: Args) -> Result<()> {
     debug!("running with args {:?}", args);
@@ -75,7 +77,7 @@ pub async fn run(args: Args) -> Result<()> {
         )
         .await
     {
-        Ok(statuses) => statuses,
+        Ok(statuses) => statuses.json,
         Err(e) => {
             eprintln!("Error fetching toots from Mastodon: {e:#?}");
             process::exit(2);
@@ -104,14 +106,74 @@ pub async fn run(args: Args) -> Result<()> {
         )
         .await
     {
-        Ok(statuses) => statuses,
+        Ok(statuses) => statuses.feed.clone(),
         Err(e) => {
             eprintln!("Error fetching posts from Bluesky: {e:#?}");
             process::exit(3);
         }
     };
 
-    dbg!(bsky_statuses);
+    let options = SyncOptions {
+        sync_reblogs: config.mastodon.sync_reblogs,
+        sync_reskeets: config.bluesky.sync_reskeets,
+        sync_hashtag_mastodon: config.mastodon.sync_hashtag,
+        sync_hashtag_twitter: config.bluesky.sync_hashtag,
+    };
+
+    let mut posts = determine_posts(&mastodon_statuses, &bsky_statuses, &options);
+
+    // Prevent double posting with a post cache that records each new status
+    // message.
+    let post_cache_file = &cache_file("post_cache.json");
+    let mut post_cache = read_post_cache(post_cache_file);
+    let mut cache_changed = false;
+    posts = filter_posted_before(posts, &post_cache)?;
+
+    for toot in posts.toots {
+        if !args.skip_existing_posts {
+            /*if let Err(e) = post_to_mastodon(&mastodon, &toot, args.dry_run) {
+                eprintln!("Error posting toot to Mastodon: {e:#?}");
+                continue;
+            }*/
+            println!("Posting to Mastodon: {}", toot.text);
+        }
+        // Posting API call was successful: store text in cache to prevent any
+        // double posting next time.
+        if !args.dry_run {
+            post_cache.insert(toot.text);
+            cache_changed = true;
+        }
+    }
+
+    for post in posts.bsky_posts {
+        if !args.skip_existing_posts {
+            /*if let Err(e) = rt.block_on(post_to_twitter(&token, &tweet, args.dry_run)) {
+                eprintln!("Error posting tweet to Twitter: {e:#?}");
+                continue;
+            }*/
+            println!("Posting to Bluesky: {}", post.text);
+        }
+        // Posting API call was successful: store text in cache to prevent any
+        // double posting next time.
+        if !args.dry_run {
+            post_cache.insert(post.text);
+            cache_changed = true;
+        }
+    }
+
+    // Write out the cache file if necessary.
+    if !args.dry_run && cache_changed {
+        let json = serde_json::to_string_pretty(&post_cache)?;
+        fs::write(post_cache_file, json.as_bytes()).await?;
+    }
 
     Ok(())
+}
+
+/// Returns the full path for a cache file name.
+fn cache_file(name: &str) -> String {
+    if let Ok(cache_dir) = std::env::var("MBS_CACHE_DIR") {
+        return format!("{cache_dir}/{name}");
+    }
+    name.into()
 }

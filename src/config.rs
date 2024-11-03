@@ -38,7 +38,7 @@ pub struct MastodonConfig {
 pub struct BlueskyConfig {
     pub bluesky_config: bsky_sdk::agent::config::Config,
     #[serde(default = "config_true_default")]
-    pub sync_retweets: bool,
+    pub sync_reskeets: bool,
     #[serde_as(as = "NoneAsEmptyString")]
     #[serde(default = "config_none_default")]
     pub sync_hashtag: Option<String>,

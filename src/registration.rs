@@ -53,7 +53,7 @@ pub async fn bluesky_register() -> Result<BlueskyConfig> {
     let _session = agent.login(identifier, password).await?;
     Ok(BlueskyConfig {
         bluesky_config: agent.to_config().await,
-        sync_retweets: true,
+        sync_reskeets: true,
         sync_hashtag: None,
     })
 }
