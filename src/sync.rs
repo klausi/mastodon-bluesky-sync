@@ -1,14 +1,14 @@
 use anyhow::Result;
 use bsky_sdk::api::app::bsky::feed::defs::FeedViewPostData;
-use bsky_sdk::api::types::Object;
+use bsky_sdk::api::types::{Object, TryFromUnknown, Unknown};
 use megalodon::entities::Status;
 use regex::Regex;
 use std::collections::HashSet;
 use std::fs;
 use unicode_segmentation::UnicodeSegmentation;
 
-// Represents new status updates that should be posted to Twitter (tweets) and
-// Mastodon (toots).
+// Represents new status updates that should be posted to Bluesky (bsky_posts)
+// and Mastodon (toots).
 #[derive(Debug, Clone)]
 pub struct StatusUpdates {
     pub bsky_posts: Vec<NewStatus>,
@@ -49,7 +49,7 @@ pub struct NewMedia {
 pub struct SyncOptions {
     pub sync_reblogs: bool,
     pub sync_reskeets: bool,
-    pub sync_hashtag_twitter: Option<String>,
+    pub sync_hashtag_bluesky: Option<String>,
     pub sync_hashtag_mastodon: Option<String>,
 }
 
@@ -57,11 +57,11 @@ pub struct SyncOptions {
 /// external API calls.
 ///
 /// The ordering of the statuses in both list parameters is expected to be from
-/// newest to oldest. That is also the ordering returned by the Twitter and
+/// newest to oldest. That is also the ordering returned by the Bluesky and
 /// Mastodon APIs for their timelines, they start with newest posts first.
 ///
 /// The returned data structure contains new posts that are not synchronized yet
-/// and should be posted on both Twitter and Mastodon. They are ordered in
+/// and should be posted on both Bluesky and Mastodon. They are ordered in
 /// reverse so that older statuses are posted first if there are multiple
 /// statuses to synchronize.
 pub fn determine_posts(
@@ -105,7 +105,7 @@ pub fn determine_posts(
         let decoded_tweet = bsky_post_unshorten_decode(post);
 
         // Check if hashtag filtering is enabled and if the tweet matches.
-        if let Some(sync_hashtag) = &options.sync_hashtag_twitter {
+        if let Some(sync_hashtag) = &options.sync_hashtag_bluesky {
             if !sync_hashtag.is_empty() && !decoded_tweet.contains(sync_hashtag) {
                 // Skip if a sync hashtag is set and the string doesn't match.
                 continue;
@@ -150,7 +150,7 @@ pub fn determine_posts(
             }
         }
 
-        // The toot is not on Twitter yet, check if we should post it.
+        // The toot is not on Bluesky yet, check if we should post it.
         // Check if hashtag filtering is enabled and if the tweet matches.
         if let Some(sync_hashtag) = &options.sync_hashtag_mastodon {
             if !sync_hashtag.is_empty() && !fulltext.contains(sync_hashtag) {
@@ -188,7 +188,7 @@ pub fn determine_posts(
     }
 }*/
 
-// Returns true if a Mastodon toot and a Twitter tweet are considered equal.
+// Returns true if a Mastodon toot and a Bluesky post are considered equal.
 pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostData>) -> bool {
     // Make sure the structure is the same: both must be replies or both must
     // not be replies.
@@ -223,7 +223,7 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
 // Unifies tweet text or toot text to a common format.
 fn unify_post_content(content: String) -> String {
     let mut result = content.to_lowercase();
-    // Remove http:// and https:// for comparing because Twitter sometimes adds
+    // Remove http:// and https:// for comparing because Bluesky sometimes adds
     // those randomly.
     result = result.replace("http://", "");
     result = result.replace("https://", "");
@@ -258,7 +258,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
             retweet
                 .clone()
                 .user
-                .unwrap_or_else(|| panic!("Twitter user missing on retweet {}", retweet.id))
+                .unwrap_or_else(|| panic!("Bluesky user missing on reskeet {}", retweet.id))
                 .screen_name,
             tweet_get_text_with_quote(retweet)
         );
@@ -286,15 +286,25 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
     // Escape direct user mentions with @\.
     tweet.text = tweet.text.replace(" @", " @\\").replace(" @\\\\", " @\\");
 
-    // Twitterposts have HTML entities such as &amp;, we need to decode them.
+    // Bluesky posts have HTML entities such as &amp;, we need to decode them.
     let decoded = html_escape::decode_html_entities(&tweet.text);*/
 
-    toot_shorten(&bsky_post.post.record.text, &bsky_post.post.uri)
+    //toot_shorten(&bsky_post.post.record.text, &bsky_post.post.uri)
+    toot_shorten(&bsky_post_get_text(bsky_post), &bsky_post.post.uri)
+}
+
+// Get the full text of a bluesky post.
+fn bsky_post_get_text(bsky_post: &Object<FeedViewPostData>) -> String {
+    bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+        bsky_post.post.record.clone(),
+    )
+    .unwrap()
+    .text
 }
 
 // If this is a quote tweet then include the original text.
 fn bsky_post_get_text_with_quote(bsky_post: &Object<FeedViewPostData>) -> String {
-    bsky_post.post.record.text
+    bsky_post_get_text(bsky_post)
     /*match bsky_post.quoted_status {
             None => bsky_post.text.clone(),
             Some(ref quoted_tweet) => {
@@ -307,7 +317,7 @@ fn bsky_post_get_text_with_quote(bsky_post: &Object<FeedViewPostData>) -> String
                 let screen_name = &original
                     .user
                     .as_ref()
-                    .unwrap_or_else(|| panic!("Twitter user missing on tweet {}", original.id))
+                    .unwrap_or_else(|| panic!("Bluesky user missing on tweet {}", original.id))
                     .screen_name;
                 let mut tweet_text = bsky_post.text.clone();
 
@@ -417,14 +427,11 @@ pub fn filter_posted_before(
         bsky_posts: Vec::new(),
         toots: Vec::new(),
     };
-    for tweet in posts.bsky_posts {
-        if post_cache.contains(&tweet.text) {
-            eprintln!(
-                "Error: preventing double posting to Twitter: {}",
-                tweet.text
-            );
+    for post in posts.bsky_posts {
+        if post_cache.contains(&post.text) {
+            eprintln!("Error: preventing double posting to Bluesky: {}", post.text);
         } else {
-            filtered_posts.bsky_posts.push(tweet.clone());
+            filtered_posts.bsky_posts.push(post.clone());
         }
     }
     for toot in posts.toots {
@@ -531,7 +538,7 @@ pub fn toot_get_attachments(toot: &Status) -> Vec<NewMedia> {
     for attachment in attachments {
         links.push(NewMedia {
             attachment_url: attachment.url.clone(),
-            // Twitter only allows a max length of 1,000 characters for alt
+            // Bluesky only allows a max length of 1,000 characters for alt
             // text, so we need to cut it off here.
             alt_text: truncate_option_string(attachment.description.clone(), 1_000),
         });

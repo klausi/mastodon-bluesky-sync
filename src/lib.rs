@@ -32,7 +32,7 @@ pub async fn run(args: Args) -> Result<()> {
                 .context("Failed to setup mastodon account")?;
             let bluesky_config = bluesky_register()
                 .await
-                .context("Failed to setup twitter account")?;
+                .context("Failed to setup Bluesky account")?;
             let config = Config {
                 mastodon: mastodon_config,
                 bluesky: bluesky_config,
@@ -67,7 +67,7 @@ pub async fn run(args: Args) -> Result<()> {
         .get_account_statuses(
             account.json.id,
             Some(&GetAccountStatusesInputOptions {
-                limit: Some(50),
+                limit: Some(1),
                 pinned: Some(false),
                 exclude_replies: Some(true),
                 exclude_reblogs: Some(!config.mastodon.sync_reblogs),
@@ -100,7 +100,7 @@ pub async fn run(args: Args) -> Result<()> {
                 cursor: None,
                 filter: None,
                 include_pins: None,
-                limit: Some(LimitedNonZeroU8::try_from(50).unwrap()),
+                limit: Some(LimitedNonZeroU8::try_from(1).unwrap()),
             }
             .into(),
         )
@@ -112,12 +112,13 @@ pub async fn run(args: Args) -> Result<()> {
             process::exit(3);
         }
     };
+    dbg!(&bsky_statuses[0]);
 
     let options = SyncOptions {
         sync_reblogs: config.mastodon.sync_reblogs,
         sync_reskeets: config.bluesky.sync_reskeets,
         sync_hashtag_mastodon: config.mastodon.sync_hashtag,
-        sync_hashtag_twitter: config.bluesky.sync_hashtag,
+        sync_hashtag_bluesky: config.bluesky.sync_hashtag,
     };
 
     let mut posts = determine_posts(&mastodon_statuses, &bsky_statuses, &options);
@@ -147,8 +148,8 @@ pub async fn run(args: Args) -> Result<()> {
 
     for post in posts.bsky_posts {
         if !args.skip_existing_posts {
-            /*if let Err(e) = rt.block_on(post_to_twitter(&token, &tweet, args.dry_run)) {
-                eprintln!("Error posting tweet to Twitter: {e:#?}");
+            /*if let Err(e) = rt.block_on(post_to_bluesky(&token, &tweet, args.dry_run)) {
+                eprintln!("Error posting tweet to Bluesky: {e:#?}");
                 continue;
             }*/
             println!("Posting to Bluesky: {}", post.text);
