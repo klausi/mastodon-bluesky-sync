@@ -39,7 +39,7 @@ pub struct BlueskyConfig {
     pub email: String,
     pub app_password: String,
     #[serde(default = "config_true_default")]
-    pub sync_reskeets: bool,
+    pub sync_reposts: bool,
     #[serde_as(as = "NoneAsEmptyString")]
     #[serde(default = "config_none_default")]
     pub sync_hashtag: Option<String>,

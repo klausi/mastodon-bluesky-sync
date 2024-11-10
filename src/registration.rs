@@ -55,7 +55,7 @@ pub async fn bluesky_register() -> Result<BlueskyConfig> {
     Ok(BlueskyConfig {
         email,
         app_password,
-        sync_reskeets: true,
+        sync_reposts: true,
         sync_hashtag: None,
     })
 }

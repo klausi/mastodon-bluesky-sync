@@ -70,7 +70,7 @@ pub async fn run(args: Args) -> Result<()> {
         .get_account_statuses(
             account.json.id,
             Some(&GetAccountStatusesInputOptions {
-                limit: Some(1),
+                limit: Some(50),
                 pinned: Some(false),
                 exclude_replies: Some(true),
                 exclude_reblogs: Some(!config.mastodon.sync_reblogs),
@@ -122,7 +122,7 @@ pub async fn run(args: Args) -> Result<()> {
                 cursor: None,
                 filter: None,
                 include_pins: None,
-                limit: Some(LimitedNonZeroU8::try_from(1).unwrap()),
+                limit: Some(LimitedNonZeroU8::try_from(50).unwrap()),
             }
             .into(),
         )
@@ -137,7 +137,7 @@ pub async fn run(args: Args) -> Result<()> {
 
     let options = SyncOptions {
         sync_reblogs: config.mastodon.sync_reblogs,
-        sync_reskeets: config.bluesky.sync_reskeets,
+        sync_reposts: config.bluesky.sync_reposts,
         sync_hashtag_mastodon: config.mastodon.sync_hashtag,
         sync_hashtag_bluesky: config.bluesky.sync_hashtag,
     };

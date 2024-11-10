@@ -48,7 +48,7 @@ pub struct NewMedia {
 #[derive(Debug, Clone)]
 pub struct SyncOptions {
     pub sync_reblogs: bool,
-    pub sync_reskeets: bool,
+    pub sync_reposts: bool,
     pub sync_hashtag_bluesky: Option<String>,
     pub sync_hashtag_mastodon: Option<String>,
 }
@@ -79,10 +79,10 @@ pub fn determine_posts(
             continue;
         }
 
-        if !options.sync_reskeets {
+        if !options.sync_reposts {
             if let Some(_reskeet) = &post.post.viewer {
                 if let Some(_repost) = &_reskeet.repost {
-                    // Skip reskeets when sync_reskeets is disabled
+                    // Skip reskeets when sync_reposts is disabled
                     continue;
                 }
             }
