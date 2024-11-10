@@ -228,19 +228,6 @@ fn unify_post_content(content: String) -> String {
     result = result.replace("http://", "");
     result = result.replace("https://", "");
 
-    // Support for old posts that started with "RT @\username:", we consider
-    // them equal to "RT username:".
-    if result.starts_with("rt @\\") {
-        result = result.replacen("rt @\\", "rt ", 1);
-    }
-    // Support for old posts that started with "RT @username:", we consider them
-    // equal to "RT username:".
-    if result.starts_with("rt @") {
-        result = result.replacen("rt @", "rt ", 1);
-    }
-    if result.starts_with("rt \\@") {
-        result = result.replacen("rt \\@", "rt ", 1);
-    }
     // Escape direct user mentions with \@.
     result = result.replace(" \\@", " @");
     result.replace(" @\\", " @")
@@ -254,7 +241,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
     // Add prefix for reposts.
     if let Some(viewer) = &bsky_post.post.viewer {
         if let Some(_repost) = &viewer.repost {
-            text = format!("RT {}: {}", bsky_post.post.author.handle.as_str(), text);
+            text = format!("♻️ {}: {}", bsky_post.post.author.handle.as_str(), text);
         }
     }
 
@@ -336,9 +323,8 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
     let mut shortened = text.trim().to_string();
     let mut with_link = shortened.clone();
 
-    // Bluesky should allow 280 characters, but their counting is unpredictable.
-    // Use 40 characters less and hope it works ¯\_(ツ)_/¯
-    while char_count > 240 {
+    // Bluesky has a limit of 300 characters.
+    while char_count > 300 {
         // Remove the last word.
         shortened = re.replace_all(&shortened, "").trim().to_string();
         if let Some(ref toot_url) = *toot_url {
@@ -376,7 +362,7 @@ fn toot_shorten(text: &str, post_uri: &str) -> String {
 pub fn mastodon_toot_get_text(toot: &Status) -> String {
     let mut replaced = match toot.reblog {
         None => toot.content.clone(),
-        Some(ref reblog) => format!("RT {}: {}", reblog.account.username, reblog.content),
+        Some(ref reblog) => format!("♻️ {}: {}", reblog.account.username, reblog.content),
     };
     replaced = replaced.replace("<br />", "\n");
     replaced = replaced.replace("<br>", "\n");

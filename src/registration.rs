@@ -1,5 +1,4 @@
 use anyhow::{Ok, Result};
-use bsky_sdk::{agent::config::FileStore, BskyAgent};
 use megalodon::generator;
 use std::io;
 

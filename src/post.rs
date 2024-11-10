@@ -78,8 +78,6 @@ async fn send_single_post_to_mastodon(
     let temp_dir = tempdir()?;
     // Post attachments first, if there are any.
     for attachment in &toot.attachments {
-        // Because we use async for egg-mode we also need to use reqwest in
-        // async mode. Otherwise we get double async executor errors.
         let response = reqwest::get(&attachment.attachment_url)
             .await
             .context(format!(
@@ -222,11 +220,46 @@ pub async fn post_to_bluesky(
 
 /// Sends the given new status to Bluesky.
 async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
+    let mut images = Vec::new();
+    for attachment in &post.attachments {
+        let response = reqwest::get(&attachment.attachment_url)
+            .await
+            .context(format!(
+                "Failed downloading attachment {}",
+                attachment.attachment_url
+            ))?;
+
+        let output = bsky_agent
+            .api
+            .com
+            .atproto
+            .repo
+            .upload_blob(response.bytes().await?.to_vec())
+            .await
+            .context(format!(
+                "Failed uploading attachment to Bluesky {}",
+                attachment.attachment_url
+            ))?;
+        images.push(
+            bsky_sdk::api::app::bsky::embed::images::ImageData {
+                alt: attachment.alt_text.clone().unwrap_or_default(),
+                aspect_ratio: None,
+                image: output.data.blob,
+            }
+            .into(),
+        )
+    }
+    let embed = Some(bsky_sdk::api::types::Union::Refs(
+        bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(Box::new(
+            bsky_sdk::api::app::bsky::embed::images::MainData { images }.into(),
+        )),
+    ));
+
     let rt = RichText::new_with_detect_facets(post.text.clone()).await?;
     let record = bsky_agent
         .create_record(bsky_sdk::api::app::bsky::feed::post::RecordData {
             created_at: bsky_sdk::api::types::string::Datetime::now(),
-            embed: None,
+            embed,
             entities: None,
             facets: rt.facets,
             labels: None,
@@ -235,65 +268,8 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
             tags: None,
             text: rt.text,
         })
-        .await?;
+        .await
+        .context(format!("Failed posting to Bluesky {}", post.text))?;
 
     Ok(to_string(&record.cid)?)
-
-    /*let mut draft = DraftTweet::new(post.text.clone());
-    'attachments: for attachment in &post.attachments {
-        let response = reqwest::get(&attachment.attachment_url).await?;
-        let media_type = response
-            .headers()
-            .get(CONTENT_TYPE)
-            .ok_or_else(|| format_err!("Missing content-type on response"))?
-            .to_str()?
-            .parse::<mime::Mime>()?;
-
-        let bytes = response.bytes().await?;
-        let mut media_handle = upload_media(&bytes, &media_type, token).await?;
-
-        // Now we need to wait and check until the media is ready.
-        loop {
-            let wait_seconds = match media_handle.progress {
-                Some(progress) => match progress {
-                    Pending(seconds) | InProgress(seconds) => seconds,
-                    Failed(error) => {
-                        if error.code == 3 {
-                            warn!(
-                                "Skipping unsupported media attachment {}, because of {}",
-                                attachment.attachment_url, error
-                            );
-                            continue 'attachments;
-                        }
-                        return Err(format_err!(
-                            "Twitter media upload of {} failed: {}",
-                            attachment.attachment_url,
-                            error
-                        ));
-                    }
-                    Success => 0,
-                },
-                // If there is no progress assume that processing is done.
-                None => 0,
-            };
-
-            if wait_seconds > 0 {
-                sleep(Duration::from_secs(wait_seconds)).await;
-                media_handle = egg_mode::media::get_status(media_handle.id, token).await?;
-            } else {
-                break;
-            }
-        }
-
-        draft.add_media(media_handle.id.clone());
-        if let Some(alt_text) = &attachment.alt_text {
-            set_metadata(&media_handle.id, alt_text, token).await?;
-        }
-    }
-
-    let created_tweet = if let Some(parent_id) = post.in_reply_to_id {
-        draft.in_reply_to(parent_id).send(token).await?
-    } else {
-        draft.send(token).await?
-    };*/
 }

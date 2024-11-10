@@ -70,7 +70,7 @@ pub async fn run(args: Args) -> Result<()> {
         .get_account_statuses(
             account.json.id,
             Some(&GetAccountStatusesInputOptions {
-                limit: Some(2),
+                limit: Some(1),
                 pinned: Some(false),
                 exclude_replies: Some(true),
                 exclude_reblogs: Some(!config.mastodon.sync_reblogs),
@@ -169,7 +169,7 @@ pub async fn run(args: Args) -> Result<()> {
     for post in posts.bsky_posts {
         if !args.skip_existing_posts {
             if let Err(e) = post_to_bluesky(&bsky_agent, &post, args.dry_run).await {
-                eprintln!("Error posting tweet to Bluesky: {e:#?}");
+                eprintln!("Error posting to Bluesky: {e:#?}");
                 continue;
             }
         }
