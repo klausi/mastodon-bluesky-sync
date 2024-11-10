@@ -1,5 +1,6 @@
 use anyhow::Result;
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewEmbedRefs};
+use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
 use megalodon::entities::Status;
 use regex::Regex;
@@ -263,11 +264,26 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
 
 // Get the full text of a bluesky post.
 fn bsky_post_get_text(bsky_post: &Object<FeedViewPostData>) -> String {
-    bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+    let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
         bsky_post.post.record.clone(),
     )
-    .unwrap()
-    .text
+    .expect("Failed to parse Bluesky post record");
+    let mut text = record.text.clone();
+    // Convert links in facets to URIs in the text.
+    if let Some(facets) = &record.facets {
+        for facet in facets {
+            if let Union::Refs(MainFeaturesItem::Link(link)) = &facet.features[0] {
+                let mut bytes = record.text.as_bytes().to_vec();
+                bytes.splice(
+                    facet.index.byte_start..facet.index.byte_end,
+                    link.uri.as_bytes().iter().cloned(),
+                );
+                text = String::from_utf8(bytes)
+                    .expect("Invalid UTF-8 in Bluesky post after replacing link");
+            }
+        }
+    }
+    text
 }
 
 // If this is a quote tweet then include the original text.
