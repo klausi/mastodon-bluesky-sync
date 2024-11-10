@@ -87,8 +87,16 @@ pub async fn run(args: Args) -> Result<()> {
     let bsky_agent = BskyAgent::builder()
         .config(config.bluesky.bluesky_config)
         .build()
-        .await?;
-    let bsky_session = bsky_agent.api.com.atproto.server.get_session().await?;
+        .await
+        .context("Error creating BlueSky agent")?;
+    let bsky_session = bsky_agent
+        .api
+        .com
+        .atproto
+        .server
+        .get_session()
+        .await
+        .context("Error getting Bluesky session")?;
     let bsky_statuses = match bsky_agent
         .api
         .app
