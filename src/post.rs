@@ -2,6 +2,7 @@ use crate::sync::NewStatus;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
+use bsky_sdk::rich_text::RichText;
 use bsky_sdk::BskyAgent;
 use megalodon::megalodon::PostStatusOutput;
 use megalodon::megalodon::UploadMediaInputOptions;
@@ -11,6 +12,7 @@ use megalodon::{
     error,
     megalodon::PostStatusInputOptions,
 };
+use serde_json::to_string;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -220,19 +222,23 @@ pub async fn post_to_bluesky(
 
 /// Sends the given new status to Bluesky.
 async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
+    let rt = RichText::new_with_detect_facets(post.text.clone()).await?;
     let record = bsky_agent
         .create_record(bsky_sdk::api::app::bsky::feed::post::RecordData {
             created_at: bsky_sdk::api::types::string::Datetime::now(),
             embed: None,
             entities: None,
-            facets: None,
+            facets: rt.facets,
             labels: None,
             langs: None,
             reply: None,
             tags: None,
-            text: post.text.clone(),
+            text: rt.text,
         })
         .await?;
+
+    Ok(to_string(&record.cid)?)
+
     /*let mut draft = DraftTweet::new(post.text.clone());
     'attachments: for attachment in &post.attachments {
         let response = reqwest::get(&attachment.attachment_url).await?;
@@ -290,7 +296,4 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
     } else {
         draft.send(token).await?
     };*/
-
-    //Ok(record.cid.to_string())
-    Ok("5".to_string())
 }

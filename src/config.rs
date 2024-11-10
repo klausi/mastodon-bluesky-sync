@@ -36,7 +36,8 @@ pub struct MastodonConfig {
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlueskyConfig {
-    pub bluesky_config: bsky_sdk::agent::config::Config,
+    pub email: String,
+    pub app_password: String,
     #[serde(default = "config_true_default")]
     pub sync_reskeets: bool,
     #[serde_as(as = "NoneAsEmptyString")]

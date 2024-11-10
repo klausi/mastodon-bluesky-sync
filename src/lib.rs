@@ -1,5 +1,6 @@
 use anyhow::Context;
 use anyhow::Result;
+use bsky_sdk::agent::config::FileStore;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use bsky_sdk::BskyAgent;
 use log::debug;
@@ -53,8 +54,8 @@ pub async fn run(args: Args) -> Result<()> {
 
     let mastodon = generator(
         megalodon::SNS::Mastodon,
-        config.mastodon.base_url,
-        Some(config.mastodon.access_token),
+        config.mastodon.base_url.clone(),
+        Some(config.mastodon.access_token.clone()),
         None,
     );
     let account = match mastodon.verify_account_credentials().await {
@@ -69,7 +70,7 @@ pub async fn run(args: Args) -> Result<()> {
         .get_account_statuses(
             account.json.id,
             Some(&GetAccountStatusesInputOptions {
-                limit: Some(1),
+                limit: Some(2),
                 pinned: Some(false),
                 exclude_replies: Some(true),
                 exclude_reblogs: Some(!config.mastodon.sync_reblogs),
@@ -86,11 +87,22 @@ pub async fn run(args: Args) -> Result<()> {
         }
     };
 
-    let bsky_agent = BskyAgent::builder()
-        .config(config.bluesky.bluesky_config)
-        .build()
-        .await
-        .context("Error creating BlueSky agent")?;
+    // First try to login with a cached access token.
+    let bsky_agent =
+        match bsky_sdk::agent::config::Config::load(&FileStore::new("bluesky-auth-cache.json"))
+            .await
+        {
+            Ok(bsky_config) => match BskyAgent::builder().config(bsky_config).build().await {
+                Ok(agent) => agent,
+                Err(_) => {
+                    get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password)
+                        .await?
+                }
+            },
+            Err(_) => {
+                get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password).await?
+            }
+        };
     let bsky_session = bsky_agent
         .api
         .com
@@ -184,4 +196,15 @@ fn cache_file(name: &str) -> String {
         return format!("{cache_dir}/{name}");
     }
     name.into()
+}
+
+async fn get_new_bluesky_agent(email: &str, app_password: &str) -> Result<BskyAgent> {
+    let agent = BskyAgent::builder().build().await?;
+    let _session = agent.login(email, app_password).await?;
+    agent
+        .to_config()
+        .await
+        .save(&FileStore::new("bluesky-auth-cache.json"))
+        .await?;
+    Ok(agent)
 }

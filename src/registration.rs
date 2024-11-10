@@ -1,5 +1,5 @@
 use anyhow::{Ok, Result};
-use bsky_sdk::BskyAgent;
+use bsky_sdk::{agent::config::FileStore, BskyAgent};
 use megalodon::generator;
 use std::io;
 
@@ -47,12 +47,15 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
 }
 
 pub async fn bluesky_register() -> Result<BlueskyConfig> {
-    let agent = BskyAgent::builder().build().await?;
-    let identifier = console_input("Enter your Bluesky email address")?;
-    let password = console_input("Enter your Bluesky password")?;
-    let _session = agent.login(identifier, password).await?;
+    let email = console_input("Enter your Bluesky email address")?;
+    let app_password = console_input("Generate a Bluesky App password at https://bsky.app/settings/app-passwords and paste it here")?;
+    let _agent = get_new_bluesky_agent(&email, &app_password).await?;
+    // Bluesky access tokens do not work for longer periods of time, so we need
+    // to store an app password here.
+    // See https://github.com/sugyan/atrium/issues/246
     Ok(BlueskyConfig {
-        bluesky_config: agent.to_config().await,
+        email,
+        app_password,
         sync_reskeets: true,
         sync_hashtag: None,
     })
