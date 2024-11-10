@@ -2,6 +2,7 @@ use crate::sync::NewStatus;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
+use bsky_sdk::BskyAgent;
 use megalodon::megalodon::PostStatusOutput;
 use megalodon::megalodon::UploadMediaInputOptions;
 use megalodon::Megalodon;
@@ -168,55 +169,72 @@ async fn mastodon_wait_until_uploaded(
     }
 }
 
-/*/// Send a new status update to Twitter, including thread replies and
+/// Send a new status update to Bluesky, including thread replies and
 /// attachments.
-pub async fn post_to_twitter(token: &Token, tweet: &NewStatus, dry_run: bool) -> Result<()> {
-    if let Some(reply_to) = tweet.in_reply_to_id {
+pub async fn post_to_bluesky(
+    bsky_agent: &BskyAgent,
+    post: &NewStatus,
+    dry_run: bool,
+) -> Result<()> {
+    if let Some(reply_to) = &post.in_reply_to_id {
         println!(
-            "Posting thread reply for {} to Twitter: {}",
-            reply_to, tweet.text
+            "Posting thread reply for {} to Bluesky: {}",
+            reply_to, post.text
         );
     } else {
-        println!("Posting to Twitter: {}", tweet.text);
+        println!("Posting to Bluesky: {}", post.text);
     }
-    let mut status_id = 0;
+    let mut status_id = "".to_string();
     if !dry_run {
-        status_id = send_single_post_to_twitter(token, tweet).await?;
+        status_id = send_single_post_to_bluesky(bsky_agent, post).await?;
     }
 
     // Recursion does not work well with async functions, so we use iteration
     // here instead.
     let mut replies = Vec::new();
-    for reply in &tweet.replies {
-        replies.push((status_id, reply));
+    for reply in &post.replies {
+        replies.push((status_id.clone(), reply));
     }
 
     while !replies.is_empty() {
         let (parent_id, reply) = replies.remove(0);
         let mut new_reply = reply.clone();
         // Set the new ID of the parent status to reply to.
-        new_reply.in_reply_to_id = Some(parent_id);
+        new_reply.in_reply_to_id = Some(parent_id.clone());
 
         println!(
             "Posting thread reply for {} to Twitter: {}",
-            parent_id, reply.text
+            &parent_id, reply.text
         );
-        let mut parent_status_id = 0;
+        let mut parent_status_id = "".to_string();
         if !dry_run {
-            parent_status_id = send_single_post_to_twitter(token, &new_reply).await?;
+            parent_status_id = send_single_post_to_bluesky(bsky_agent, &new_reply).await?;
         }
         for remaining_reply in &reply.replies {
-            replies.push((parent_status_id, remaining_reply));
+            replies.push((parent_status_id.clone(), remaining_reply));
         }
     }
 
     Ok(())
 }
 
-/// Sends the given new status to Twitter.
-async fn send_single_post_to_twitter(token: &Token, tweet: &NewStatus) -> Result<u64> {
-    let mut draft = DraftTweet::new(tweet.text.clone());
-    'attachments: for attachment in &tweet.attachments {
+/// Sends the given new status to Bluesky.
+async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
+    let record = bsky_agent
+        .create_record(bsky_sdk::api::app::bsky::feed::post::RecordData {
+            created_at: bsky_sdk::api::types::string::Datetime::now(),
+            embed: None,
+            entities: None,
+            facets: None,
+            labels: None,
+            langs: None,
+            reply: None,
+            tags: None,
+            text: post.text.clone(),
+        })
+        .await?;
+    /*let mut draft = DraftTweet::new(post.text.clone());
+    'attachments: for attachment in &post.attachments {
         let response = reqwest::get(&attachment.attachment_url).await?;
         let media_type = response
             .headers()
@@ -267,11 +285,12 @@ async fn send_single_post_to_twitter(token: &Token, tweet: &NewStatus) -> Result
         }
     }
 
-    let created_tweet = if let Some(parent_id) = tweet.in_reply_to_id {
+    let created_tweet = if let Some(parent_id) = post.in_reply_to_id {
         draft.in_reply_to(parent_id).send(token).await?
     } else {
         draft.send(token).await?
-    };
+    };*/
 
-    Ok(created_tweet.id)
-}*/
+    //Ok(record.cid.to_string())
+    Ok("5".to_string())
+}

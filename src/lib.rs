@@ -145,7 +145,6 @@ pub async fn run(args: Args) -> Result<()> {
                 eprintln!("Error posting toot to Mastodon: {e:#?}");
                 continue;
             }
-            println!("Posting to Mastodon: {}", toot.text);
         }
         // Posting API call was successful: store text in cache to prevent any
         // double posting next time.
@@ -157,11 +156,10 @@ pub async fn run(args: Args) -> Result<()> {
 
     for post in posts.bsky_posts {
         if !args.skip_existing_posts {
-            /*if let Err(e) = rt.block_on(post_to_bluesky(&token, &tweet, args.dry_run)) {
+            if let Err(e) = post_to_bluesky(&bsky_agent, &post, args.dry_run).await {
                 eprintln!("Error posting tweet to Bluesky: {e:#?}");
                 continue;
-            }*/
-            println!("Posting to Bluesky: {}", post.text);
+            }
         }
         // Posting API call was successful: store text in cache to prevent any
         // double posting next time.

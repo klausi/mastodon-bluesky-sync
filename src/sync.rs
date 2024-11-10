@@ -142,16 +142,16 @@ pub fn determine_posts(
             continue;
         }
 
-        for tweet in bsky_statuses {
+        for bsky_post in bsky_statuses {
             // If the toot already exists we can stop here and know that we are
             // synced.
-            if toot_and_post_are_equal(toot, tweet) {
+            if toot_and_post_are_equal(toot, bsky_post) {
                 break 'toots;
             }
         }
 
         // The toot is not on Bluesky yet, check if we should post it.
-        // Check if hashtag filtering is enabled and if the tweet matches.
+        // Check if hashtag filtering is enabled and if the post matches.
         if let Some(sync_hashtag) = &options.sync_hashtag_mastodon {
             if !sync_hashtag.is_empty() && !fulltext.contains(sync_hashtag) {
                 // Skip if a sync hashtag is set and the string doesn't match.
@@ -201,9 +201,9 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
     // Strip markup from Mastodon toot and unify message for comparison.
     let toot_text = unify_post_content(mastodon_toot_get_text(toot));
     // Replace those ugly t.co URLs in the tweet text.
-    let tweet_text = unify_post_content(bsky_post_unshorten_decode(bsky_post));
+    let bsky_text = unify_post_content(bsky_post_unshorten_decode(bsky_post));
 
-    if toot_text == tweet_text {
+    if toot_text == bsky_text {
         return true;
     }
     // Mastodon allows up to 500 characters, so we might need to shorten the
@@ -213,14 +213,14 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
         Some(reblog) => bsky_post_shorten(&toot_text, &reblog.url),
     });
 
-    if shortened_toot == tweet_text {
+    if shortened_toot == bsky_text {
         return true;
     }
 
     false
 }
 
-// Unifies tweet text or toot text to a common format.
+// Unifies bluesky text or toot text to a common format.
 fn unify_post_content(content: String) -> String {
     let mut result = content.to_lowercase();
     // Remove http:// and https:// for comparing because Bluesky sometimes adds
