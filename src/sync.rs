@@ -1,6 +1,6 @@
 use anyhow::Result;
-use bsky_sdk::api::app::bsky::feed::defs::FeedViewPostData;
-use bsky_sdk::api::types::{Object, TryFromUnknown, Unknown};
+use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewEmbedRefs};
+use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
 use megalodon::entities::Status;
 use regex::Regex;
 use std::collections::HashSet;
@@ -82,7 +82,7 @@ pub fn determine_posts(
         if !options.sync_reskeets {
             if let Some(_reskeet) = &post.post.viewer {
                 if let Some(_repost) = &_reskeet.repost {
-                    // Skip retweets when sync_retweets is disabled
+                    // Skip reskeets when sync_reskeets is disabled
                     continue;
                 }
             }
@@ -93,27 +93,27 @@ pub fn determine_posts(
             if let Some(_id) = &toot.in_reply_to_id {
                 continue;
             }
-            // If the tweet already exists we can stop here and know that we are
+            // If the post already exists we can stop here and know that we are
             // synced.
             if toot_and_post_are_equal(toot, post) {
                 break 'bsky;
             }
         }
 
-        // The tweet is not on Mastodon yet, check if we should post it.
-        // Fetch the tweet text into a String object
-        let decoded_tweet = bsky_post_unshorten_decode(post);
+        // The post is not on Mastodon yet, check if we should post it.
+        // Fetch the post text into a String object
+        let decoded_post = bsky_post_unshorten_decode(post);
 
-        // Check if hashtag filtering is enabled and if the tweet matches.
+        // Check if hashtag filtering is enabled and if the post matches.
         if let Some(sync_hashtag) = &options.sync_hashtag_bluesky {
-            if !sync_hashtag.is_empty() && !decoded_tweet.contains(sync_hashtag) {
+            if !sync_hashtag.is_empty() && !decoded_post.contains(sync_hashtag) {
                 // Skip if a sync hashtag is set and the string doesn't match.
                 continue;
             }
         }
 
         updates.toots.push(NewStatus {
-            text: decoded_tweet,
+            text: decoded_post,
             attachments: bsky_get_attachments(post),
             replies: Vec::new(),
             in_reply_to_id: None,
@@ -246,37 +246,19 @@ fn unify_post_content(content: String) -> String {
     result.replace(" @\\", " @")
 }
 
-// Replace t.co URLs and HTML entity decode &amp;.
+// Extend URLs and HTML entity decode &amp;.
 // Directly include quote tweets in the text.
 pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> String {
-    // We need to cleanup the tweet text while passing the tweet around.
-    /*let mut tweet = bsky_post.clone();
+    let mut text = bsky_post_get_text(bsky_post);
 
-    if let Some(retweet) = &tweet.retweeted_status {
-        tweet.text = format!(
-            "RT {}: {}",
-            retweet
-                .clone()
-                .user
-                .unwrap_or_else(|| panic!("Bluesky user missing on reskeet {}", retweet.id))
-                .screen_name,
-            tweet_get_text_with_quote(retweet)
-        );
-        tweet.entities.urls = retweet.entities.urls.clone();
-        tweet.extended_entities = retweet.extended_entities.clone();
-    }
-
-    // Remove the last media link if there is one, we will upload attachments
-    // directly to Mastodon.
-    if let Some(media) = &tweet.extended_entities {
-        for attachment in &media.media {
-            tweet.text = tweet.text.replace(&attachment.url, "");
+    // Add prefix for reposts.
+    if let Some(viewer) = &bsky_post.post.viewer {
+        if let Some(_repost) = &viewer.repost {
+            text = format!("RT {}: {}", bsky_post.post.author.handle.as_str(), text);
         }
     }
-    tweet.text = tweet.text.trim().to_string();
-    tweet.text = tweet_get_text_with_quote(&tweet);
 
-    // Replace t.co URLs with the real links in tweets.
+    /*// Replace t.co URLs with the real links in tweets.
     for url in tweet.entities.urls {
         if let Some(expanded_url) = &url.expanded_url {
             tweet.text = tweet.text.replace(&url.url, expanded_url);
@@ -289,8 +271,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
     // Bluesky posts have HTML entities such as &amp;, we need to decode them.
     let decoded = html_escape::decode_html_entities(&tweet.text);*/
 
-    //toot_shorten(&bsky_post.post.record.text, &bsky_post.post.uri)
-    toot_shorten(&bsky_post_get_text(bsky_post), &bsky_post.post.uri)
+    toot_shorten(&text, &bsky_post.post.uri)
 }
 
 // Get the full text of a bluesky post.
@@ -472,55 +453,25 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 
 // Returns a list of direct links to attachments for download.
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
-    let links = Vec::new();
-    /*// Check if there are attachments directly on the tweet, otherwise try to
-    // use attachments from retweets and quote tweets.
-    let media = match &tweet.extended_entities {
-        Some(media) => Some(media),
-        None => {
-            let mut retweet_media = None;
-            if let Some(retweet) = &tweet.retweeted_status {
-                if let Some(media) = &retweet.extended_entities {
-                    retweet_media = Some(media);
-                }
-            } else if let Some(quote_tweet) = &tweet.quoted_status {
-                if let Some(media) = &quote_tweet.extended_entities {
-                    retweet_media = Some(media);
-                }
-            }
-            retweet_media
-        }
-    };
+    let mut links = Vec::new();
 
-    if let Some(media) = media {
-        for attachment in &media.media {
-            match &attachment.video_info {
-                Some(video_info) => {
-                    let mut bitrate = 0;
-                    let mut media_url = "".to_string();
-                    // Use the video variant with the highest bitrate.
-                    for variant in &video_info.variants {
-                        if let Some(video_bitrate) = variant.bitrate {
-                            if video_bitrate >= bitrate {
-                                bitrate = video_bitrate;
-                                media_url = variant.url.clone();
-                            }
-                        }
+    if let Some(embed) = &bsky_post.post.embed {
+        if let Union::Refs(refs) = embed {
+            match &refs {
+                PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box) => {
+                    let images = &image_box.images;
+                    for image in images {
+                        links.push(NewMedia {
+                            attachment_url: image.fullsize.clone(),
+                            alt_text: Some(image.alt.clone()),
+                        });
                     }
-                    links.push(NewMedia {
-                        attachment_url: media_url,
-                        alt_text: attachment.ext_alt_text.clone(),
-                    });
                 }
-                None => {
-                    links.push(NewMedia {
-                        attachment_url: attachment.media_url_https.clone(),
-                        alt_text: attachment.ext_alt_text.clone(),
-                    });
-                }
+                _ => {}
             }
         }
-    }*/
+    }
+
     links
 }
 

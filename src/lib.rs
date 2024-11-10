@@ -12,12 +12,14 @@ use tokio::io::AsyncWriteExt;
 
 use crate::args::*;
 use crate::config::*;
+use crate::post::*;
 use crate::registration::bluesky_register;
 use crate::registration::mastodon_register;
 use crate::sync::*;
 
 pub mod args;
 mod config;
+mod post;
 mod registration;
 mod sync;
 
@@ -49,13 +51,13 @@ pub async fn run(args: Args) -> Result<()> {
         }
     };
 
-    let client = generator(
+    let mastodon = generator(
         megalodon::SNS::Mastodon,
         config.mastodon.base_url,
         Some(config.mastodon.access_token),
         None,
     );
-    let account = match client.verify_account_credentials().await {
+    let account = match mastodon.verify_account_credentials().await {
         Ok(account) => account,
         Err(e) => {
             eprintln!("Error connecting to Mastodon: {e:#?}");
@@ -63,7 +65,7 @@ pub async fn run(args: Args) -> Result<()> {
         }
     };
     // Get most recent 50 toots, exclude replies for now.
-    let mastodon_statuses = match client
+    let mastodon_statuses = match mastodon
         .get_account_statuses(
             account.json.id,
             Some(&GetAccountStatusesInputOptions {
@@ -120,7 +122,6 @@ pub async fn run(args: Args) -> Result<()> {
             process::exit(3);
         }
     };
-    dbg!(&bsky_statuses[0]);
 
     let options = SyncOptions {
         sync_reblogs: config.mastodon.sync_reblogs,
@@ -140,10 +141,10 @@ pub async fn run(args: Args) -> Result<()> {
 
     for toot in posts.toots {
         if !args.skip_existing_posts {
-            /*if let Err(e) = post_to_mastodon(&mastodon, &toot, args.dry_run) {
+            if let Err(e) = post_to_mastodon(&mastodon, &toot, args.dry_run).await {
                 eprintln!("Error posting toot to Mastodon: {e:#?}");
                 continue;
-            }*/
+            }
             println!("Posting to Mastodon: {}", toot.text);
         }
         // Posting API call was successful: store text in cache to prevent any

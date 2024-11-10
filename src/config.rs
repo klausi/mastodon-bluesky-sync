@@ -44,10 +44,6 @@ pub struct BlueskyConfig {
     pub sync_hashtag: Option<String>,
 }
 
-fn config_false_default() -> bool {
-    false
-}
-
 fn config_true_default() -> bool {
     true
 }
