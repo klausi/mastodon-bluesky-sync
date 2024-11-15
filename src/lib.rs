@@ -93,7 +93,15 @@ pub async fn run(args: Args) -> Result<()> {
             .await
         {
             Ok(bsky_config) => match BskyAgent::builder().config(bsky_config).build().await {
-                Ok(agent) => agent,
+                Ok(agent) => {
+                    // Save the session in case it was refreshed.
+                    agent
+                        .to_config()
+                        .await
+                        .save(&FileStore::new("bluesky-auth-cache.json"))
+                        .await?;
+                    agent
+                }
                 Err(_) => {
                     get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password)
                         .await?
