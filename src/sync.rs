@@ -1,6 +1,6 @@
 use anyhow::Result;
 use bsky_sdk::api::app::bsky::embed::record::ViewRecordRefs;
-use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewEmbedRefs};
+use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostViewEmbedRefs};
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
 use megalodon::entities::Status;
@@ -260,7 +260,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
             }
         }
     }
-    toot_shorten(&text, &bsky_post.post.uri)
+    toot_shorten(&text, &bsky_post.post)
 }
 
 // Get the full text of a bluesky post.
@@ -307,18 +307,33 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
 
 // Mastodon has a 500 character post limit. With embedded quote tweets and long
 // links the content could get too long, shorten it to 500 characters.
-fn toot_shorten(text: &str, post_uri: &str) -> String {
+fn toot_shorten(text: &str, bsky_post: &Object<PostViewData>) -> String {
     let mut char_count = text.graphemes(true).count();
-    let re = Regex::new(r"[^\s]+$").unwrap();
+    if char_count <= 500 {
+        return text.to_string();
+    }
+    let last_word_regex = Regex::new(r"[^\s]+$").unwrap();
     let mut shortened = text.trim().to_string();
     let mut with_link = shortened.clone();
+    let username = bsky_post.author.handle.as_str();
+    // Get everything after the last slash, example:
+    // at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3lb3f2ko4rc23
+    let post_id_regex = Regex::new(r"[^/]+$").unwrap();
+    let post_id = post_id_regex
+        .find(&bsky_post.uri)
+        .map(|mat| mat.as_str())
+        .unwrap();
+    let link = format!("https://bsky.app/profile/{username}/post/{post_id}");
 
     // Hard-coding a limit of 500 here for now, could be configurable.
     while char_count > 500 {
         // Remove the last word.
-        shortened = re.replace_all(&shortened, "").trim().to_string();
+        shortened = last_word_regex
+            .replace_all(&shortened, "")
+            .trim()
+            .to_string();
         // Add a link to the full length tweet.
-        with_link = format!("{shortened}… https://twitter.com/twitter/status/{post_uri}");
+        with_link = format!("{shortened}… {link}");
         char_count = with_link.graphemes(true).count();
     }
     with_link
@@ -473,7 +488,7 @@ pub mod tests {
     use bsky_sdk::api::types::Object;
     use std::fs;
 
-    use crate::{determine_posts, SyncOptions};
+    use crate::{determine_posts, sync::toot_shorten, SyncOptions};
 
     // Test that embedded quote posts are included correctly.
     #[test]
@@ -490,6 +505,18 @@ Synchronization of posts works, but I'm still testing things.
 
 https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         );
+    }
+
+    // Test that a correct Bluesky link is appended when posting to Mastodon.
+    #[test]
+    fn toot_shorten_link() {
+        let text = "a ".repeat(251);
+        let post = read_bsky_post_from_json("tests/bsky_quote_post.json");
+        let expected = format!(
+            "{}a… https://bsky.app/profile/klau.si/post/3lb3f2ko4rc23",
+            "a ".repeat(223)
+        );
+        assert_eq!(expected, toot_shorten(&text, &post.post));
     }
 
     // Read static bluesky post from test file.
