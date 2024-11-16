@@ -60,7 +60,7 @@ This is running a sync without actually posting anything.
 
 If you already have posts in one or both of your accounts and you want to exclude them from being synced you can use `--skip-existing-posts`. This is going to mark all posts as synced without actually posting them.
 
-    ./mastodon-twitter-sync --skip-existing-posts
+    ./mastodon-bluesky-sync --skip-existing-posts
 
 Note that combining `--skip-existing-posts --dry-run` will not do anything. You have to run `--skip-existing-posts` alone to mark all posts as synchronized in the post cache.
 
@@ -76,6 +76,5 @@ Every run of the program only synchronizes the accounts once. Use Cron to run it
 
 Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
-- Optionally configuration options can be set to delete posts/favourites from your Mastodon and Twitter accounts that are older than 90 days.
-- Automated tests
+- Optionally configuration options can be set to delete posts/favourites from your Mastodon and Bluesky accounts that are older than 90 days.
 - Build portable binaries on Github without OpenSSL dependencies

@@ -203,7 +203,7 @@ pub async fn post_to_bluesky(
         new_reply.in_reply_to_id = Some(parent_id.clone());
 
         println!(
-            "Posting thread reply for {} to Twitter: {}",
+            "Posting thread reply for {} to Bluesky: {}",
             &parent_id, reply.text
         );
         let mut parent_status_id = "".to_string();

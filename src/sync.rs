@@ -195,7 +195,7 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
 
     // Strip markup from Mastodon toot and unify message for comparison.
     let toot_text = unify_post_content(mastodon_toot_get_text(toot));
-    // Replace those ugly t.co URLs in the tweet text.
+    // Populate URLs in the post text.
     let bsky_text = unify_post_content(bsky_post_unshorten_decode(bsky_post));
 
     if toot_text == bsky_text {
@@ -229,7 +229,7 @@ fn unify_post_content(content: String) -> String {
 }
 
 // Extend URLs and HTML entity decode &amp;.
-// Directly include quote tweets in the text.
+// Directly include quoted posts in the text.
 pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> String {
     let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
         bsky_post.post.record.clone(),
@@ -305,10 +305,11 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
     with_link
 }
 
-// Mastodon has a 500 character post limit. With embedded quote tweets and long
+// Mastodon has a 500 character post limit. With embedded quote posts and long
 // links the content could get too long, shorten it to 500 characters.
 fn toot_shorten(text: &str, bsky_post: &Object<PostViewData>) -> String {
     let mut char_count = text.graphemes(true).count();
+    // Hard-coding a limit of 500 here for now, could be configurable.
     if char_count <= 500 {
         return text.to_string();
     }
@@ -325,14 +326,13 @@ fn toot_shorten(text: &str, bsky_post: &Object<PostViewData>) -> String {
         .unwrap();
     let link = format!("https://bsky.app/profile/{username}/post/{post_id}");
 
-    // Hard-coding a limit of 500 here for now, could be configurable.
     while char_count > 500 {
         // Remove the last word.
         shortened = last_word_regex
             .replace_all(&shortened, "")
             .trim()
             .to_string();
-        // Add a link to the full length tweet.
+        // Add a link to the full length post on Bluesky.
         with_link = format!("{shortened}… {link}");
         char_count = with_link.graphemes(true).count();
     }
