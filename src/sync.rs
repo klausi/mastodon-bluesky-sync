@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bsky_sdk::api::app::bsky::embed::record::ViewRecordRefs;
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewEmbedRefs};
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
@@ -36,8 +37,6 @@ pub struct NewStatus {
     // This new status could be part of a thread, post it in reply to an
     // existing already synced status.
     pub in_reply_to_id: Option<String>,
-    // The original post ID on the source status.
-    pub original_id: String,
 }
 
 #[derive(Debug, Clone)]
@@ -46,7 +45,7 @@ pub struct NewMedia {
     pub alt_text: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SyncOptions {
     pub sync_reblogs: bool,
     pub sync_reposts: bool,
@@ -118,7 +117,6 @@ pub fn determine_posts(
             attachments: bsky_get_attachments(post),
             replies: Vec::new(),
             in_reply_to_id: None,
-            original_id: post.post.uri.clone(),
         });
     }
 
@@ -165,10 +163,6 @@ pub fn determine_posts(
             attachments: toot_get_attachments(toot),
             replies: Vec::new(),
             in_reply_to_id: None,
-            original_id: toot
-                .id
-                .parse()
-                .unwrap_or_else(|_| panic!("Mastodon status ID is not u64: {}", toot.id)),
         });
     }
 
@@ -237,7 +231,11 @@ fn unify_post_content(content: String) -> String {
 // Extend URLs and HTML entity decode &amp;.
 // Directly include quote tweets in the text.
 pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> String {
-    let mut text = bsky_post_get_text(bsky_post);
+    let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+        bsky_post.post.record.clone(),
+    )
+    .expect("Failed to parse Bluesky post record");
+    let mut text = bsky_record_get_text(record);
 
     // Add prefix for reposts.
     if let Some(viewer) = &bsky_post.post.viewer {
@@ -246,34 +244,33 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
         }
     }
 
-    /*// Replace t.co URLs with the real links in tweets.
-    for url in tweet.entities.urls {
-        if let Some(expanded_url) = &url.expanded_url {
-            tweet.text = tweet.text.replace(&url.url, expanded_url);
+    if let Some(embed) = &bsky_post.post.embed {
+        if let Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record)) = &embed {
+            if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
+                let quote_record =
+                    bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+                        quote.value.clone(),
+                    )
+                    .expect("Failed to parse Bluesky quote post record");
+                let quote_text = bsky_record_get_text(quote_record);
+                text = format!(
+                    "{text}\n\n💬 {}: {quote_text}",
+                    quote.author.handle.as_str()
+                );
+            }
         }
     }
-
-    // Escape direct user mentions with @\.
-    tweet.text = tweet.text.replace(" @", " @\\").replace(" @\\\\", " @\\");
-
-    // Bluesky posts have HTML entities such as &amp;, we need to decode them.
-    let decoded = html_escape::decode_html_entities(&tweet.text);*/
-
     toot_shorten(&text, &bsky_post.post.uri)
 }
 
 // Get the full text of a bluesky post.
-fn bsky_post_get_text(bsky_post: &Object<FeedViewPostData>) -> String {
-    let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
-        bsky_post.post.record.clone(),
-    )
-    .expect("Failed to parse Bluesky post record");
-    let mut text = record.text.clone();
+fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::RecordData) -> String {
+    let mut text = bsky_record.text.clone();
     // Convert links in facets to URIs in the text.
-    if let Some(facets) = &record.facets {
+    if let Some(facets) = &bsky_record.facets {
         for facet in facets {
             if let Union::Refs(MainFeaturesItem::Link(link)) = &facet.features[0] {
-                let mut bytes = record.text.as_bytes().to_vec();
+                let mut bytes = bsky_record.text.as_bytes().to_vec();
                 bytes.splice(
                     facet.index.byte_start..facet.index.byte_end,
                     link.uri.as_bytes().iter().cloned(),
@@ -284,53 +281,6 @@ fn bsky_post_get_text(bsky_post: &Object<FeedViewPostData>) -> String {
         }
     }
     text
-}
-
-// If this is a quote tweet then include the original text.
-fn bsky_post_get_text_with_quote(bsky_post: &Object<FeedViewPostData>) -> String {
-    bsky_post_get_text(bsky_post)
-    /*match bsky_post.quoted_status {
-            None => bsky_post.text.clone(),
-            Some(ref quoted_tweet) => {
-                // Prevent infinite quote tweets. We only want to include
-                // the first level, so make sure that the original has any
-                // quote tweet removed.
-                let mut original = quoted_tweet.clone();
-                original.quoted_status = None;
-                let original_text = bsky_post_unshorten_decode(&original);
-                let screen_name = &original
-                    .user
-                    .as_ref()
-                    .unwrap_or_else(|| panic!("Bluesky user missing on tweet {}", original.id))
-                    .screen_name;
-                let mut tweet_text = bsky_post.text.clone();
-
-                // Remove quote link at the end of the tweet text.
-                for url in &bsky_post.entities.urls {
-                    if let Some(expanded_url) = &url.expanded_url {
-                        if expanded_url
-                            == &format!(
-                                "https://twitter.com/{}/status/{}",
-                                screen_name, quoted_tweet.id
-                            )
-                            || expanded_url
-                                == &format!(
-                                    "https://mobile.twitter.com/{}/status/{}",
-                                    screen_name, quoted_tweet.id
-                                )
-                        {
-                            tweet_text = tweet_text.replace(&url.url, "").trim().to_string();
-                        }
-                    }
-                }
-
-                format!(
-                    "{tweet_text}
-
-    QT {screen_name}: {original_text}"
-                )
-            }
-        }*/
 }
 
 pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
@@ -514,5 +464,37 @@ fn truncate_option_string(stringy: Option<String>, max_chars: usize) -> Option<S
             Some((idx, _)) => Some(string[..idx].to_string()),
         },
         None => None,
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use bsky_sdk::api::app::bsky::feed::defs::FeedViewPostData;
+    use bsky_sdk::api::types::Object;
+    use std::fs;
+
+    use crate::{determine_posts, SyncOptions};
+
+    // Test that embedded quote posts are included correctly.
+    #[test]
+    fn bsky_quote_post() {
+        let post = read_bsky_post_from_json("tests/bsky_quote_post.json");
+        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        assert_eq!(
+            posts.toots[0].text,
+            "Working on this and testing quote posts
+
+💬 klau.si: Initial release of #Mastodon #Bluesky Sync 🚀  !
+
+Synchronization of posts works, but I'm still testing things.
+
+https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
+        );
+    }
+
+    // Read static bluesky post from test file.
+    fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
+        let json = fs::read_to_string(file_name).unwrap();
+        serde_json::from_str(&json).unwrap()
     }
 }

@@ -1,0 +1,132 @@
+{
+  "post": {
+    "author": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "cid": "bafyreida6j374fe7a4u3ng4u7s35fj2xdidecgjuyhjesgzudi2jey7qnm",
+    "embed": {
+      "$type": "app.bsky.embed.record#view",
+      "record": {
+        "$type": "app.bsky.embed.record#viewRecord",
+        "author": {
+          "associated": {
+            "chat": {
+              "allowIncoming": "following"
+            }
+          },
+          "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+          "createdAt": "2023-12-24T10:54:53.475Z",
+          "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+          "displayName": "klausi",
+          "handle": "klau.si",
+          "labels": [],
+          "viewer": {
+            "blockedBy": false,
+            "muted": false
+          }
+        },
+        "cid": "bafyreibfk5hevbactm7w55pwt3aj64x4rgfry4mtltvhkyrfobsk3oijq4",
+        "embeds": [
+          {
+            "$type": "app.bsky.embed.images#view",
+            "images": []
+          }
+        ],
+        "indexedAt": "2024-11-15T19:00:02.495Z",
+        "labels": [],
+        "likeCount": 2,
+        "quoteCount": 1,
+        "replyCount": 0,
+        "repostCount": 0,
+        "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3laz2qdw2l62e",
+        "value": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2024-11-15T19:00:02.495034Z",
+          "embed": {
+            "$type": "app.bsky.embed.images",
+            "images": []
+          },
+          "facets": [
+            {
+              "features": [
+                {
+                  "$type": "app.bsky.richtext.facet#link",
+                  "uri": "https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
+                }
+              ],
+              "index": {
+                "byteEnd": 182,
+                "byteStart": 115
+              }
+            },
+            {
+              "features": [
+                {
+                  "$type": "app.bsky.richtext.facet#tag",
+                  "tag": "Mastodon"
+                }
+              ],
+              "index": {
+                "byteEnd": 28,
+                "byteStart": 19
+              }
+            },
+            {
+              "features": [
+                {
+                  "$type": "app.bsky.richtext.facet#tag",
+                  "tag": "Bluesky"
+                }
+              ],
+              "index": {
+                "byteEnd": 37,
+                "byteStart": 29
+              }
+            }
+          ],
+          "text": "Initial release of #Mastodon #Bluesky Sync 🚀  !\n\nSynchronization of posts works, but I'm still testing things.\n\nhttps://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
+        }
+      }
+    },
+    "indexedAt": "2024-11-16T17:10:02.081Z",
+    "labels": [],
+    "likeCount": 1,
+    "quoteCount": 0,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2024-11-16T17:10:02.081Z",
+      "embed": {
+        "$type": "app.bsky.embed.record",
+        "record": {
+          "cid": "bafyreibfk5hevbactm7w55pwt3aj64x4rgfry4mtltvhkyrfobsk3oijq4",
+          "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3laz2qdw2l62e"
+        }
+      },
+      "langs": [
+        "en"
+      ],
+      "text": "Working on this and testing quote posts"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3lb3f2ko4rc23",
+    "viewer": {
+      "embeddingDisabled": false,
+      "threadMuted": false
+    }
+  }
+}
