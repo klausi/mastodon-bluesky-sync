@@ -4,31 +4,13 @@ use bsky_sdk::api::types::TryFromUnknown;
 use bsky_sdk::BskyAgent;
 use chrono::prelude::*;
 use chrono::Duration;
-use serde::Deserialize;
-use serde::Serialize;
 use std::collections::BTreeMap;
-use std::fmt;
 use tokio::fs;
 use tokio::fs::remove_file;
 
 use crate::cache_file;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-enum PostType {
-    Post(String),
-    Repost(String),
-}
-
-impl fmt::Display for PostType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            PostType::Post(uri) => write!(f, "Post({})", uri),
-            PostType::Repost(uri) => write!(f, "Repost({})", uri),
-        }
-    }
-}
-
-type DatePostMap = BTreeMap<DateTime<Utc>, PostType>;
+type DatePostMap = BTreeMap<DateTime<Utc>, String>;
 
 // Delete old posts of this account that are older than 90 days.
 pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -> Result<()> {
@@ -38,25 +20,18 @@ pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -
     let dates = bluesky_load_post_dates(bsky_agent, cache_file).await?;
     let mut remove_dates = Vec::new();
     let three_months_ago = Utc::now() - Duration::days(90);
-    for (date, post_type) in dates.range(..three_months_ago) {
+    for (date, post_uri) in dates.range(..three_months_ago) {
+        println!("Deleting Bluesky post from {date}: {post_uri}");
+        // Do nothing on a dry run, just print what would be done.
+        if dry_run {
+            continue;
+        }
         remove_dates.push(date);
-        match post_type {
-            PostType::Post(uri) => {
-                println!("Deleting Bluesky post from {date}: {post_type}");
-                // Do nothing on a dry run, just print what would be done.
-                if dry_run {
-                    continue;
-                }
-                let delete_result = bsky_agent.delete_record(uri).await;
-                // @todo The status could have been deleted already by the user, ignore API
-                // errors in that case.
-                if let Err(e) = delete_result {
-                    eprintln!("Failed to delete post {uri}: {e}");
-                }
-            }
-            PostType::Repost(_) => {
-                // @todo not implemented yet.
-            }
+        let delete_result = bsky_agent.delete_record(post_uri).await;
+        // The status could have been deleted already by the user, ignore API
+        // errors in that case.
+        if let Err(e) = delete_result {
+            eprintln!("Failed to delete post {post_uri} (maybe the post was already deleted): {e}");
         }
     }
     remove_dates_from_cache(remove_dates, &dates, cache_file).await
@@ -107,17 +82,17 @@ async fn bluesky_fetch_post_dates(bsky_agent: &BskyAgent, cache_file: &str) -> R
 
             // Check if this post is a repost.
             if let Some(viewer) = &post.post.viewer {
-                if let Some(_repost) = &viewer.repost {
+                if let Some(repost) = &viewer.repost {
                     dates.insert(
                         record.created_at.as_ref().clone().into(),
-                        PostType::Repost(post.post.uri.clone()),
+                        repost.to_string(),
                     );
                     continue;
                 }
             }
             dates.insert(
                 record.created_at.as_ref().clone().into(),
-                PostType::Post(post.post.uri.clone()),
+                post.post.uri.clone(),
             );
         }
         if feed.cursor.is_none() {
