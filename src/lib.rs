@@ -3,6 +3,7 @@ use anyhow::Result;
 use bsky_sdk::agent::config::FileStore;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use bsky_sdk::BskyAgent;
+use delete_posts::bluesky_delete_older_posts;
 use log::debug;
 use megalodon::generator;
 use megalodon::megalodon::GetAccountStatusesInputOptions;
@@ -20,6 +21,7 @@ use crate::sync::*;
 
 pub mod args;
 mod config;
+mod delete_posts;
 mod post;
 mod registration;
 mod sync;
@@ -193,6 +195,12 @@ pub async fn run(args: Args) -> Result<()> {
     if !args.dry_run && cache_changed {
         let json = serde_json::to_string_pretty(&post_cache)?;
         fs::write(post_cache_file, json.as_bytes()).await?;
+    }
+
+    if config.bluesky.delete_old_posts {
+        bluesky_delete_older_posts(&bsky_agent, args.dry_run)
+            .await
+            .context("Failed to delete old Bluesky posts")?;
     }
 
     Ok(())

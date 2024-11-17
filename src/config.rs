@@ -39,6 +39,8 @@ pub struct BlueskyConfig {
     #[serde_as(as = "NoneAsEmptyString")]
     #[serde(default = "config_none_default")]
     pub sync_hashtag: Option<String>,
+    #[serde(default = "config_false_default")]
+    pub delete_old_posts: bool,
 }
 
 fn config_true_default() -> bool {
@@ -47,4 +49,8 @@ fn config_true_default() -> bool {
 
 fn config_none_default<T>() -> Option<T> {
     None
+}
+
+fn config_false_default() -> bool {
+    false
 }

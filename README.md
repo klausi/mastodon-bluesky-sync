@@ -46,6 +46,8 @@ email = "klausi@example.com"
 app_password = "XXXXXXXXXXXXXXXXXXXXXXX"
 sync_reposts = true
 sync_hashtag = ""
+# Delete Bluesky posts that are older than 90 days
+delete_older_posts = true
 ```
 
 ## Preview what's going to be synced

@@ -57,6 +57,7 @@ pub async fn bluesky_register() -> Result<BlueskyConfig> {
         app_password,
         sync_reposts: true,
         sync_hashtag: None,
+        delete_old_posts: false,
     })
 }
 
