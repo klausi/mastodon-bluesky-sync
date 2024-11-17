@@ -8,7 +8,7 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
     let base_url = console_input(
         "Provide the URL of your Mastodon instance, for example https://mastodon.social ",
     )?;
-    let client = generator(megalodon::SNS::Mastodon, base_url.clone(), None, None);
+    let client = generator(megalodon::SNS::Mastodon, base_url.clone(), None, None)?;
     let options = megalodon::megalodon::AppInputOptions {
         scopes: Some(["read".to_string(), "write".to_string()].to_vec()),
         website: Some("https://github.com/klausi/mastodon-bluesky-sync".to_string()),

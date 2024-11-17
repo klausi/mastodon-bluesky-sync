@@ -57,7 +57,7 @@ pub async fn run(args: Args) -> Result<()> {
         config.mastodon.base_url.clone(),
         Some(config.mastodon.access_token.clone()),
         None,
-    );
+    )?;
     let account = match mastodon.verify_account_credentials().await {
         Ok(account) => account,
         Err(e) => {
