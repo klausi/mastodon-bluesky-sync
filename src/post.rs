@@ -4,6 +4,8 @@ use anyhow::Context;
 use anyhow::Result;
 use bsky_sdk::rich_text::RichText;
 use bsky_sdk::BskyAgent;
+use image_compressor::compressor::Compressor;
+use image_compressor::Factor;
 use megalodon::megalodon::PostStatusOutput;
 use megalodon::megalodon::UploadMediaInputOptions;
 use megalodon::Megalodon;
@@ -12,12 +14,16 @@ use megalodon::{
     error,
     megalodon::PostStatusInputOptions,
 };
+use reqwest::Response;
 use serde_json::to_string;
 use std::fs::File;
+use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use std::time::Duration;
 use tempfile::tempdir;
+use tempfile::NamedTempFile;
+use tokio::fs::metadata;
 use tokio::time::sleep;
 
 /// Send new status with any given replies to Mastodon.
@@ -229,12 +235,14 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
                 attachment.attachment_url
             ))?;
 
+        let attachment_bytes = resize_image_if_needed(response, &attachment.attachment_url).await?;
+
         let output = bsky_agent
             .api
             .com
             .atproto
             .repo
-            .upload_blob(response.bytes().await?.to_vec())
+            .upload_blob(attachment_bytes)
             .await
             .context(format!(
                 "Failed uploading attachment to Bluesky {}",
@@ -272,4 +280,45 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
         .context(format!("Failed posting to Bluesky {}", post.text))?;
 
     Ok(to_string(&record.cid)?)
+}
+
+async fn resize_image_if_needed(download_response: Response, url: &str) -> Result<Vec<u8>> {
+    // If the attachment is an image, check that is is not larger than 1MB.
+    if let Some(content_type) = download_response.headers().get("content-type") {
+        if content_type
+            .to_str()
+            .unwrap_or_default()
+            .starts_with("image/")
+        {
+            let download_bytes = download_response.bytes().await?;
+            let size = download_bytes.len();
+            if size > 1_000_000 {
+                let mut source_file = NamedTempFile::new()?;
+                source_file.write_all(&download_bytes)?;
+                // Try with 100% quality first, then decrease by 10% until we
+                // get less than 1MB.
+                let mut quality = 100.;
+                loop {
+                    let dest_dir = tempdir()?;
+                    let mut compressor = Compressor::new(source_file.path(), dest_dir.path());
+                    compressor.set_factor(Factor::new(quality, 1.0));
+                    // Todo: how can we propagate the error here?
+                    let compressed = compressor.compress_to_jpg().unwrap();
+                    let new_size = metadata(&compressed).await?.len();
+                    if new_size < 1_000_000 {
+                        let mut compressed_file = File::open(compressed)?;
+                        let mut compressed_bytes = Vec::new();
+                        compressed_file.read_to_end(&mut compressed_bytes)?;
+                        return Ok(compressed_bytes);
+                    }
+                    quality -= 10.;
+                    if quality < 0.1 {
+                        bail!("Could not compress image {url} to less than 1MB");
+                    }
+                }
+            }
+            return Ok(download_bytes.to_vec());
+        }
+    }
+    Ok(download_response.bytes().await?.to_vec())
 }
