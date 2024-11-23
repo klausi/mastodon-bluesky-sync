@@ -302,8 +302,13 @@ async fn resize_image_if_needed(download_response: Response, url: &str) -> Resul
                     let dest_dir = tempdir()?;
                     let mut compressor = Compressor::new(source_file.path(), dest_dir.path());
                     compressor.set_factor(Factor::new(quality, 1.0));
-                    // Todo: how can we propagate the error here?
-                    let compressed = compressor.compress_to_jpg().unwrap();
+                    // Dyn errors are weird, can't throw them with `?`.`
+                    let compressed = match compressor.compress_to_jpg() {
+                        Ok(compressed) => compressed,
+                        Err(e) => {
+                            bail!("Failed compressing image {url} to less than 1MB: {e}");
+                        }
+                    };
                     let new_size = metadata(&compressed).await?.len();
                     if new_size < 1_000_000 {
                         let mut compressed_file = File::open(compressed)?;
