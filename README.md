@@ -9,6 +9,9 @@ This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Blue
 - Your status update on Mastodon will be posted automatically to Bluesky
 - Your boost on Mastodon will be posted automatically to Bluesky with a "♻️ username:" prefix
 
+## Old data deletion feature for better privacy
+Optionally a configuration option can be set to delete posts from your Bluesky account that are older than 90 days.
+
 ## Installation and execution
 
 This will install Rust and setup API access to Mastodon and Bluesky. Follow the text instructions to enter credentials.
@@ -80,3 +83,5 @@ Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
 - Optionally configuration options can be set to delete posts/favourites from your Mastodon and Bluesky accounts that are older than 90 days.
 - Build portable binaries on Github without OpenSSL dependencies
+- Attach media from quote posts
+
