@@ -90,4 +90,5 @@ Todo list for the future, not implemented yet:
 - Build portable binaries on Github without OpenSSL dependencies
 - Attach media from quote posts
 - Improve Mastodon character counting, links only count for 23 characters
+- Parallel execution of fetching and syncing requests at the same time
 
