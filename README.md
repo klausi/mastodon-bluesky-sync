@@ -87,7 +87,7 @@ Every run of the program only synchronizes the accounts once. Use Cron to run it
 
 Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
-- Optionally configuration options can be set to delete posts/favourites from your Mastodon and Bluesky accounts that are older than 90 days.
 - Build portable binaries on Github without OpenSSL dependencies
 - Attach media from quote posts
+- Improve Mastodon character counting, links only count for 23 characters
 
