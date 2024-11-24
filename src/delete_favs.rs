@@ -19,7 +19,7 @@ pub async fn mastodon_delete_older_favs(
     let cache_file = &cache_file("mastodon_fav_cache.json");
     let dates = mastodon_load_fav_dates(mastodon, cache_file).await?;
     let three_months_ago = Utc::now() - Duration::days(90);
-    for (date, toot_id) in dates.range(..three_months_ago) {
+    for (toot_id, date) in dates.iter().filter(|(_, date)| date < &&three_months_ago) {
         println!("Deleting Mastodon fav {toot_id} from {date}");
         // Do nothing on a dry run, just print what would be done.
         if dry_run {
@@ -28,7 +28,7 @@ pub async fn mastodon_delete_older_favs(
 
         match mastodon.unfavourite_status(toot_id.to_string()).await {
             Ok(_) => {
-                remove_date_from_cache(date, cache_file).await?;
+                remove_date_from_cache(toot_id, cache_file).await?;
             }
             Err(error) => {
                 if let megalodon::error::Error::OwnError(ref own_error) = error {
@@ -38,7 +38,7 @@ pub async fn mastodon_delete_older_favs(
                                 // The status could have been deleted already by the user, ignore API
                                 // errors in that case.
                                 404 => {
-                                    remove_date_from_cache(date, cache_file).await?;
+                                    remove_date_from_cache(&toot_id, cache_file).await?;
                                 }
                                 // Mastodon API rate limit exceeded, stopping fav deletion for now.
                                 429 => {
@@ -61,7 +61,7 @@ pub async fn mastodon_delete_older_favs(
 async fn mastodon_load_fav_dates(
     mastodon: &Box<dyn Megalodon + Send + Sync>,
     cache_file: &str,
-) -> Result<BTreeMap<DateTime<Utc>, String>> {
+) -> Result<DatePostList> {
     match load_dates_from_cache(cache_file).await? {
         Some(dates) => Ok(dates),
         None => mastodon_fetch_fav_dates(mastodon, cache_file).await,
@@ -71,7 +71,7 @@ async fn mastodon_load_fav_dates(
 async fn mastodon_fetch_fav_dates(
     mastodon: &Box<dyn Megalodon + Send + Sync>,
     cache_file: &str,
-) -> Result<BTreeMap<DateTime<Utc>, String>> {
+) -> Result<DatePostList> {
     let mut dates = BTreeMap::new();
     let mut max_id = u64::MAX;
     loop {
@@ -89,7 +89,7 @@ async fn mastodon_fetch_fav_dates(
             }))
             .await?;
         for status in &response.json {
-            dates.insert(status.created_at, status.id.to_string());
+            dates.insert(status.id.to_string(), status.created_at);
         }
         // Pagination: Parse the Link header to get the next max_id.
         match response.header.get("link") {

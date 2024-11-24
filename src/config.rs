@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use tokio::fs;
 use tokio::fs::remove_file;
 
-pub type DatePostMap = BTreeMap<DateTime<Utc>, String>;
+pub type DatePostList = BTreeMap<String, DateTime<Utc>>;
 
 #[inline]
 pub fn config_load(config: &str) -> Result<Config> {
@@ -63,17 +63,17 @@ fn config_false_default() -> bool {
     false
 }
 
-pub async fn remove_date_from_cache(remove_date: &DateTime<Utc>, cache_file: &str) -> Result<()> {
+pub async fn remove_date_from_cache(post_id: &str, cache_file: &str) -> Result<()> {
     let dates_cache = load_dates_from_cache(cache_file).await?;
     if let Some(mut dates) = dates_cache {
-        dates.remove(remove_date);
+        dates.remove(post_id);
         save_dates_to_cache(cache_file, &dates).await?;
     }
 
     Ok(())
 }
 
-pub async fn load_dates_from_cache(cache_file: &str) -> Result<Option<DatePostMap>> {
+pub async fn load_dates_from_cache(cache_file: &str) -> Result<Option<DatePostList>> {
     if let Ok(json) = fs::read_to_string(cache_file).await {
         let cache = serde_json::from_str(&json)?;
         Ok(Some(cache))
@@ -82,7 +82,7 @@ pub async fn load_dates_from_cache(cache_file: &str) -> Result<Option<DatePostMa
     }
 }
 
-pub async fn save_dates_to_cache(cache_file: &str, dates: &DatePostMap) -> Result<()> {
+pub async fn save_dates_to_cache(cache_file: &str, dates: &DatePostList) -> Result<()> {
     if dates.is_empty() {
         // If the cache file exists delete it.
         if fs::metadata(cache_file).await.is_ok() {
