@@ -21,6 +21,7 @@ use crate::sync::*;
 
 pub mod args;
 mod config;
+mod delete_favs;
 mod delete_posts;
 mod post;
 mod registration;
@@ -201,6 +202,12 @@ pub async fn run(args: Args) -> Result<()> {
         bluesky_delete_older_posts(&bsky_agent, args.dry_run)
             .await
             .context("Failed to delete old Bluesky posts")?;
+    }
+
+    if config.mastodon.delete_old_favs {
+        delete_favs::mastodon_delete_older_favs(&mastodon, args.dry_run)
+            .await
+            .context("Failed to delete old Mastodon favourites")?;
     }
 
     Ok(())

@@ -5,12 +5,12 @@ use bsky_sdk::BskyAgent;
 use chrono::prelude::*;
 use chrono::Duration;
 use std::collections::BTreeMap;
-use tokio::fs;
-use tokio::fs::remove_file;
 
 use crate::cache_file;
-
-type DatePostMap = BTreeMap<DateTime<Utc>, String>;
+use crate::load_dates_from_cache;
+use crate::remove_dates_from_cache;
+use crate::save_dates_to_cache;
+use crate::DatePostMap;
 
 // Delete old posts of this account that are older than 90 days.
 pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -> Result<()> {
@@ -104,47 +104,4 @@ async fn bluesky_fetch_post_dates(bsky_agent: &BskyAgent, cache_file: &str) -> R
     save_dates_to_cache(cache_file, &dates).await?;
 
     Ok(dates)
-}
-
-async fn load_dates_from_cache(cache_file: &str) -> Result<Option<DatePostMap>> {
-    if let Ok(json) = fs::read_to_string(cache_file).await {
-        let cache = serde_json::from_str(&json)?;
-        Ok(Some(cache))
-    } else {
-        Ok(None)
-    }
-}
-
-async fn save_dates_to_cache(cache_file: &str, dates: &DatePostMap) -> Result<()> {
-    let json = serde_json::to_string_pretty(&dates)?;
-    fs::write(cache_file, json.as_bytes()).await?;
-    Ok(())
-}
-
-// Delete a list of dates from the given cache of dates and write the cache to
-// disk if necessary.
-async fn remove_dates_from_cache(
-    remove_dates: Vec<&DateTime<Utc>>,
-    cached_dates: &DatePostMap,
-    cache_file: &str,
-) -> Result<()> {
-    if remove_dates.is_empty() {
-        return Ok(());
-    }
-
-    let mut new_dates = cached_dates.clone();
-    for remove_date in remove_dates {
-        new_dates.remove(remove_date);
-    }
-
-    if new_dates.is_empty() {
-        // If we have deleted all old dates from our cache file we can remove
-        // it. On the next run all entries will be fetched and the cache
-        // recreated.
-        remove_file(cache_file).await?;
-    } else {
-        save_dates_to_cache(cache_file, &new_dates).await?;
-    }
-
-    Ok(())
 }

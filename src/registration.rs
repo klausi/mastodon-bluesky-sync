@@ -42,6 +42,7 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
         refresh_token: token_data.refresh_token.unwrap_or("none".to_string()),
         sync_reblogs: true,
         sync_hashtag: None,
+        delete_old_favs: false,
     })
 }
 

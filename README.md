@@ -10,7 +10,8 @@ This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Blue
 - Your boost on Mastodon will be posted automatically to Bluesky with a "♻️ username:" prefix
 
 ## Old data deletion feature for better privacy
-Optionally a configuration option can be set to delete posts from your Bluesky account that are older than 90 days.
+- Optionally a configuration option can be set to delete posts from your Bluesky account that are older than 90 days.
+- Optionally a configuration option can be set to delete favorites from your Mastodon account that are older than 90 days.
 
 ## Installation and execution
 
@@ -43,13 +44,15 @@ access_token = "XXXXXXXXXXXXXXXXXXXXXXXXX"
 refresh_token = "none"
 sync_reblogs = true
 sync_hashtag = ""
+# Delete older Mastodon favorites that are older than 90 days.
+delete_older_posts = true
 
 [bluesky]
 email = "klausi@example.com"
 app_password = "XXXXXXXXXXXXXXXXXXXXXXX"
 sync_reposts = true
 sync_hashtag = ""
-# Delete Bluesky posts that are older than 90 days
+# Delete Bluesky posts that are older than 90 days.
 delete_older_posts = true
 ```
 
