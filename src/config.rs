@@ -63,34 +63,6 @@ fn config_false_default() -> bool {
     false
 }
 
-// Delete a list of dates from the given cache of dates and write the cache to
-// disk if necessary.
-pub async fn remove_dates_from_cache(
-    remove_dates: Vec<&DateTime<Utc>>,
-    cached_dates: &DatePostMap,
-    cache_file: &str,
-) -> Result<()> {
-    if remove_dates.is_empty() {
-        return Ok(());
-    }
-
-    let mut new_dates = cached_dates.clone();
-    for remove_date in remove_dates {
-        new_dates.remove(remove_date);
-    }
-
-    if new_dates.is_empty() {
-        // If we have deleted all old dates from our cache file we can remove
-        // it. On the next run all entries will be fetched and the cache
-        // recreated.
-        remove_file(cache_file).await?;
-    } else {
-        save_dates_to_cache(cache_file, &new_dates).await?;
-    }
-
-    Ok(())
-}
-
 pub async fn remove_date_from_cache(remove_date: &DateTime<Utc>, cache_file: &str) -> Result<()> {
     let dates_cache = load_dates_from_cache(cache_file).await?;
     if let Some(mut dates) = dates_cache {

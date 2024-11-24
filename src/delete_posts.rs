@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 
 use crate::cache_file;
 use crate::load_dates_from_cache;
-use crate::remove_dates_from_cache;
+use crate::remove_date_from_cache;
 use crate::save_dates_to_cache;
 use crate::DatePostMap;
 
@@ -18,7 +18,6 @@ pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -
     // keyed by their dates.
     let cache_file = &cache_file("bluesky_cache.json");
     let dates = bluesky_load_post_dates(bsky_agent, cache_file).await?;
-    let mut remove_dates = Vec::new();
     let three_months_ago = Utc::now() - Duration::days(90);
     for (date, post_uri) in dates.range(..three_months_ago) {
         println!("Deleting Bluesky post from {date}: {post_uri}");
@@ -26,15 +25,12 @@ pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -
         if dry_run {
             continue;
         }
-        remove_dates.push(date);
-        let delete_result = bsky_agent.delete_record(post_uri).await;
-        // The status could have been deleted already by the user, ignore API
-        // errors in that case.
-        if let Err(e) = delete_result {
-            eprintln!("Failed to delete post {post_uri} (maybe the post was already deleted): {e}");
-        }
+        // No error handling needed here for non existing posts, the Bluesky API
+        // returns success even if the post does not exist.
+        bsky_agent.delete_record(post_uri).await?;
+        remove_date_from_cache(date, cache_file).await?;
     }
-    remove_dates_from_cache(remove_dates, &dates, cache_file).await
+    Ok(())
 }
 
 async fn bluesky_load_post_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Result<DatePostMap> {
