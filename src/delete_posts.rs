@@ -47,6 +47,10 @@ async fn bluesky_fetch_post_dates(
     let mut dates = BTreeMap::new();
     let mut cursor = None;
     loop {
+        println!(
+            "Fetching Bluesky posts older than {}",
+            cursor.as_ref().unwrap_or(&"now".to_string())
+        );
         // Try to fetch as many posts as possible at once, Bluesky API docs say
         // that is 100.
         let feed = match bsky_agent
