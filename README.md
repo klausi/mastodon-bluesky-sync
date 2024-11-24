@@ -11,6 +11,7 @@ This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Blue
 
 ## Old data deletion feature for better privacy
 - Optionally a configuration option can be set to delete posts from your Bluesky account that are older than 90 days.
+- Optionally a configuration option can be set to delete favorites (likes) from your Bluesky account that are older than 90 days.
 - Optionally a configuration option can be set to delete favorites from your Mastodon account that are older than 90 days.
 
 ## Installation and execution
@@ -45,7 +46,7 @@ refresh_token = "none"
 sync_reblogs = true
 sync_hashtag = ""
 # Delete older Mastodon favorites that are older than 90 days.
-delete_older_posts = true
+delete_older_favs = true
 
 [bluesky]
 email = "klausi@example.com"
@@ -54,6 +55,8 @@ sync_reposts = true
 sync_hashtag = ""
 # Delete Bluesky posts that are older than 90 days.
 delete_older_posts = true
+# Delete older Bluesky favorites (likes) that are older than 90 days.
+delete_older_favs = true
 ```
 
 ## Preview what's going to be synced

@@ -49,6 +49,8 @@ pub struct BlueskyConfig {
     pub sync_hashtag: Option<String>,
     #[serde(default = "config_false_default")]
     pub delete_old_posts: bool,
+    #[serde(default = "config_false_default")]
+    pub delete_old_favs: bool,
 }
 
 fn config_true_default() -> bool {

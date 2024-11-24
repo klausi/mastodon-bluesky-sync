@@ -59,6 +59,7 @@ pub async fn bluesky_register() -> Result<BlueskyConfig> {
         sync_reposts: true,
         sync_hashtag: None,
         delete_old_posts: false,
+        delete_old_favs: false,
     })
 }
 

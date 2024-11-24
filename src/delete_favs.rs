@@ -1,4 +1,12 @@
+use anyhow::bail;
+use anyhow::Context;
 use anyhow::Result;
+use bsky_sdk::api::types::string::AtIdentifier;
+use bsky_sdk::api::types::string::Nsid;
+use bsky_sdk::api::types::string::RecordKey;
+use bsky_sdk::api::types::LimitedNonZeroU8;
+use bsky_sdk::api::types::TryFromUnknown;
+use bsky_sdk::BskyAgent;
 use chrono::prelude::*;
 use chrono::Duration;
 use megalodon::error::Kind;
@@ -119,4 +127,119 @@ fn mastodon_parse_next_max_id(link_header: &str) -> Option<u64> {
         }
     }
     None
+}
+
+// Delete old favorites of this account that are older than 90 days.
+pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) -> Result<()> {
+    // In order not to fetch old posts every time keep them in a cache file
+    // keyed by their dates.
+    let cache_file = &cache_file("bluesky_fav_cache.json");
+    let dates = bluesky_load_fav_dates(bsky_agent, cache_file).await?;
+    let three_months_ago = Utc::now() - Duration::days(90);
+    let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
+    for (post_uri, date) in dates.iter().filter(|(_, date)| date < &&three_months_ago) {
+        println!("Deleting Bluesky favorite from {date}: {post_uri}");
+        // Do nothing on a dry run, just print what would be done.
+        if dry_run {
+            continue;
+        }
+        let parts = post_uri
+            .strip_prefix("at://")
+            .with_context(|| format!("Invalid At URI prefix {post_uri} when deleting fav"))?
+            .splitn(3, '/')
+            .collect::<Vec<_>>();
+        let rkey = match parts[2].parse::<RecordKey>() {
+            Ok(rkey) => rkey,
+            Err(e) => bail!("Invalid At URI rkey {post_uri} when deleting fav: {e}"),
+        };
+        bsky_agent
+            .api
+            .com
+            .atproto
+            .repo
+            .delete_record(
+                bsky_sdk::api::com::atproto::repo::delete_record::InputData {
+                    collection: Nsid::new("app.bsky.feed.like".to_string()).unwrap(),
+                    repo: actor.clone(),
+                    rkey: rkey.into(),
+                    swap_commit: None,
+                    swap_record: None,
+                }
+                .into(),
+            )
+            .await?;
+        remove_date_from_cache(post_uri, cache_file).await?;
+    }
+    Ok(())
+}
+
+async fn bluesky_load_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Result<DatePostList> {
+    match load_dates_from_cache(cache_file).await? {
+        Some(dates) => Ok(dates),
+        None => bluesky_fetch_fav_dates(bsky_agent, cache_file).await,
+    }
+}
+
+async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Result<DatePostList> {
+    let mut dates = BTreeMap::new();
+    let mut cursor = None;
+    let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
+    // The Blusky API does not provide a way to get all favorites of an actor
+    // efficiently. It returns a cursor to fetch the next page of potential
+    // favorites, but will return lots of empty pages. We stop after 100
+    // requests.
+    let mut counter = 0;
+    loop {
+        println!(
+            "Fetching Bluesky favorites older than {}",
+            cursor.as_ref().unwrap_or(&"now".to_string())
+        );
+        // Try to fetch as many posts as possible at once, Bluesky API docs say
+        // that is 100.
+        let feed = match bsky_agent
+            .api
+            .app
+            .bsky
+            .feed
+            .get_actor_likes(
+                bsky_sdk::api::app::bsky::feed::get_actor_likes::ParametersData {
+                    actor: actor.clone(),
+                    cursor: cursor,
+                    limit: Some(LimitedNonZeroU8::try_from(100).unwrap()),
+                }
+                .into(),
+            )
+            .await
+        {
+            Ok(posts) => posts,
+            Err(e) => {
+                eprintln!("Error fetching favorites from Bluesky: {e:#?}");
+                break;
+            }
+        };
+
+        for post in &feed.feed {
+            dbg!(&post.post.uri);
+            let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+                post.post.record.clone(),
+            )
+            .expect("Failed to parse Bluesky post record for favorites");
+            dates.insert(
+                post.post.uri.clone(),
+                record.created_at.as_ref().clone().into(),
+            );
+        }
+        if feed.cursor.is_none() {
+            break;
+        }
+        cursor = feed.cursor.clone();
+        counter += 1;
+        if counter >= 100 {
+            break;
+        }
+    }
+
+    save_dates_to_cache(cache_file, &dates).await?;
+
+    Ok(dates)
 }

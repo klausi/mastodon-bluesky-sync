@@ -210,6 +210,12 @@ pub async fn run(args: Args) -> Result<()> {
             .context("Failed to delete old Mastodon favourites")?;
     }
 
+    if config.bluesky.delete_old_favs {
+        delete_favs::bluesky_delete_older_favs(&bsky_agent, args.dry_run)
+            .await
+            .context("Failed to delete old Bluesky favourites")?;
+    }
+
     Ok(())
 }
 
