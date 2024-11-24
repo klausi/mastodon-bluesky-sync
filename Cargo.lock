@@ -1520,7 +1520,7 @@ dependencies = [
 
 [[package]]
 name = "mastodon-bluesky-sync"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "bsky-sdk",
@@ -1532,7 +1532,7 @@ dependencies = [
  "log",
  "megalodon",
  "regex",
- "reqwest 0.12.9",
+ "reqwest 0.11.27",
  "serde",
  "serde_json",
  "serde_with",
