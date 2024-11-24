@@ -13,6 +13,7 @@ use megalodon::error::Kind;
 use megalodon::megalodon::GetFavouritesInputOptions;
 use megalodon::Megalodon;
 use std::collections::BTreeMap;
+use tokio::fs;
 
 use crate::cache_file;
 use crate::config::*;
@@ -134,7 +135,7 @@ pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) ->
     // In order not to fetch old posts every time keep them in a cache file
     // keyed by their dates.
     let cache_file = &cache_file("bluesky_fav_cache.json");
-    let dates = bluesky_load_fav_dates(bsky_agent, cache_file).await?;
+    let dates = bluesky_fetch_fav_dates(bsky_agent, cache_file).await?;
     let three_months_ago = Utc::now() - Duration::days(90);
     let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
     for (post_uri, date) in dates.iter().filter(|(_, date)| date < &&three_months_ago) {
@@ -173,22 +174,38 @@ pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) ->
     Ok(())
 }
 
-async fn bluesky_load_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Result<DatePostList> {
-    match load_dates_from_cache(cache_file).await? {
-        Some(dates) => Ok(dates),
-        None => bluesky_fetch_fav_dates(bsky_agent, cache_file).await,
-    }
-}
-
-async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Result<DatePostList> {
-    let mut dates = BTreeMap::new();
-    let mut cursor = None;
-    let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
-    // The Blusky API does not provide a way to get all favorites of an actor
+async fn bluesky_fetch_fav_dates(
+    bsky_agent: &BskyAgent,
+    cache_file_name: &str,
+) -> Result<DatePostList> {
+    let mut dates = match load_dates_from_cache(cache_file_name).await? {
+        Some(dates) => dates,
+        None => BTreeMap::new(),
+    };
+    // The Bluesky API does not provide a way to get all favorites of an actor
     // efficiently. It returns a cursor to fetch the next page of potential
     // favorites, but will return lots of empty pages. We stop after 100
-    // requests.
+    // requests and save the cursor for the next run.
+    let cursor_file = &cache_file("bluesky_fav_cursor_cache.json");
+    let mut cursor = if let Ok(json) = fs::read_to_string(cursor_file).await {
+        match serde_json::from_str(&json)? {
+            Some(cursor) => Some(cursor),
+            None => {
+                if !dates.is_empty() {
+                    // Return early: the stored cursor is None which means
+                    // all old favs have been fetched.
+                    return Ok(dates);
+                }
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
     let mut counter = 0;
+
     loop {
         println!(
             "Fetching Bluesky favorites older than {}",
@@ -204,7 +221,7 @@ async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Re
             .get_actor_likes(
                 bsky_sdk::api::app::bsky::feed::get_actor_likes::ParametersData {
                     actor: actor.clone(),
-                    cursor: cursor,
+                    cursor: cursor.clone(),
                     limit: Some(LimitedNonZeroU8::try_from(100).unwrap()),
                 }
                 .into(),
@@ -219,7 +236,6 @@ async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Re
         };
 
         for post in &feed.feed {
-            dbg!(&post.post.uri);
             let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
                 post.post.record.clone(),
             )
@@ -229,7 +245,10 @@ async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Re
                 record.created_at.as_ref().clone().into(),
             );
         }
-        if feed.cursor.is_none() {
+        if feed.cursor.is_none() || feed.cursor == cursor {
+            // The cursor did not change, we are at the beginning of the feed.
+            // Reset the cursor and stop.
+            cursor = None;
             break;
         }
         cursor = feed.cursor.clone();
@@ -239,7 +258,9 @@ async fn bluesky_fetch_fav_dates(bsky_agent: &BskyAgent, cache_file: &str) -> Re
         }
     }
 
-    save_dates_to_cache(cache_file, &dates).await?;
+    save_dates_to_cache(cache_file_name, &dates).await?;
+    let json = serde_json::to_string_pretty(&cursor)?;
+    fs::write(cursor_file, json.as_bytes()).await?;
 
     Ok(dates)
 }
