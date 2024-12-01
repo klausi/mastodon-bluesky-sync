@@ -92,3 +92,6 @@ Todo list for the future, not implemented yet:
 - Improve Mastodon character counting, links only count for 23 characters
 - Parallel execution of fetching and syncing requests at the same time
 
+## Acknowledgements
+
+Thanks to [Yoshihiro Sugi (sugyan)](https://github.com/sugyan) for his continuous support when implementing Bluesky API access with [Atrium](https://github.com/sugyan/atrium).
