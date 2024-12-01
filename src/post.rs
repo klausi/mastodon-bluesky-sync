@@ -1,3 +1,4 @@
+use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
 use anyhow::bail;
 use anyhow::Context;
@@ -14,7 +15,6 @@ use megalodon::{
     error,
     megalodon::PostStatusInputOptions,
 };
-use reqwest::Response;
 use serde_json::to_string;
 use std::fs::File;
 use std::io::Read;
@@ -227,6 +227,7 @@ pub async fn post_to_bluesky(
 /// Sends the given new status to Bluesky.
 async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
     let mut images = Vec::new();
+    let mut video = None;
     for attachment in &post.attachments {
         let response = reqwest::get(&attachment.attachment_url)
             .await
@@ -234,34 +235,68 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
                 "Failed downloading attachment {}",
                 attachment.attachment_url
             ))?;
-
-        let attachment_bytes = resize_image_if_needed(response, &attachment.attachment_url).await?;
-
-        let output = bsky_agent
-            .api
-            .com
-            .atproto
-            .repo
-            .upload_blob(attachment_bytes)
-            .await
+        let content_type = response
+            .headers()
+            .get("content-type")
             .context(format!(
-                "Failed uploading attachment to Bluesky {}",
-                attachment.attachment_url
-            ))?;
-        images.push(
-            bsky_sdk::api::app::bsky::embed::images::ImageData {
-                alt: attachment.alt_text.clone().unwrap_or_default(),
+                "Failed getting content type of {}",
+                &attachment.attachment_url
+            ))?
+            .to_str()
+            .context(format!(
+                "Failed converting content type of {} to string",
+                &attachment.attachment_url
+            ))?
+            .to_string();
+        let bytes = response.bytes().await?;
+
+        if content_type.starts_with("image/") {
+            let attachment_bytes =
+                resize_image_if_needed(&bytes, &attachment.attachment_url).await?;
+
+            let output = bsky_agent
+                .api
+                .com
+                .atproto
+                .repo
+                .upload_blob(attachment_bytes)
+                .await
+                .context(format!(
+                    "Failed uploading image to Bluesky {}",
+                    attachment.attachment_url
+                ))?;
+            images.push(
+                bsky_sdk::api::app::bsky::embed::images::ImageData {
+                    alt: attachment.alt_text.clone().unwrap_or_default(),
+                    aspect_ratio: None,
+                    image: output.data.blob,
+                }
+                .into(),
+            );
+        } else if content_type.starts_with("video/") {
+            let blob =
+                bluesky_upload_video(bsky_agent, &attachment.attachment_url, bytes.into()).await?;
+            video = Some(bsky_sdk::api::app::bsky::embed::video::MainData {
+                alt: attachment.alt_text.clone(),
                 aspect_ratio: None,
-                image: output.data.blob,
-            }
-            .into(),
-        )
+                captions: None,
+                video: blob,
+            });
+        }
     }
-    let embed = Some(bsky_sdk::api::types::Union::Refs(
-        bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(Box::new(
-            bsky_sdk::api::app::bsky::embed::images::MainData { images }.into(),
+    // If there is a video then prefer that as embed, otherwise use images.
+    let embed = match video {
+        None => Some(bsky_sdk::api::types::Union::Refs(
+            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(
+                Box::new(bsky_sdk::api::app::bsky::embed::images::MainData { images }.into()),
+            ),
         )),
-    ));
+        Some(video) => Some(bsky_sdk::api::types::Union::Refs(
+            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedVideoMain(Box::new(
+                video.into(),
+            )),
+        )),
+    };
 
     let rt = RichText::new_with_detect_facets(post.text.clone()).await?;
     let record = bsky_agent
@@ -282,48 +317,38 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
     Ok(to_string(&record.cid)?)
 }
 
-async fn resize_image_if_needed(download_response: Response, url: &str) -> Result<Vec<u8>> {
-    // If the attachment is an image, check that is is not larger than 1MB.
-    if let Some(content_type) = download_response.headers().get("content-type") {
-        if content_type
-            .to_str()
-            .unwrap_or_default()
-            .starts_with("image/")
-        {
-            let download_bytes = download_response.bytes().await?;
-            let size = download_bytes.len();
-            if size > 1_000_000 {
-                let mut source_file = NamedTempFile::new()?;
-                source_file.write_all(&download_bytes)?;
-                // Try with 100% quality first, then decrease by 10% until we
-                // get less than 1MB.
-                let mut quality = 100.;
-                loop {
-                    let dest_dir = tempdir()?;
-                    let mut compressor = Compressor::new(source_file.path(), dest_dir.path());
-                    compressor.set_factor(Factor::new(quality, 1.0));
-                    // Dyn errors are weird, can't throw them with `?`.`
-                    let compressed = match compressor.compress_to_jpg() {
-                        Ok(compressed) => compressed,
-                        Err(e) => {
-                            bail!("Failed compressing image {url} to less than 1MB: {e}");
-                        }
-                    };
-                    let new_size = metadata(&compressed).await?.len();
-                    if new_size < 1_000_000 {
-                        let mut compressed_file = File::open(compressed)?;
-                        let mut compressed_bytes = Vec::new();
-                        compressed_file.read_to_end(&mut compressed_bytes)?;
-                        return Ok(compressed_bytes);
-                    }
-                    quality -= 10.;
-                    if quality < 0.1 {
-                        bail!("Could not compress image {url} to less than 1MB");
-                    }
+async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<u8>> {
+    // Check that the image is not larger than 1MB.
+    let size = download_bytes.len();
+    if size > 1_000_000 {
+        let mut source_file = NamedTempFile::new()?;
+        source_file.write_all(&download_bytes)?;
+        // Try with 100% quality first, then decrease by 10% until we
+        // get less than 1MB.
+        let mut quality = 100.;
+        loop {
+            let dest_dir = tempdir()?;
+            let mut compressor = Compressor::new(source_file.path(), dest_dir.path());
+            compressor.set_factor(Factor::new(quality, 1.0));
+            // Dyn errors are weird, can't throw them with `?`.`
+            let compressed = match compressor.compress_to_jpg() {
+                Ok(compressed) => compressed,
+                Err(e) => {
+                    bail!("Failed compressing image {url} to less than 1MB: {e}");
                 }
+            };
+            let new_size = metadata(&compressed).await?.len();
+            if new_size < 1_000_000 {
+                let mut compressed_file = File::open(compressed)?;
+                let mut compressed_bytes = Vec::new();
+                compressed_file.read_to_end(&mut compressed_bytes)?;
+                return Ok(compressed_bytes);
             }
-            return Ok(download_bytes.to_vec());
+            quality -= 10.;
+            if quality < 0.1 {
+                bail!("Could not compress image {url} to less than 1MB");
+            }
         }
     }
-    Ok(download_response.bytes().await?.to_vec())
+    return Ok(download_bytes.to_vec());
 }

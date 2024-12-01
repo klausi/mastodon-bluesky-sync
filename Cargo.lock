@@ -1521,6 +1521,7 @@ name = "mastodon-bluesky-sync"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "atrium-xrpc-client",
  "bsky-sdk",
  "chrono",
  "clap",
@@ -1532,12 +1533,14 @@ dependencies = [
  "regex",
  "reqwest 0.12.9",
  "serde",
+ "serde_html_form",
  "serde_json",
  "serde_with",
  "tempfile",
  "tokio",
  "toml",
  "unicode-segmentation",
+ "url",
  "voca_rs",
 ]
 
