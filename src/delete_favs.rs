@@ -237,10 +237,7 @@ async fn bluesky_fetch_fav_dates(
                 post.post.record.clone(),
             )
             .expect("Failed to parse Bluesky post record for favorites");
-            dates.insert(
-                post.post.uri.clone(),
-                (*record.created_at.as_ref()).into(),
-            );
+            dates.insert(post.post.uri.clone(), (*record.created_at.as_ref()).into());
         }
         if feed.cursor.is_none() || feed.cursor == cursor {
             // The cursor did not change, we are at the beginning of the feed.

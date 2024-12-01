@@ -86,17 +86,11 @@ async fn bluesky_fetch_post_dates(
             // Check if this post is a repost.
             if let Some(viewer) = &post.post.viewer {
                 if let Some(repost) = &viewer.repost {
-                    dates.insert(
-                        repost.to_string(),
-                        (*record.created_at.as_ref()).into(),
-                    );
+                    dates.insert(repost.to_string(), (*record.created_at.as_ref()).into());
                     continue;
                 }
             }
-            dates.insert(
-                post.post.uri.clone(),
-                (*record.created_at.as_ref()).into(),
-            );
+            dates.insert(post.post.uri.clone(), (*record.created_at.as_ref()).into());
         }
         if feed.cursor.is_none() {
             break;
