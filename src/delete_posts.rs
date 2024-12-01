@@ -61,7 +61,7 @@ async fn bluesky_fetch_post_dates(
             .get_author_feed(
                 bsky_sdk::api::app::bsky::feed::get_author_feed::ParametersData {
                     actor: bsky_agent.get_session().await.unwrap().did.clone().into(),
-                    cursor: cursor,
+                    cursor,
                     filter: None,
                     include_pins: None,
                     limit: Some(LimitedNonZeroU8::try_from(100).unwrap()),
@@ -88,14 +88,14 @@ async fn bluesky_fetch_post_dates(
                 if let Some(repost) = &viewer.repost {
                     dates.insert(
                         repost.to_string(),
-                        record.created_at.as_ref().clone().into(),
+                        (*record.created_at.as_ref()).into(),
                     );
                     continue;
                 }
             }
             dates.insert(
                 post.post.uri.clone(),
-                record.created_at.as_ref().clone().into(),
+                (*record.created_at.as_ref()).into(),
             );
         }
         if feed.cursor.is_none() {

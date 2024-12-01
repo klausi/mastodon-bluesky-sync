@@ -424,17 +424,14 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
 
     if let Some(embed) = &bsky_post.post.embed {
         if let Union::Refs(refs) = embed {
-            match &refs {
-                PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box) => {
-                    let images = &image_box.images;
-                    for image in images {
-                        links.push(NewMedia {
-                            attachment_url: image.fullsize.clone(),
-                            alt_text: Some(image.alt.clone()),
-                        });
-                    }
+            if let PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box) = &refs {
+                let images = &image_box.images;
+                for image in images {
+                    links.push(NewMedia {
+                        attachment_url: image.fullsize.clone(),
+                        alt_text: Some(image.alt.clone()),
+                    });
                 }
-                _ => {}
             }
         }
     }

@@ -322,7 +322,7 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
     let size = download_bytes.len();
     if size > 1_000_000 {
         let mut source_file = NamedTempFile::new()?;
-        source_file.write_all(&download_bytes)?;
+        source_file.write_all(download_bytes)?;
         // Try with 100% quality first, then decrease by 10% until we
         // get less than 1MB.
         let mut quality = 100.;
@@ -350,5 +350,5 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
             }
         }
     }
-    return Ok(download_bytes.to_vec());
+    Ok(download_bytes.to_vec())
 }

@@ -47,7 +47,7 @@ pub async fn mastodon_delete_older_favs(
                                 // The status could have been deleted already by the user, ignore API
                                 // errors in that case.
                                 404 => {
-                                    remove_date_from_cache(&toot_id, cache_file).await?;
+                                    remove_date_from_cache(toot_id, cache_file).await?;
                                 }
                                 // Mastodon API rate limit exceeded, stopping fav deletion for now.
                                 429 => {
@@ -178,10 +178,7 @@ async fn bluesky_fetch_fav_dates(
     bsky_agent: &BskyAgent,
     cache_file_name: &str,
 ) -> Result<DatePostList> {
-    let mut dates = match load_dates_from_cache(cache_file_name).await? {
-        Some(dates) => dates,
-        None => BTreeMap::new(),
-    };
+    let mut dates = (load_dates_from_cache(cache_file_name).await?).unwrap_or_default();
     // The Bluesky API does not provide a way to get all favorites of an actor
     // efficiently. It returns a cursor to fetch the next page of potential
     // favorites, but will return lots of empty pages. We stop after 100
@@ -242,7 +239,7 @@ async fn bluesky_fetch_fav_dates(
             .expect("Failed to parse Bluesky post record for favorites");
             dates.insert(
                 post.post.uri.clone(),
-                record.created_at.as_ref().clone().into(),
+                (*record.created_at.as_ref()).into(),
             );
         }
         if feed.cursor.is_none() || feed.cursor == cursor {
