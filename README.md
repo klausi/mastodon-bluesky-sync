@@ -1,5 +1,7 @@
 # Mastodon Bluesky Sync
 
+[![Automated tests](https://github.com/klausi/mastodon-bluesky-sync/workflows/Testing/badge.svg)](https://github.com/klausi/mastodon-bluesky-sync/actions)
+
 This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Bluesky](https://bsky.app) and back. It does not matter where you post your stuff - it will get synchronized to the other!
 
 ## Synchronization Features
