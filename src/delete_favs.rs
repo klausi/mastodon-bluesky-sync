@@ -20,7 +20,7 @@ use crate::config::*;
 
 // Delete old favourites of this account that are older than 90 days.
 pub async fn mastodon_delete_older_favs(
-    mastodon: &Box<dyn Megalodon + Send + Sync>,
+    mastodon: &(dyn Megalodon + Send + Sync),
     dry_run: bool,
 ) -> Result<()> {
     // In order not to fetch old favs every time keep them in a cache file
@@ -68,7 +68,7 @@ pub async fn mastodon_delete_older_favs(
 }
 
 async fn mastodon_load_fav_dates(
-    mastodon: &Box<dyn Megalodon + Send + Sync>,
+    mastodon: &(dyn Megalodon + Send + Sync),
     cache_file: &str,
 ) -> Result<DatePostList> {
     match load_dates_from_cache(cache_file).await? {
@@ -78,7 +78,7 @@ async fn mastodon_load_fav_dates(
 }
 
 async fn mastodon_fetch_fav_dates(
-    mastodon: &Box<dyn Megalodon + Send + Sync>,
+    mastodon: &(dyn Megalodon + Send + Sync),
     cache_file: &str,
 ) -> Result<DatePostList> {
     let mut dates = BTreeMap::new();

@@ -244,20 +244,19 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
         }
     }
 
-    if let Some(embed) = &bsky_post.post.embed {
-        if let Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record)) = &embed {
-            if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
-                let quote_record =
-                    bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
-                        quote.value.clone(),
-                    )
-                    .expect("Failed to parse Bluesky quote post record");
-                let quote_text = bsky_record_get_text(quote_record);
-                text = format!(
-                    "{text}\n\n💬 {}: {quote_text}",
-                    quote.author.handle.as_str()
-                );
-            }
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
+        &bsky_post.post.embed
+    {
+        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
+            let quote_record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+                quote.value.clone(),
+            )
+            .expect("Failed to parse Bluesky quote post record");
+            let quote_text = bsky_record_get_text(quote_record);
+            text = format!(
+                "{text}\n\n💬 {}: {quote_text}",
+                quote.author.handle.as_str()
+            );
         }
     }
     toot_shorten(&text, &bsky_post.post)
@@ -422,17 +421,15 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
     let mut links = Vec::new();
 
-    if let Some(embed) = &bsky_post.post.embed {
-        if let Union::Refs(refs) = embed {
-            if let PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box) = &refs {
-                let images = &image_box.images;
-                for image in images {
-                    links.push(NewMedia {
-                        attachment_url: image.fullsize.clone(),
-                        alt_text: Some(image.alt.clone()),
-                    });
-                }
-            }
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box))) =
+        &bsky_post.post.embed
+    {
+        let images = &image_box.images;
+        for image in images {
+            links.push(NewMedia {
+                attachment_url: image.fullsize.clone(),
+                alt_text: Some(image.alt.clone()),
+            });
         }
     }
 

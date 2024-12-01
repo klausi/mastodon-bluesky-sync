@@ -28,7 +28,7 @@ use tokio::time::sleep;
 
 /// Send new status with any given replies to Mastodon.
 pub async fn post_to_mastodon(
-    mastodon: &Box<dyn Megalodon + Send + Sync>,
+    mastodon: &(dyn Megalodon + Send + Sync),
     toot: &NewStatus,
     dry_run: bool,
 ) -> Result<()> {
@@ -76,7 +76,7 @@ pub async fn post_to_mastodon(
 
 /// Sends the given new status to Mastodon.
 async fn send_single_post_to_mastodon(
-    mastodon: &Box<dyn Megalodon + Send + Sync>,
+    mastodon: &(dyn Megalodon + Send + Sync),
     toot: &NewStatus,
 ) -> Result<String> {
     let mut media_ids = Vec::new();
@@ -154,7 +154,7 @@ async fn send_single_post_to_mastodon(
 }
 
 async fn mastodon_wait_until_uploaded(
-    client: &Box<dyn Megalodon + Send + Sync>,
+    client: &(dyn Megalodon + Send + Sync),
     id: &str,
 ) -> Result<entities::Attachment, error::Error> {
     loop {
