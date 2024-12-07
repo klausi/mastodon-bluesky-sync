@@ -313,7 +313,7 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
 // Mastodon has a 500 character post limit. With embedded quote posts and long
 // links the content could get too long, shorten it to 500 characters.
 fn toot_shorten(text: &str, bsky_post: &Object<PostViewData>) -> String {
-    let mut char_count = text.graphemes(true).count();
+    let mut char_count = mastodon_text_length(text);
     // Hard-coding a limit of 500 here for now, could be configurable.
     if char_count <= 500 {
         return text.to_string();
@@ -339,9 +339,21 @@ fn toot_shorten(text: &str, bsky_post: &Object<PostViewData>) -> String {
             .to_string();
         // Add a link to the full length post on Bluesky.
         with_link = format!("{shortened}… {link}");
-        char_count = with_link.graphemes(true).count();
+        char_count = mastodon_text_length(&with_link);
     }
     with_link
+}
+
+// Calculate the character length or a text where each link counts for 23 characters.
+fn mastodon_text_length(text: &str) -> usize {
+    let link_regex = Regex::new(r"https?://\S+").unwrap();
+    // Replace all links with the empty string.
+    let text_without_links = link_regex.replace_all(text, "");
+    // Count how many links were matched.
+    let link_count = link_regex.find_iter(text).count();
+    // Each link counts for 23 characters in Mastodon.
+    let link_length = link_count * 23;
+    text_without_links.graphemes(true).count() + link_length
 }
 
 // Prefix boost toots with the author and strip HTML tags.
@@ -514,7 +526,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         let post = read_bsky_post_from_json("tests/bsky_quote_post.json");
         let expected = format!(
             "{}a… https://bsky.app/profile/klau.si/post/3lb3f2ko4rc23",
-            "a ".repeat(223)
+            "a ".repeat(237)
         );
         assert_eq!(expected, toot_shorten(&text, &post.post));
     }
@@ -534,6 +546,17 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 1) https://www.youtube.com/live/_aLgEA3TQVQ?si=8hufYrjCiisvoMyQ
 2) https://www.youtube.com/live/jATJBLcI2MA?si=7Gm1GudFuSmW2iRH
 3) https://www.youtube.com/live/fmz3vj-L9U8?si=Uzn12ksO-lDwQRqc"
+        );
+    }
+
+    // Test that a post with a long link gets fully posted to Mastodon.
+    #[test]
+    fn bsky_long_url() {
+        let post = read_bsky_post_from_json("tests/bsky_long_url.json");
+        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        assert_eq!(
+            posts.toots[0].text,
+            "Test post with a very long URL https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         );
     }
 
