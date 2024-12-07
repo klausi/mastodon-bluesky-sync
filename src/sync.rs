@@ -267,17 +267,23 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
     let mut text = bsky_record.text.clone();
     // Convert links in facets to URIs in the text.
     if let Some(facets) = &bsky_record.facets {
-        for facet in facets {
-            if let Union::Refs(MainFeaturesItem::Link(link)) = &facet.features[0] {
-                let mut bytes = bsky_record.text.as_bytes().to_vec();
-                bytes.splice(
-                    facet.index.byte_start..facet.index.byte_end,
-                    link.uri.as_bytes().iter().cloned(),
-                );
-                text = String::from_utf8(bytes)
-                    .expect("Invalid UTF-8 in Bluesky post after replacing link");
+        let mut bytes = bsky_record.text.as_bytes().to_vec();
+        // Sort facets backwards so that we can replace the links in the text
+        // from behind.
+        let mut sorted_facets = facets.clone();
+        sorted_facets.sort_by(|a, b| b.index.byte_start.cmp(&a.index.byte_start));
+        for facet in sorted_facets {
+            for feature in &facet.features {
+                if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    bytes.splice(
+                        facet.index.byte_start..facet.index.byte_end,
+                        link.uri.as_bytes().iter().cloned(),
+                    );
+                }
             }
         }
+        text =
+            String::from_utf8(bytes).expect("Invalid UTF-8 in Bluesky post after replacing links");
     }
     text
 }
@@ -511,6 +517,24 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "a ".repeat(223)
         );
         assert_eq!(expected, toot_shorten(&text, &post.post));
+    }
+
+    // Test that multiple links in a post are correct.
+    #[test]
+    fn bsky_multiple_links() {
+        let post = read_bsky_post_from_json("tests/bsky_multiple_links.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(
+            posts.toots[0].text,
+            "♻️ martinthuer.at: Ich durfte auf der @univie.ac.at über die Kontrollfunktion der Medien sprechen. Wie Macht kontrolliert wird, warum das manchmal scheitert und wie das konkret funktioniert.
+1) https://www.youtube.com/live/_aLgEA3TQVQ?si=8hufYrjCiisvoMyQ
+2) https://www.youtube.com/live/jATJBLcI2MA?si=7Gm1GudFuSmW2iRH
+3) https://www.youtube.com/live/fmz3vj-L9U8?si=Uzn12ksO-lDwQRqc"
+        );
     }
 
     // Read static bluesky post from test file.

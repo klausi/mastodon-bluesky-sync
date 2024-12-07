@@ -1,0 +1,110 @@
+{
+  "post": {
+    "author": {
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:bj6xn75434vxr4whgwglqb47/bafkreiftrg2wgnuva3rifebdo7iig5oqstnln7hbc2xy2fp7gvif2y77qy@jpeg",
+      "createdAt": "2023-07-04T13:56:49.597Z",
+      "did": "did:plc:bj6xn75434vxr4whgwglqb47",
+      "displayName": "Martin Thür",
+      "handle": "martinthuer.at",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "following": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.graph.follow/3khbxjnpufb2y",
+        "muted": false
+      }
+    },
+    "cid": "bafyreieejopraunk7btnnsmyijtcgmlbbflq73pqgdyadgiupzm67jj26i",
+    "indexedAt": "2024-12-03T18:37:31.018Z",
+    "labels": [],
+    "likeCount": 279,
+    "quoteCount": 2,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2024-12-03T18:37:30.470Z",
+      "facets": [
+        {
+          "$type": "app.bsky.richtext.facet",
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#mention",
+              "did": "did:plc:gojk6a2fhfmayzodmkxzsy36"
+            }
+          ],
+          "index": {
+            "byteEnd": 32,
+            "byteStart": 19
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://www.youtube.com/live/_aLgEA3TQVQ?si=8hufYrjCiisvoMyQ"
+            }
+          ],
+          "index": {
+            "byteEnd": 207,
+            "byteStart": 176
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://www.youtube.com/live/jATJBLcI2MA?si=7Gm1GudFuSmW2iRH"
+            }
+          ],
+          "index": {
+            "byteEnd": 242,
+            "byteStart": 211
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://www.youtube.com/live/fmz3vj-L9U8?si=Uzn12ksO-lDwQRqc"
+            }
+          ],
+          "index": {
+            "byteEnd": 277,
+            "byteStart": 246
+          }
+        }
+      ],
+      "langs": [
+        "de"
+      ],
+      "text": "Ich durfte auf der @univie.ac.at über die Kontrollfunktion der Medien sprechen. Wie Macht kontrolliert wird, warum das manchmal scheitert und wie das konkret funktioniert.\n1) www.youtube.com/live/_aLgEA3...\n2) www.youtube.com/live/jATJBLc...\n3) www.youtube.com/live/fmz3vj-..."
+    },
+    "replyCount": 13,
+    "repostCount": 41,
+    "uri": "at://did:plc:bj6xn75434vxr4whgwglqb47/app.bsky.feed.post/3lcgbumqxoc2s",
+    "viewer": {
+      "embeddingDisabled": false,
+      "repost": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.repost/3lcgcwmiu442z",
+      "threadMuted": false
+    }
+  },
+  "reason": {
+    "$type": "app.bsky.feed.defs#reasonRepost",
+    "by": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "indexedAt": "2024-12-03T18:56:31.031Z"
+  }
+}
