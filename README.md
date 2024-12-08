@@ -91,7 +91,7 @@ Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
 - Build portable binaries on Github without OpenSSL dependencies
 - Attach media from quote posts
-- Improve Bluesky link posting, links should be posted as shortened facets
+- Add open graph link preview when posting to Bluesky
 - Parallel execution of fetching and syncing requests at the same time
 
 ## Acknowledgements
