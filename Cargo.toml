@@ -19,6 +19,7 @@ html-escape = ">=0.2.11"
 image_compressor = ">=1"
 log = ">=0.4.8"
 megalodon = ">=0.14"
+psl = ">=2.1.42"
 regex = ">=0.2.2"
 reqwest = { version = ">=0.11", default-features = false, features = [
   "rustls-tls",

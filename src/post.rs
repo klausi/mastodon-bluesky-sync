@@ -1,9 +1,9 @@
+use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
-use bsky_sdk::rich_text::RichText;
 use bsky_sdk::BskyAgent;
 use image_compressor::compressor::Compressor;
 use image_compressor::Factor;
@@ -298,7 +298,7 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
         )),
     };
 
-    let rt = RichText::new_with_detect_facets(post.text.clone()).await?;
+    let rt = get_rich_text(&post.text);
     let record = bsky_agent
         .create_record(bsky_sdk::api::app::bsky::feed::post::RecordData {
             created_at: bsky_sdk::api::types::string::Datetime::now(),

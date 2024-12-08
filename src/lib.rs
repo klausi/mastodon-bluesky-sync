@@ -20,6 +20,7 @@ use crate::registration::mastodon_register;
 use crate::sync::*;
 
 pub mod args;
+mod bluesky_richtext;
 mod bluesky_video;
 mod config;
 mod delete_favs;

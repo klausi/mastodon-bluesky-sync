@@ -9,6 +9,8 @@ use std::collections::HashSet;
 use std::fs;
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::bluesky_richtext::get_rich_text;
+
 // Represents new status updates that should be posted to Bluesky (bsky_posts)
 // and Mastodon (toots).
 #[derive(Debug, Clone)]
@@ -290,6 +292,20 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
 
 pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
     let mut char_count = text.graphemes(true).count();
+    // Hard-coding the Bluesky limit of 300 here for now, could be configurable.
+    if char_count <= 300 {
+        return text.to_string();
+    }
+    // Try to shorten links first.
+    let mut richtext = get_rich_text(text);
+    // If the result is below 300 characters we can return the original text, it
+    // will be shortened on posting.
+    char_count = richtext.grapheme_len();
+    if char_count <= 300 {
+        return text.to_string();
+    }
+
+    // Remove words one by one from the end until the text is short enough.
     let re = Regex::new(r"[^\s]+$").unwrap();
     let mut shortened = text.trim().to_string();
     let mut with_link = shortened.clone();
@@ -304,8 +320,8 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
         } else {
             with_link = shortened.clone();
         }
-        let new_count = with_link.graphemes(true).count();
-        char_count = new_count;
+        richtext = get_rich_text(&with_link);
+        char_count = richtext.grapheme_len();
     }
     with_link
 }
@@ -498,6 +514,7 @@ fn truncate_option_string(stringy: Option<String>, max_chars: usize) -> Option<S
 pub mod tests {
     use bsky_sdk::api::app::bsky::feed::defs::FeedViewPostData;
     use bsky_sdk::api::types::Object;
+    use megalodon::entities::Status;
     use std::fs;
 
     use crate::{determine_posts, sync::toot_shorten, SyncOptions};
@@ -560,8 +577,25 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         );
     }
 
+    // Test that a post with a long link gets fully posted to Bluesky.
+    #[test]
+    fn mastodon_long_url() {
+        let post = read_mastodon_post_from_json("tests/mastodon_long_url.json");
+        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        );
+    }
+
     // Read static bluesky post from test file.
     fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
+        let json = fs::read_to_string(file_name).unwrap();
+        serde_json::from_str(&json).unwrap()
+    }
+
+    // Read static Mastofon post from test file.
+    fn read_mastodon_post_from_json(file_name: &str) -> Status {
         let json = fs::read_to_string(file_name).unwrap();
         serde_json::from_str(&json).unwrap()
     }
