@@ -457,6 +457,23 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
     let mut links = Vec::new();
 
+    dbg!(&bsky_post);
+    // Collect videos directly on the post.
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
+        &bsky_post.post.embed
+    {
+        let videos = &video_box.videos;
+        for video in videos {
+            links.push(NewMedia {
+                attachment_url: video.url.clone(),
+                alt_text: if video.alt.is_empty() {
+                    None
+                } else {
+                    Some(video.alt.clone())
+                },
+            });
+        }*/
+    }
     // Collect images directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box))) =
         &bsky_post.post.embed
@@ -629,6 +646,22 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
         );
         assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
+    }
+
+    // Test that a video attachment is extracted correctly.
+    #[test]
+    fn bsky_video_attachment() {
+        let post = read_bsky_post_from_json("tests/bsky_video.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(
+            posts.toots[0].text,
+            "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
+        );
+        //assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
     }
 
     // Read static bluesky post from test file.
