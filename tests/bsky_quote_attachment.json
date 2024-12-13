@@ -1,0 +1,141 @@
+{
+  "post": {
+    "author": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "cid": "bafyreihhxkrozgma4eza6qu6jpfuti7xcnl67ixji3mzltftvum3j4dara",
+    "embed": {
+      "$type": "app.bsky.embed.record#view",
+      "record": {
+        "$type": "app.bsky.embed.record#viewRecord",
+        "author": {
+          "associated": {
+            "chat": {
+              "allowIncoming": "all"
+            }
+          },
+          "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreifwxanrielankhlwtv5a5ml3woqz2xdfc6klo2lkhtvntczzuf7qi@jpeg",
+          "createdAt": "2023-08-19T19:40:43.596Z",
+          "did": "did:plc:m2uq4xp53ln6ajjhjg5putln",
+          "displayName": "Patricia Lierzer",
+          "handle": "patricialierzer.bsky.social",
+          "labels": [
+            {
+              "cid": "bafyreihvkikeg7p3w2ybwvuc5udx2rcqsuuq6xyglt2rln6vrr7xhchnri",
+              "cts": "1970-01-01T00:00:00.000Z",
+              "src": "did:plc:m2uq4xp53ln6ajjhjg5putln",
+              "uri": "at://did:plc:m2uq4xp53ln6ajjhjg5putln/app.bsky.actor.profile/self",
+              "val": "!no-unauthenticated"
+            }
+          ],
+          "viewer": {
+            "blockedBy": false,
+            "muted": false
+          }
+        },
+        "cid": "bafyreiblu3pyczvciy5n4wficewdis5ivmigsen44ew3rl7zkbyxoicxg4",
+        "embeds": [
+          {
+            "$type": "app.bsky.embed.images#view",
+            "images": [
+              {
+                "alt": "Bild von Precht im Stil einer Parfüm-Werbung. Oben links steht \"PRECHT\". Unten links eine blaue Parfümflasche, daneben steht \"Der Duft der heißen Luft. Beliebig und dennoch penetrant.\"\n\nQuelle leider unbekannt.",
+                "aspectRatio": {
+                  "height": 960,
+                  "width": 960
+                },
+                "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg",
+                "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg"
+              }
+            ]
+          }
+        ],
+        "indexedAt": "2024-12-13T15:12:29.121Z",
+        "labels": [],
+        "likeCount": 11,
+        "quoteCount": 1,
+        "replyCount": 0,
+        "repostCount": 2,
+        "uri": "at://did:plc:m2uq4xp53ln6ajjhjg5putln/app.bsky.feed.post/3ld7336q5vk2z",
+        "value": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2024-12-13T15:12:27.897Z",
+          "embed": {
+            "$type": "app.bsky.embed.images",
+            "images": [
+              {
+                "alt": "Bild von Precht im Stil einer Parfüm-Werbung. Oben links steht \"PRECHT\". Unten links eine blaue Parfümflasche, daneben steht \"Der Duft der heißen Luft. Beliebig und dennoch penetrant.\"\n\nQuelle leider unbekannt.",
+                "aspectRatio": {
+                  "height": 960,
+                  "width": 960
+                },
+                "image": {
+                  "$type": "blob",
+                  "mimeType": "image/jpeg",
+                  "ref": {
+                    "$link": "bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44"
+                  },
+                  "size": 215716
+                }
+              }
+            ]
+          },
+          "langs": [
+            "de"
+          ],
+          "reply": {
+            "parent": {
+              "cid": "bafyreiarbkmwpttpsyzzuqcrfynjo3woc3owso6uoemgl7bbwyuimk4gqa",
+              "uri": "at://did:plc:7syfakzcriq44mwbdbc7jwvn/app.bsky.feed.post/3ld6zc6w4ws2i"
+            },
+            "root": {
+              "cid": "bafyreiarbkmwpttpsyzzuqcrfynjo3woc3owso6uoemgl7bbwyuimk4gqa",
+              "uri": "at://did:plc:7syfakzcriq44mwbdbc7jwvn/app.bsky.feed.post/3ld6zc6w4ws2i"
+            }
+          },
+          "text": ""
+        }
+      }
+    },
+    "indexedAt": "2024-12-13T16:36:38.120Z",
+    "labels": [],
+    "likeCount": 0,
+    "quoteCount": 0,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2024-12-13T16:36:37.914Z",
+      "embed": {
+        "$type": "app.bsky.embed.record",
+        "record": {
+          "cid": "bafyreiblu3pyczvciy5n4wficewdis5ivmigsen44ew3rl7zkbyxoicxg4",
+          "uri": "at://did:plc:m2uq4xp53ln6ajjhjg5putln/app.bsky.feed.post/3ld7336q5vk2z"
+        }
+      },
+      "langs": [
+        "de"
+      ],
+      "text": "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3ld77rorzhc2p",
+    "viewer": {
+      "embeddingDisabled": false,
+      "threadMuted": false
+    }
+  }
+}

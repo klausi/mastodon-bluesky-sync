@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bsky_sdk::api::app::bsky::embed::record::ViewRecordRefs;
+use bsky_sdk::api::app::bsky::embed::record::{ViewRecordEmbedsItem, ViewRecordRefs};
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostViewEmbedRefs};
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
@@ -258,7 +258,9 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
             text = format!(
                 "{text}\n\n💬 {}: {quote_text}",
                 quote.author.handle.as_str()
-            );
+            )
+            .trim()
+            .to_string();
         }
     }
     toot_shorten(&text, &bsky_post.post)
@@ -455,6 +457,7 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
     let mut links = Vec::new();
 
+    // Collect images directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box))) =
         &bsky_post.post.embed
     {
@@ -462,8 +465,36 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
         for image in images {
             links.push(NewMedia {
                 attachment_url: image.fullsize.clone(),
-                alt_text: Some(image.alt.clone()),
+                alt_text: if image.alt.is_empty() {
+                    None
+                } else {
+                    Some(image.alt.clone())
+                },
             });
+        }
+    }
+    // Collect images from a quote post.
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
+        &bsky_post.post.embed
+    {
+        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
+            for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
+                if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedImagesView(image_box)) =
+                    quote_embed
+                {
+                    let images = &image_box.images;
+                    for image in images {
+                        links.push(NewMedia {
+                            attachment_url: image.fullsize.clone(),
+                            alt_text: if image.alt.is_empty() {
+                                None
+                            } else {
+                                Some(image.alt.clone())
+                            },
+                        });
+                    }
+                }
+            }
         }
     }
 
@@ -586,6 +617,18 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.bsky_posts[0].text,
             "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         );
+    }
+
+    // Test that an attachment from a quoted post is used.
+    #[test]
+    fn bsky_quote_attachment() {
+        let post = read_bsky_post_from_json("tests/bsky_quote_attachment.json");
+        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        assert_eq!(
+            posts.toots[0].text,
+            "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
+        );
+        assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
     }
 
     // Read static bluesky post from test file.
