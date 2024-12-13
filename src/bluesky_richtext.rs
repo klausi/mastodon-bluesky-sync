@@ -1,4 +1,4 @@
-// Copied from Atrium, as it is not public there.
+// Forked from Atrium - we only want to detect links starting with http.
 use bsky_sdk::{
     api::{
         app::bsky::richtext::facet::{
@@ -8,12 +8,10 @@ use bsky_sdk::{
     },
     rich_text::RichText,
 };
-use psl;
 use regex::Regex;
 use std::sync::OnceLock;
 use unicode_segmentation::UnicodeSegmentation;
 
-static RE_MENTION: OnceLock<Regex> = OnceLock::new();
 static RE_URL: OnceLock<Regex> = OnceLock::new();
 static RE_ENDING_PUNCTUATION: OnceLock<Regex> = OnceLock::new();
 static RE_TRAILING_PUNCTUATION: OnceLock<Regex> = OnceLock::new();
@@ -27,7 +25,6 @@ pub struct FacetWithoutResolution {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FacetFeaturesItem {
-    Mention(Box<MentionWithoutResolution>),
     Link(Box<Link>),
     Tag(Box<Tag>),
 }
@@ -39,48 +36,12 @@ pub struct MentionWithoutResolution {
 
 fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
     let mut facets = Vec::new();
-    // mentions
-    {
-        let re = RE_MENTION
-          .get_or_init(|| Regex::new(r"(?:^|\s|\()@(([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\b").expect("invalid regex"));
-        for capture in re.captures_iter(text) {
-            let Some(m) = capture.get(1) else {
-                continue;
-            };
-            facets.push(FacetWithoutResolution {
-                features: vec![FacetFeaturesItem::Mention(Box::new(
-                    MentionWithoutResolution {
-                        handle: m.as_str().into(),
-                    },
-                ))],
-                index: ByteSliceData {
-                    byte_end: m.end(),
-                    byte_start: m.start() - 1,
-                }
-                .into(),
-            });
-        }
-    }
     // links
     {
-        let re = RE_URL.get_or_init(|| {
-          Regex::new(
-              r"(?:^|\s|\()((?:https?:\/\/[\S]+)|(?:(?<domain>[a-z][a-z0-9]*(?:\.[a-z0-9]+)+)[\S]*))",
-          )
-          .expect("invalid regex")
-      });
+        let re = RE_URL.get_or_init(|| Regex::new(r"https?:\/\/[\S]+").expect("invalid regex"));
         for capture in re.captures_iter(text) {
-            let m = capture.get(1).expect("invalid capture");
-            let mut uri = if let Some(domain) = capture.name("domain") {
-                if !psl::suffix(domain.as_str().as_bytes())
-                    .map_or(false, |suffix| suffix.is_known())
-                {
-                    continue;
-                }
-                format!("https://{}", m.as_str())
-            } else {
-                m.as_str().into()
-            };
+            let m = capture.get(0).expect("invalid capture");
+            let mut uri = m.as_str().to_string();
             let mut index = ByteSliceData {
                 byte_end: m.end(),
                 byte_start: m.start(),
@@ -155,7 +116,6 @@ fn detect_facets(text: &str) -> RichText {
                     FacetFeaturesItem::Tag(tag) => {
                         features.push(Union::Refs(MainFeaturesItem::Tag(tag)));
                     }
-                    _ => { /* ignore mentions */ }
                 }
             }
             facets.push(
@@ -243,6 +203,17 @@ pub mod tests {
         assert_eq!(
             richtext.text,
             "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa…"
+        );
+    }
+
+    #[test]
+    // Test that only links starting with https:// or http:// are detected.
+    fn test_link_detection() {
+        let text = "♻️ bensaufley.com: This is awful from start to finish. The documentation of this guy's descent into hate is really chilling, to me. It's a story we seem to be seeing more and more, and to hear the personal side of this, from a warm and collaborative friend to this secret … villain … it's just so sad, and so scary.\n\n💬 lizthegrey.com:… https://mastodon.social/@klausi/113511471780554214";
+        let richtext = get_rich_text(text);
+        assert_eq!(
+            richtext.text,
+            "♻️ bensaufley.com: This is awful from start to finish. The documentation of this guy's descent into hate is really chilling, to me. It's a story we seem to be seeing more and more, and to hear the personal side of this, from a warm and collaborative friend to this secret … villain … it's just so sad, and so scary.\n\n💬 lizthegrey.com:… https://mastodon.socia…"
         );
     }
 }

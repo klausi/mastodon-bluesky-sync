@@ -1530,7 +1530,6 @@ dependencies = [
  "image_compressor",
  "log",
  "megalodon",
- "psl",
  "regex",
  "reqwest 0.12.9",
  "serde",
