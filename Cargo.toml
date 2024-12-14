@@ -15,6 +15,7 @@ bsky-sdk = ">=0.1"
 chrono = { version = ">=0.4.23", default-features = false, features = ["std"] }
 clap = { version = ">=3.2.22", features = ["derive"] }
 env_logger = ">=0.7.1"
+hls_m3u8 = ">=0.4"
 html-escape = ">=0.2.11"
 image_compressor = ">=1"
 log = ">=0.4.8"

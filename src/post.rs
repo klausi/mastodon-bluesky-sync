@@ -5,6 +5,9 @@ use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
 use bsky_sdk::BskyAgent;
+use hls_m3u8::tags::VariantStream;
+use hls_m3u8::MasterPlaylist;
+use hls_m3u8::MediaPlaylist;
 use image_compressor::compressor::Compressor;
 use image_compressor::Factor;
 use megalodon::megalodon::PostStatusOutput;
@@ -16,6 +19,7 @@ use megalodon::{
     megalodon::PostStatusInputOptions,
 };
 use serde_json::to_string;
+use std::convert::TryFrom;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -79,10 +83,14 @@ async fn send_single_post_to_mastodon(
     mastodon: &(dyn Megalodon + Send + Sync),
     toot: &NewStatus,
 ) -> Result<String> {
+    // Post attachments first, if there are any.
     let mut media_ids = Vec::new();
+    if let Some(video_stream) = &toot.video_stream {
+        let media_id = mastodon_upload_video_stream(mastodon, video_stream).await?;
+        media_ids.push(media_id);
+    }
     // Temporary directory where we will download any file attachments to.
     let temp_dir = tempdir()?;
-    // Post attachments first, if there are any.
     for attachment in &toot.attachments {
         let response = reqwest::get(&attachment.attachment_url)
             .await
@@ -151,6 +159,71 @@ async fn send_single_post_to_mastodon(
             scheduled_status
         ),
     }
+}
+
+async fn mastodon_upload_video_stream(
+    mastodon: &(dyn Megalodon + Send + Sync),
+    stream_url: &str,
+) -> Result<String> {
+    let response = reqwest::get(stream_url)
+        .await
+        .context(format!("Failed downloading stream URL {}", stream_url))?;
+
+    let response_string = response.text().await?;
+    let master_playlist = MasterPlaylist::try_from(response_string.as_str())?;
+
+    // Get the best quality video stream by choosing the highest bandwidth.
+    let mut high_quality_part = "".to_string();
+    let mut max_bandwidth = 0;
+    for variant_stream in &master_playlist.variant_streams {
+        if let VariantStream::ExtXStreamInf {
+            uri,
+            frame_rate: _,
+            audio: _,
+            subtitles: _,
+            closed_captions: _,
+            stream_data,
+        } = variant_stream
+        {
+            if stream_data.bandwidth() > max_bandwidth {
+                max_bandwidth = stream_data.bandwidth();
+                high_quality_part = uri.to_string();
+            }
+        }
+    }
+    // Replace the last part of the URL with the high quality part.
+    let high_quality_uri =
+        stream_url.replace(stream_url.split('/').last().unwrap(), &high_quality_part);
+    let response = reqwest::get(&high_quality_uri).await.context(format!(
+        "Failed downloading high quality URL {}",
+        high_quality_uri
+    ))?;
+    let response_string = response.text().await?;
+    let media_playlist = MediaPlaylist::try_from(response_string.as_str())?;
+
+    let mut file = NamedTempFile::new()?;
+
+    for (_, segment) in &media_playlist.segments {
+        let segement_uri =
+            high_quality_uri.replace(high_quality_uri.split('/').last().unwrap(), &segment.uri());
+        let response = reqwest::get(&segement_uri)
+            .await
+            .context(format!("Failed downloading segment URL {}", segement_uri))?;
+        file.write_all(&response.bytes().await?)?;
+    }
+
+    let upload = mastodon
+        .upload_media(file.path().to_str().unwrap().to_string(), None)
+        .await?
+        .json();
+
+    Ok(match upload {
+        entities::UploadMedia::Attachment(attachment) => attachment.id,
+        entities::UploadMedia::AsyncAttachment(async_attachment) => {
+            let uploaded = mastodon_wait_until_uploaded(mastodon, &async_attachment.id).await?;
+            uploaded.id
+        }
+    })
 }
 
 async fn mastodon_wait_until_uploaded(

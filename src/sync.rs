@@ -33,6 +33,7 @@ impl StatusUpdates {
 pub struct NewStatus {
     pub text: String,
     pub attachments: Vec<NewMedia>,
+    pub video_stream: Option<String>,
     // A list of further statuses that are new replies to this new status. Used
     // to sync threads.
     pub replies: Vec<NewStatus>,
@@ -117,6 +118,7 @@ pub fn determine_posts(
         updates.toots.push(NewStatus {
             text: decoded_post,
             attachments: bsky_get_attachments(post),
+            video_stream: bsky_get_video_stream(post),
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -163,6 +165,7 @@ pub fn determine_posts(
         updates.bsky_posts.push(NewStatus {
             text: post,
             attachments: toot_get_attachments(toot),
+            video_stream: None,
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -457,23 +460,6 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
     let mut links = Vec::new();
 
-    dbg!(&bsky_post);
-    // Collect videos directly on the post.
-    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
-        &bsky_post.post.embed
-    {
-        let videos = &video_box.videos;
-        for video in videos {
-            links.push(NewMedia {
-                attachment_url: video.url.clone(),
-                alt_text: if video.alt.is_empty() {
-                    None
-                } else {
-                    Some(video.alt.clone())
-                },
-            });
-        }*/
-    }
     // Collect images directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box))) =
         &bsky_post.post.embed
@@ -516,6 +502,16 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
     }
 
     links
+}
+
+// Extract the video stream URL from a Bluesky post.
+fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
+        &bsky_post.post.embed
+    {
+        return Some(video_box.playlist.clone());
+    }
+    None
 }
 
 // Returns a list of direct links to attachments for download.
@@ -661,7 +657,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].text,
             "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
-        //assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
+        assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
     }
 
     // Read static bluesky post from test file.
