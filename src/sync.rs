@@ -33,6 +33,7 @@ impl StatusUpdates {
 pub struct NewStatus {
     pub text: String,
     pub attachments: Vec<NewMedia>,
+    pub video_stream: Option<String>,
     // A list of further statuses that are new replies to this new status. Used
     // to sync threads.
     pub replies: Vec<NewStatus>,
@@ -117,6 +118,7 @@ pub fn determine_posts(
         updates.toots.push(NewStatus {
             text: decoded_post,
             attachments: bsky_get_attachments(post),
+            video_stream: bsky_get_video_stream(post),
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -163,6 +165,7 @@ pub fn determine_posts(
         updates.bsky_posts.push(NewStatus {
             text: post,
             attachments: toot_get_attachments(toot),
+            video_stream: None,
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -501,6 +504,16 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
     links
 }
 
+// Extract the video stream URL from a Bluesky post.
+fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
+        &bsky_post.post.embed
+    {
+        return Some(video_box.playlist.clone());
+    }
+    None
+}
+
 // Returns a list of direct links to attachments for download.
 pub fn toot_get_attachments(toot: &Status) -> Vec<NewMedia> {
     let mut links = Vec::new();
@@ -629,6 +642,22 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
         );
         assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
+    }
+
+    // Test that a video attachment is extracted correctly.
+    #[test]
+    fn bsky_video_attachment() {
+        let post = read_bsky_post_from_json("tests/bsky_video.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(
+            posts.toots[0].text,
+            "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
+        );
+        assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
     }
 
     // Read static bluesky post from test file.

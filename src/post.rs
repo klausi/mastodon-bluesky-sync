@@ -20,6 +20,7 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
+use std::process::Command;
 use std::time::Duration;
 use tempfile::tempdir;
 use tempfile::NamedTempFile;
@@ -79,10 +80,14 @@ async fn send_single_post_to_mastodon(
     mastodon: &(dyn Megalodon + Send + Sync),
     toot: &NewStatus,
 ) -> Result<String> {
+    // Post attachments first, if there are any.
     let mut media_ids = Vec::new();
+    if let Some(video_stream) = &toot.video_stream {
+        let media_id = mastodon_upload_video_stream(mastodon, video_stream).await?;
+        media_ids.push(media_id);
+    }
     // Temporary directory where we will download any file attachments to.
     let temp_dir = tempdir()?;
-    // Post attachments first, if there are any.
     for attachment in &toot.attachments {
         let response = reqwest::get(&attachment.attachment_url)
             .await
@@ -151,6 +156,49 @@ async fn send_single_post_to_mastodon(
             scheduled_status
         ),
     }
+}
+
+// Download a Bluesky video stream, convert it with ffmpeg and upload it to
+// Mastodon.
+async fn mastodon_upload_video_stream(
+    mastodon: &(dyn Megalodon + Send + Sync),
+    stream_url: &str,
+) -> Result<String> {
+    let temp_dir = tempdir()?;
+    let path = temp_dir.path().join("video.mp4");
+    let command = Command::new("ffmpeg")
+        .arg("-i")
+        .arg(stream_url)
+        .arg("-acodec")
+        .arg("copy")
+        .arg("-bsf:a")
+        .arg("aac_adtstoasc")
+        .arg("-vcodec")
+        .arg("copy")
+        .arg(path.to_string_lossy().to_string())
+        .output()
+        .context(format!(
+            "Failed to execute ffmpeg for video stream {stream_url}"
+        ))?;
+    if !command.status.success() {
+        bail!(
+            "ffmpeg error for {stream_url}: {}",
+            String::from_utf8_lossy(&command.stderr)
+        );
+    }
+
+    let upload = mastodon
+        .upload_media(path.to_string_lossy().to_string(), None)
+        .await?
+        .json();
+
+    Ok(match upload {
+        entities::UploadMedia::Attachment(attachment) => attachment.id,
+        entities::UploadMedia::AsyncAttachment(async_attachment) => {
+            let uploaded = mastodon_wait_until_uploaded(mastodon, &async_attachment.id).await?;
+            uploaded.id
+        }
+    })
 }
 
 async fn mastodon_wait_until_uploaded(
