@@ -14,7 +14,7 @@ RUN cargo vendor >> /code/.cargo/config.toml
 
 FROM rust:1-alpine AS builder
 
-RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static
+RUN apk add --no-cache musl-dev
 
 ENV USER=root
 WORKDIR /code

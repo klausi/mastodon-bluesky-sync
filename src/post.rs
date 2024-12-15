@@ -1,10 +1,10 @@
 use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
+use crate::BskyAgent;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
-use bsky_sdk::BskyAgent;
 use image_compressor::compressor::Compressor;
 use image_compressor::Factor;
 use megalodon::megalodon::PostStatusOutput;

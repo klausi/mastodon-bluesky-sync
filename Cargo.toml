@@ -6,9 +6,13 @@ description = "Synchronizes posts from Mastodon to Bluesky and back."
 edition = "2021"
 
 [dependencies]
+bsky-sdk = { version = ">=0.1", default-features = false, features = [
+  "rich-text",
+] }
 anyhow = ">=1"
-atrium-xrpc-client = ">=0.1"
-bsky-sdk = ">=0.1"
+atrium-xrpc-client = { version = ">=0.1", default-features = false, features = [
+  "reqwest",
+] }
 # Switching off default features removes a dependency to the "time" crate that
 # contains a potential security issue.
 # See https://github.com/time-rs/time/issues/293

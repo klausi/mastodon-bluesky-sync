@@ -6,7 +6,6 @@ use bsky_sdk::api::types::string::Nsid;
 use bsky_sdk::api::types::string::RecordKey;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use bsky_sdk::api::types::TryFromUnknown;
-use bsky_sdk::BskyAgent;
 use chrono::prelude::*;
 use chrono::Duration;
 use megalodon::error::Kind;
@@ -17,6 +16,7 @@ use tokio::fs;
 
 use crate::cache_file;
 use crate::config::*;
+use crate::BskyAgent;
 
 // Delete old favourites of this account that are older than 90 days.
 pub async fn mastodon_delete_older_favs(

@@ -1,8 +1,9 @@
 use anyhow::Context;
 use anyhow::Result;
+use atrium_xrpc_client::reqwest::ReqwestClient;
 use bsky_sdk::agent::config::FileStore;
+use bsky_sdk::agent::BskyAgentBuilder;
 use bsky_sdk::api::types::LimitedNonZeroU8;
-use bsky_sdk::BskyAgent;
 use delete_posts::bluesky_delete_older_posts;
 use log::debug;
 use megalodon::generator;
@@ -28,6 +29,8 @@ mod delete_posts;
 mod post;
 mod registration;
 mod sync;
+
+type BskyAgent = bsky_sdk::BskyAgent<atrium_xrpc_client::reqwest::ReqwestClient>;
 
 pub async fn run(args: Args) -> Result<()> {
     debug!("running with args {:?}", args);
@@ -97,21 +100,27 @@ pub async fn run(args: Args) -> Result<()> {
         match bsky_sdk::agent::config::Config::load(&FileStore::new("bluesky-auth-cache.json"))
             .await
         {
-            Ok(bsky_config) => match BskyAgent::builder().config(bsky_config).build().await {
-                Ok(agent) => {
-                    // Save the session in case it was refreshed.
-                    agent
-                        .to_config()
-                        .await
-                        .save(&FileStore::new("bluesky-auth-cache.json"))
-                        .await?;
-                    agent
+            Ok(bsky_config) => {
+                match BskyAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
+                    .config(bsky_config)
+                    .build()
+                    .await
+                {
+                    Ok(agent) => {
+                        // Save the session in case it was refreshed.
+                        agent
+                            .to_config()
+                            .await
+                            .save(&FileStore::new("bluesky-auth-cache.json"))
+                            .await?;
+                        agent
+                    }
+                    Err(_) => {
+                        get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password)
+                            .await?
+                    }
                 }
-                Err(_) => {
-                    get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password)
-                        .await?
-                }
-            },
+            }
             Err(_) => {
                 get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password).await?
             }
@@ -230,7 +239,9 @@ fn cache_file(name: &str) -> String {
 }
 
 async fn get_new_bluesky_agent(email: &str, app_password: &str) -> Result<BskyAgent> {
-    let agent = BskyAgent::builder().build().await?;
+    let agent = BskyAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
+        .build()
+        .await?;
     let _session = agent.login(email, app_password).await?;
     agent
         .to_config()
