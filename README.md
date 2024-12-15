@@ -18,27 +18,7 @@ This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Blue
 
 ## Installation and execution
 
-For converting Bluesky video streams this program needs the `ffmpeg` executable. Install it for example on Debian/Ubuntu:
-```sh
-sudo apt install ffmpeg
-```
-
-The program itself needs to be compiled with Rust for now.
-
-```
-curl https://sh.rustup.rs -sSf | sh
-source ~/.cargo/env
-```
-When running the program the first time a registration step will setup API access to Mastodon and Bluesky. Follow the text instructions to enter credentials.
-```
-git clone https://github.com/klausi/mastodon-bluesky-sync.git
-cd mastodon-bluesky-sync
-cargo run --release
-```
-
-Use the `cargo run --release --` command as a replacement for `./mastodon-bluesky-sync` in the examples in this README.
-
-Configuration and cache files will be created in the directory where the program was executed.
+See [INSTALL.md](INSTALL.md).
 
 ## Configuration
 
