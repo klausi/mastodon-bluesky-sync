@@ -506,10 +506,25 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
 
 // Extract the video stream URL from a Bluesky post.
 fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
+    // Check video directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
         &bsky_post.post.embed
     {
         return Some(video_box.playlist.clone());
+    }
+    // Check video on a quote post.
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
+        &bsky_post.post.embed
+    {
+        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
+            for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
+                if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedVideoView(video_box)) =
+                    quote_embed
+                {
+                    return Some(video_box.playlist.clone());
+                }
+            }
+        }
     }
     None
 }
@@ -656,6 +671,24 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         assert_eq!(
             posts.toots[0].text,
             "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
+        );
+        assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
+    }
+
+    // Test that a video attached to a quote post is extracted correctly.
+    #[test]
+    fn bsky_quote_video_attachment() {
+        let post = read_bsky_post_from_json("tests/bsky_quote_video.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(
+            posts.toots[0].text,
+            "Testing quote post videos
+
+💬 mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
         assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
     }

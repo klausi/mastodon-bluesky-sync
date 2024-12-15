@@ -1,0 +1,109 @@
+{
+  "post": {
+    "author": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "cid": "bafyreibtcmgecqtlfsvc2k7ls5czca54a5iewdz7zgoisdk2zs3itgjeze",
+    "embed": {
+      "$type": "app.bsky.embed.record#view",
+      "record": {
+        "$type": "app.bsky.embed.record#viewRecord",
+        "author": {
+          "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:gkgmduxh722ocstroyi75gbg/bafkreifpurouecxapq5nl4gtr3zrdv7ckyl2xh6ivsvzvpzmzuniuvtcye@jpeg",
+          "createdAt": "2024-11-09T03:00:34.111Z",
+          "did": "did:plc:gkgmduxh722ocstroyi75gbg",
+          "displayName": "Morgan J Freeman",
+          "handle": "mjfree.bsky.social",
+          "labels": [],
+          "viewer": {
+            "blockedBy": false,
+            "muted": false
+          }
+        },
+        "cid": "bafyreife5kzd7zeamy2ejycgoenqktstr3uyov3ny4tgm2gxpihhk2bdm4",
+        "embeds": [
+          {
+            "$type": "app.bsky.embed.video#view",
+            "aspectRatio": {
+              "height": 720,
+              "width": 1280
+            },
+            "cid": "bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy",
+            "playlist": "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8",
+            "thumbnail": "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/thumbnail.jpg"
+          }
+        ],
+        "indexedAt": "2024-12-13T12:26:34.016Z",
+        "labels": [],
+        "likeCount": 19351,
+        "quoteCount": 236,
+        "replyCount": 506,
+        "repostCount": 5808,
+        "uri": "at://did:plc:gkgmduxh722ocstroyi75gbg/app.bsky.feed.post/3ld6rsjrbys2t",
+        "value": {
+          "$type": "app.bsky.feed.post",
+          "createdAt": "2024-12-13T12:26:33.816Z",
+          "embed": {
+            "$type": "app.bsky.embed.video",
+            "aspectRatio": {
+              "height": 720,
+              "width": 1280
+            },
+            "video": {
+              "$type": "blob",
+              "mimeType": "video/mp4",
+              "ref": {
+                "$link": "bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy"
+              },
+              "size": 11996206
+            }
+          },
+          "langs": [
+            "en"
+          ],
+          "text": "I'm going to post this video every day so we never forget"
+        }
+      }
+    },
+    "indexedAt": "2024-12-15T09:39:13.719Z",
+    "labels": [],
+    "likeCount": 0,
+    "quoteCount": 0,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2024-12-15T09:39:13.444Z",
+      "embed": {
+        "$type": "app.bsky.embed.record",
+        "record": {
+          "cid": "bafyreife5kzd7zeamy2ejycgoenqktstr3uyov3ny4tgm2gxpihhk2bdm4",
+          "uri": "at://did:plc:gkgmduxh722ocstroyi75gbg/app.bsky.feed.post/3ld6rsjrbys2t"
+        }
+      },
+      "langs": [
+        "en"
+      ],
+      "text": "Testing quote post videos"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3lddjf5gy722l",
+    "viewer": {
+      "embeddingDisabled": false,
+      "threadMuted": false
+    }
+  }
+}
