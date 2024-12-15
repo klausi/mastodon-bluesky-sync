@@ -16,15 +16,15 @@ use megalodon::{
     megalodon::PostStatusInputOptions,
 };
 use serde_json::to_string;
-use std::fs::File;
-use std::io::Read;
-use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
 use tempfile::tempdir;
 use tempfile::NamedTempFile;
 use tokio::fs::metadata;
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
+use tokio::io::AsyncWriteExt;
 use tokio::time::sleep;
 
 /// Send new status with any given replies to Mastodon.
@@ -106,8 +106,8 @@ async fn send_single_post_to_mastodon(
         let path = temp_dir.path().join(file_name);
         let string_path = path.to_string_lossy().into_owned();
 
-        let mut file = File::create(path)?;
-        file.write_all(&response.bytes().await?)?;
+        let mut file = File::create(path).await?;
+        file.write_all(&response.bytes().await?).await?;
 
         let upload = match &attachment.alt_text {
             None => mastodon.upload_media(string_path, None).await?,
@@ -369,14 +369,15 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
     // Check that the image is not larger than 1MB.
     let size = download_bytes.len();
     if size > 1_000_000 {
-        let mut source_file = NamedTempFile::new()?;
-        source_file.write_all(download_bytes)?;
+        let tmp_file = NamedTempFile::new()?;
+        let mut source_file = File::open(tmp_file.path()).await?;
+        source_file.write_all(download_bytes).await?;
         // Try with 100% quality first, then decrease by 10% until we
         // get less than 1MB.
         let mut quality = 100.;
         loop {
             let dest_dir = tempdir()?;
-            let mut compressor = Compressor::new(source_file.path(), dest_dir.path());
+            let mut compressor = Compressor::new(tmp_file.path(), dest_dir.path());
             compressor.set_factor(Factor::new(quality, 1.0));
             // Dyn errors are weird, can't throw them with `?`.`
             let compressed = match compressor.compress_to_jpg() {
@@ -387,9 +388,9 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
             };
             let new_size = metadata(&compressed).await?.len();
             if new_size < 1_000_000 {
-                let mut compressed_file = File::open(compressed)?;
+                let mut compressed_file = File::open(compressed).await?;
                 let mut compressed_bytes = Vec::new();
-                compressed_file.read_to_end(&mut compressed_bytes)?;
+                compressed_file.read_to_end(&mut compressed_bytes).await?;
                 return Ok(compressed_bytes);
             }
             quality -= 10.;
