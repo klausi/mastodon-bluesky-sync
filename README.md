@@ -80,6 +80,7 @@ Todo list for the future, not implemented yet:
 - Build portable binaries on Github without OpenSSL dependencies
 - Add open graph link preview when posting to Bluesky
 - Parallel execution of fetching and syncing requests at the same time
+- Remove username escaping with backslash from Bluesky, not needed
 
 ## Acknowledgements
 

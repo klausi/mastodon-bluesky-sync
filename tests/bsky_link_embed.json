@@ -1,0 +1,98 @@
+{
+  "post": {
+    "author": {
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:lefzypleshs6us5ceycuwsyi/bafkreiafjhfxrfopbf6jmzr2kk6f362sglsmeubztdqnt3wwlzmv6cpqiq@jpeg",
+      "createdAt": "2024-11-14T19:49:42.860Z",
+      "did": "did:plc:lefzypleshs6us5ceycuwsyi",
+      "displayName": "Lea Susemichel",
+      "handle": "leasusemichel.bsky.social",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "cid": "bafyreifi4y5fgo5krcgal7uk3hms4wllbwp4l6e3j6vzryauuza3cm6c4a",
+    "embed": {
+      "$type": "app.bsky.embed.external#view",
+      "external": {
+        "description": "Obwohl es einfach ist, Männer innerhalb eines Radius von 50 Kilometern zu finden, die bereit sind, eine Frau zu vergewaltigen. Obwohl wir um das Ausmaß an Gewalt gegen Frauen wissen: Wir geben uns wei...",
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:lefzypleshs6us5ceycuwsyi/bafkreiftvn3w5rwol4ofeikbibe545jiqsvmb44fc7u2vnm7kuiosj5hvu@jpeg",
+        "title": "Der Fall Pelicot: Unfassbar? Monströs?",
+        "uri": "https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstroes?ref=article"
+      }
+    },
+    "indexedAt": "2024-12-20T06:59:38.418Z",
+    "labels": [],
+    "likeCount": 185,
+    "quoteCount": 5,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2024-12-20T06:59:36.164Z",
+      "embed": {
+        "$type": "app.bsky.embed.external",
+        "external": {
+          "description": "Obwohl es einfach ist, Männer innerhalb eines Radius von 50 Kilometern zu finden, die bereit sind, eine Frau zu vergewaltigen. Obwohl wir um das Ausmaß an Gewalt gegen Frauen wissen: Wir geben uns wei...",
+          "thumb": {
+            "$type": "blob",
+            "mimeType": "image/jpeg",
+            "ref": {
+              "$link": "bafkreiftvn3w5rwol4ofeikbibe545jiqsvmb44fc7u2vnm7kuiosj5hvu"
+            },
+            "size": 345613
+          },
+          "title": "Der Fall Pelicot: Unfassbar? Monströs?",
+          "uri": "https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstroes?ref=article"
+        }
+      },
+      "facets": [
+        {
+          "$type": "app.bsky.richtext.facet",
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#mention",
+              "did": "did:plc:bd6iprc7exhom67togimxom3"
+            }
+          ],
+          "index": {
+            "byteEnd": 92,
+            "byteStart": 70
+          }
+        }
+      ],
+      "langs": [
+        "de"
+      ],
+      "text": "\n \"Wir nennen die Taten unfassbar und die Täter monströs\",schreibt  @pickinese.bsky.social. Typen, die eigentlich durchschnittlich und gewöhnlich sind.\n\"In einer globalen Pandemie sexualisierter Gewalt gegen Frauen geben wir uns anhaltend begriffsstutzig.\""
+    },
+    "replyCount": 15,
+    "repostCount": 61,
+    "uri": "at://did:plc:lefzypleshs6us5ceycuwsyi/app.bsky.feed.post/3ldpssd5dp22s",
+    "viewer": {
+      "embeddingDisabled": false,
+      "repost": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.repost/3ldpudi5dnw2w",
+      "threadMuted": false
+    }
+  },
+  "reason": {
+    "$type": "app.bsky.feed.defs#reasonRepost",
+    "by": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "indexedAt": "2024-12-20T07:27:05.716Z"
+  }
+}

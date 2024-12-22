@@ -1,6 +1,7 @@
 use anyhow::Result;
-use bsky_sdk::api::app::bsky::embed::record::{ViewRecordEmbedsItem, ViewRecordRefs};
+use bsky_sdk::api::app::bsky::embed::record::{self, ViewRecordEmbedsItem, ViewRecordRefs};
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostViewEmbedRefs};
+use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
 use megalodon::entities::Status;
@@ -291,6 +292,14 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
         }
         text =
             String::from_utf8(bytes).expect("Invalid UTF-8 in Bluesky post after replacing links");
+    }
+    // Check if there is a link embed. Add the link to the text if it is not in
+    // there already.
+    if let Some(Union::Refs(RecordEmbedRefs::AppBskyEmbedExternalMain(embed))) = &bsky_record.embed
+    {
+        if !text.contains(&embed.external.uri) {
+            text = format!("{text}\n\n{}", embed.external.uri);
+        }
     }
     text
 }
@@ -691,6 +700,22 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 💬 mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
         assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
+    }
+
+    // Test that a link embed is attached as link if the URL is not in the post
+    // already.
+    #[test]
+    fn bsky_link_embed() {
+        let post = read_bsky_post_from_json("tests/bsky_link_embed.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(posts.toots[0].text, "♻️ leasusemichel.bsky.social: \n \"Wir nennen die Taten unfassbar und die Täter monströs\",schreibt  @pickinese.bsky.social. Typen, die eigentlich durchschnittlich und gewöhnlich sind.
+\"In einer globalen Pandemie sexualisierter Gewalt gegen Frauen geben wir uns anhaltend begriffsstutzig.\"
+
+https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstroes?ref=article");
     }
 
     // Read static bluesky post from test file.
