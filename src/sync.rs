@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bsky_sdk::api::app::bsky::embed::record::{self, ViewRecordEmbedsItem, ViewRecordRefs};
+use bsky_sdk::api::app::bsky::embed::record::{ViewRecordEmbedsItem, ViewRecordRefs};
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostViewEmbedRefs};
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
