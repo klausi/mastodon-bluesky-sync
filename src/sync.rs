@@ -229,9 +229,7 @@ fn unify_post_content(content: String) -> String {
     result = result.replace("http://", "");
     result = result.replace("https://", "");
 
-    // Escape direct user mentions with \@.
-    result = result.replace(" \\@", " @");
-    result.replace(" @\\", " @")
+    result
 }
 
 // Extend URLs and HTML entity decode &amp;.
@@ -399,9 +397,6 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
     replaced = replaced.replace("</p>", "");
 
     replaced = voca_rs::strip::strip_tags(&replaced);
-
-    // Escape direct user mentions with @\.
-    replaced = replaced.replace(" @", " @\\").replace(" @\\\\", " @\\");
 
     html_escape::decode_html_entities(&replaced).to_string()
 }
@@ -716,6 +711,18 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 \"In einer globalen Pandemie sexualisierter Gewalt gegen Frauen geben wir uns anhaltend begriffsstutzig.\"
 
 https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstroes?ref=article");
+    }
+
+    // Test that a user mention on mastodon is posted as is to Bluesky. We don't
+    // need to escape it.
+    #[test]
+    fn mastodon_user_mention() {
+        let post = read_mastodon_post_from_json("tests/mastodon_mention.json");
+        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "Finally watched #RebelRidge recommended by @mekkaokereke a while ago... Good stuff! 🎬"
+        );
     }
 
     // Read static bluesky post from test file.
