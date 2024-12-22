@@ -1,6 +1,6 @@
 [package]
 name = "mastodon-bluesky-sync"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Klaus Purer <klaus.purer@protonmail.ch>"]
 description = "Synchronizes posts from Mastodon to Bluesky and back."
 edition = "2021"
