@@ -77,7 +77,6 @@ Every run of the program only synchronizes the accounts once. Use Cron to run it
 
 Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
-- Build portable binaries on Github without OpenSSL dependencies
 - Add open graph link preview when posting to Bluesky
 - Parallel execution of fetching and syncing requests at the same time
 
