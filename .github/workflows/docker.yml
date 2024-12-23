@@ -16,6 +16,9 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     environment: Docker
+    concurrency:
+      group: docker
+      cancel-in-progress: true
     steps:
       -
         name: Checkout
