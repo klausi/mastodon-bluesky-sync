@@ -35,6 +35,7 @@ pub struct NewStatus {
     pub text: String,
     pub attachments: Vec<NewMedia>,
     pub video_stream: Option<String>,
+    pub original_post_url: String,
     // A list of further statuses that are new replies to this new status. Used
     // to sync threads.
     pub replies: Vec<NewStatus>,
@@ -119,6 +120,7 @@ pub fn determine_posts(
         updates.toots.push(NewStatus {
             text: decoded_post,
             attachments: bsky_get_attachments(post),
+            original_post_url: post.post.uri.clone(),
             video_stream: bsky_get_video_stream(post),
             replies: Vec::new(),
             in_reply_to_id: None,
@@ -166,6 +168,10 @@ pub fn determine_posts(
         updates.bsky_posts.push(NewStatus {
             text: post,
             attachments: toot_get_attachments(toot),
+            original_post_url: match &toot.reblog {
+                None => toot.url.clone().unwrap_or("".to_string()),
+                Some(reblog) => reblog.url.clone().unwrap_or("".to_string()),
+            },
             video_stream: None,
             replies: Vec::new(),
             in_reply_to_id: None,

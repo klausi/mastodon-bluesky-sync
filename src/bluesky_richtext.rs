@@ -38,8 +38,11 @@ fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
     let mut facets = Vec::new();
     // links
     {
-        let re = RE_URL.get_or_init(|| Regex::new(r"https?:\/\/[\S]+").expect("invalid regex"));
-        for capture in re.captures_iter(text) {
+        let url_regex =
+            RE_URL.get_or_init(|| Regex::new(r"https?:\/\/[\S]+").expect("invalid regex"));
+        let dot_regex =
+            RE_ENDING_PUNCTUATION.get_or_init(|| Regex::new(r"[.,;:!?]$").expect("invalid regex"));
+        for capture in url_regex.captures_iter(text) {
             let m = capture.get(0).expect("invalid capture");
             let mut uri = m.as_str().to_string();
             let mut index = ByteSliceData {
@@ -47,11 +50,7 @@ fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
                 byte_start: m.start(),
             };
             // strip ending puncuation
-            if (RE_ENDING_PUNCTUATION
-                .get_or_init(|| Regex::new(r"[.,;:!?]$").expect("invalid regex"))
-                .is_match(&uri))
-                || (uri.ends_with(')') && !uri.contains('('))
-            {
+            if (dot_regex.is_match(&uri)) || (uri.ends_with(')') && !uri.contains('(')) {
                 uri.pop();
                 index.byte_end -= 1;
             }
@@ -68,13 +67,13 @@ fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
               r"(?:^|\s)([#＃])([^\s\u00AD\u2060\u200A\u200B\u200C\u200D\u20e2]*[^\d\s\p{P}\u00AD\u2060\u200A\u200B\u200C\u200D\u20e2]+[^\s\u00AD\u2060\u200A\u200B\u200C\u200D\u20e2]*)?",
           )
           .expect("invalid regex")
-      });
+        });
+        let trail_regex =
+            RE_TRAILING_PUNCTUATION.get_or_init(|| Regex::new(r"\p{P}+$").expect("invalid regex"));
         for capture in re.captures_iter(text) {
             if let Some(tag) = capture.get(2) {
                 // strip ending punctuation and any spaces
-                let tag = RE_TRAILING_PUNCTUATION
-                    .get_or_init(|| Regex::new(r"\p{P}+$").expect("invalid regex"))
-                    .replace(tag.as_str(), "");
+                let tag = trail_regex.replace(tag.as_str(), "");
                 // look-around, including look-ahead and look-behind, is not supported in `regex`
                 if tag.starts_with('\u{fe0f}') {
                     continue;

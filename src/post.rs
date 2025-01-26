@@ -2,9 +2,12 @@ use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
 use crate::BskyAgent;
+use crate::NewMedia;
 use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
+use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
+use bsky_sdk::api::types::BlobRef;
 use image_compressor::compressor::Compressor;
 use image_compressor::Factor;
 use megalodon::megalodon::PostStatusOutput;
@@ -159,7 +162,7 @@ async fn send_single_post_to_mastodon(
 }
 
 // Download a Bluesky video stream, convert it with ffmpeg and upload it to
-// Mastodon.
+// Mastodon. Returns the media ID of the uploaded video.
 async fn mastodon_upload_video_stream(
     mastodon: &(dyn Megalodon + Send + Sync),
     stream_url: &str,
@@ -275,7 +278,7 @@ pub async fn post_to_bluesky(
 /// Sends the given new status to Bluesky.
 async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
     let mut images = Vec::new();
-    let mut video = None;
+    let mut embed = None;
     for attachment in &post.attachments {
         let response = reqwest::get(&attachment.attachment_url)
             .await
@@ -299,52 +302,29 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
         let bytes = response.bytes().await?;
 
         if content_type.starts_with("image/") {
-            let attachment_bytes =
-                resize_image_if_needed(&bytes, &attachment.attachment_url).await?;
-
-            let output = bsky_agent
-                .api
-                .com
-                .atproto
-                .repo
-                .upload_blob(attachment_bytes)
-                .await
-                .context(format!(
-                    "Failed uploading image to Bluesky {}",
-                    attachment.attachment_url
-                ))?;
             images.push(
                 bsky_sdk::api::app::bsky::embed::images::ImageData {
                     alt: attachment.alt_text.clone().unwrap_or_default(),
                     aspect_ratio: None,
-                    image: output.data.blob,
+                    image: bluesky_upload_image(&bytes, &attachment.attachment_url, bsky_agent)
+                        .await?,
                 }
                 .into(),
             );
         } else if content_type.starts_with("video/") {
-            let blob =
-                bluesky_upload_video(bsky_agent, &attachment.attachment_url, bytes.into()).await?;
-            video = Some(bsky_sdk::api::app::bsky::embed::video::MainData {
-                alt: attachment.alt_text.clone(),
-                aspect_ratio: None,
-                captions: None,
-                video: blob,
-            });
+            embed =
+                Some(bluesky_upload_or_embed_video(&bytes, attachment, post, bsky_agent).await?);
+            break;
         }
     }
-    // If there is a video then prefer that as embed, otherwise use images.
-    let embed = match video {
-        None => Some(bsky_sdk::api::types::Union::Refs(
+    // If there is no video then use the images.
+    if embed.is_none() {
+        embed = Some(bsky_sdk::api::types::Union::Refs(
             bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(
                 Box::new(bsky_sdk::api::app::bsky::embed::images::MainData { images }.into()),
             ),
-        )),
-        Some(video) => Some(bsky_sdk::api::types::Union::Refs(
-            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedVideoMain(Box::new(
-                video.into(),
-            )),
-        )),
-    };
+        ));
+    }
 
     let rt = get_rich_text(&post.text);
     let record = bsky_agent
@@ -370,7 +350,7 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
     let size = download_bytes.len();
     if size > 1_000_000 {
         let tmp_file = NamedTempFile::new()?;
-        let mut source_file = File::open(tmp_file.path()).await?;
+        let mut source_file = File::create(tmp_file.path()).await?;
         source_file.write_all(download_bytes).await?;
         // Try with 100% quality first, then decrease by 10% until we
         // get less than 1MB.
@@ -400,4 +380,125 @@ async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<
         }
     }
     Ok(download_bytes.to_vec())
+}
+
+// Before uploading a video to Bluesky, we need to check if it is less than 60
+// seconds. When it is longer we embed it as external post instead.
+async fn bluesky_upload_or_embed_video(
+    video_bytes: &[u8],
+    attachment: &NewMedia,
+    post: &NewStatus,
+    bsky_agent: &BskyAgent,
+) -> Result<bsky_sdk::api::types::Union<RecordEmbedRefs>> {
+    // Save video bytes to a temporary file and check if it is less than
+    // 60 seconds.
+    let tmp_file = NamedTempFile::new()?;
+    let mut video_file = File::create(tmp_file.path()).await?;
+    video_file.write_all(video_bytes).await?;
+    let ffprobe_output = Command::new("ffprobe")
+        .arg("-v")
+        .arg("error")
+        .arg("-show_entries")
+        .arg("format=duration")
+        .arg("-of")
+        .arg("default=noprint_wrappers=1:nokey=1")
+        .arg(tmp_file.path())
+        .output()
+        .context(format!(
+            "Failed to execute ffprobe for video {}",
+            attachment.attachment_url
+        ))?;
+    let duration: f64 = String::from_utf8_lossy(&ffprobe_output.stdout)
+        .trim()
+        .parse()
+        .context(format!(
+            "Failed to parse ffprobe output for video {}",
+            attachment.attachment_url
+        ))?;
+    // If the video is longer then embed the original toot as link
+    // embed.
+    if duration > 60. {
+        let response = reqwest::get(&post.original_post_url)
+            .await
+            .context(format!(
+                "Failed extracting link preview {}",
+                post.original_post_url
+            ))?;
+        let html_bytes = response.bytes().await?;
+        let html = webpage::HTML::from_string(
+            String::from_utf8_lossy(&html_bytes).to_string(),
+            Some(post.original_post_url.clone()),
+        )
+        .context(format!(
+            "Failed parsing HTML from {}",
+            post.original_post_url
+        ))?;
+        let thumb = match html.opengraph.images.first() {
+            Some(image) => {
+                let thumb_bytes = reqwest::get(&image.url)
+                    .await
+                    .context(format!("Failed downloading thumbnail {}", image.url))?
+                    .bytes()
+                    .await?;
+                Some(bluesky_upload_image(&thumb_bytes, &image.url, bsky_agent).await?)
+            }
+            None => None,
+        };
+        let external = bsky_sdk::api::app::bsky::embed::external::MainData {
+            external: bsky_sdk::api::app::bsky::embed::external::ExternalData {
+                description: html
+                    .opengraph
+                    .properties
+                    .get("description")
+                    .unwrap_or(&"".to_string())
+                    .to_string(),
+                thumb,
+                title: html
+                    .opengraph
+                    .properties
+                    .get("title")
+                    .unwrap_or(&"".to_string())
+                    .to_string(),
+                uri: post.original_post_url.clone(),
+            }
+            .into(),
+        };
+        Ok(bsky_sdk::api::types::Union::Refs(
+            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedExternalMain(
+                Box::new(external.into()),
+            ),
+        ))
+    } else {
+        let blob = bluesky_upload_video(bsky_agent, &attachment.attachment_url, video_bytes.into())
+            .await?;
+        let video = bsky_sdk::api::app::bsky::embed::video::MainData {
+            alt: attachment.alt_text.clone(),
+            aspect_ratio: None,
+            captions: None,
+            video: blob,
+        };
+        Ok(bsky_sdk::api::types::Union::Refs(
+            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedVideoMain(Box::new(
+                video.into(),
+            )),
+        ))
+    }
+}
+
+async fn bluesky_upload_image(
+    image_bytes: &[u8],
+    image_url: &str,
+    bsky_agent: &BskyAgent,
+) -> Result<BlobRef> {
+    let attachment_bytes = resize_image_if_needed(image_bytes, image_url).await?;
+
+    let output = bsky_agent
+        .api
+        .com
+        .atproto
+        .repo
+        .upload_blob(attachment_bytes)
+        .await
+        .context(format!("Failed uploading image to Bluesky {}", image_url))?;
+    Ok(output.data.blob)
 }
