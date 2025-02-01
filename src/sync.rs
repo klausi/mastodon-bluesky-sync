@@ -206,19 +206,20 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
     }
 
     // Strip markup from Mastodon toot and unify message for comparison.
-    let toot_text = unify_post_content(mastodon_toot_get_text(toot));
+    let toot_text = unify_post_content(&mastodon_toot_get_text(toot), toot);
     // Populate URLs in the post text.
-    let bsky_text = unify_post_content(bsky_post_unshorten_decode(bsky_post));
+    let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post), toot);
 
     if toot_text == bsky_text {
         return true;
     }
     // Mastodon allows up to 500 characters, so we might need to shorten the
     // toot. If this is a reblog/boost then take the URL to the original toot.
-    let shortened_toot = unify_post_content(match &toot.reblog {
+    let bsky_shortened = match &toot.reblog {
         None => bsky_post_shorten(&toot_text, &toot.url),
         Some(reblog) => bsky_post_shorten(&toot_text, &reblog.url),
-    });
+    };
+    let shortened_toot = unify_post_content(&bsky_shortened, toot);
 
     if shortened_toot == bsky_text {
         return true;
@@ -228,12 +229,19 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
 }
 
 // Unifies bluesky text or toot text to a common format.
-fn unify_post_content(content: String) -> String {
-    let mut result = content.to_lowercase();
-    // Remove http:// and https:// for comparing because Bluesky sometimes adds
-    // those randomly.
-    result = result.replace("http://", "");
-    result = result.replace("https://", "");
+fn unify_post_content(content: &str, toot: &Status) -> String {
+    // Remove links to the respective posts themselves, they could have been
+    // added because of a too long video.
+    let mut result = content.to_string();
+    if let Some(url) = &toot.url {
+        result = result.replace(url, "");
+    }
+    if let Some(reblog) = &toot.reblog {
+        if let Some(url) = &reblog.url {
+            result = result.replace(url, "");
+        }
+    }
+    result = result.to_lowercase().trim().to_string();
 
     result
 }
@@ -729,6 +737,21 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             posts.bsky_posts[0].text,
             "Finally watched #RebelRidge recommended by @mekkaokereke a while ago... Good stuff! 🎬"
         );
+    }
+
+    // Test that a long video post on mastodon is euqal to a video link embed on
+    // Bluesky.
+    #[test]
+    fn mastodon_long_video() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_long_video.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_sync_video.json");
+        let sync_options = SyncOptions {
+            sync_reblogs: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&vec![mastodon_post], &vec![bsky_post], &sync_options);
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
     }
 
     // Read static bluesky post from test file.
