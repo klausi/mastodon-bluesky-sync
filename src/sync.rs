@@ -731,6 +731,21 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         );
     }
 
+    // Test that a long video post on mastodon is euqal to a video link embed on
+    // Bluesky.
+    #[test]
+    fn mastodon_long_video() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_long_video.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_sync_video.json");
+        let sync_options = SyncOptions {
+            sync_reblogs: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&vec![mastodon_post], &vec![bsky_post], &sync_options);
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
+    }
+
     // Read static bluesky post from test file.
     fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
         let json = fs::read_to_string(file_name).unwrap();

@@ -1,0 +1,77 @@
+{
+  "post": {
+    "author": {
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        }
+      },
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua@jpeg",
+      "createdAt": "2023-12-24T10:54:53.475Z",
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "displayName": "klausi",
+      "handle": "klau.si",
+      "labels": [],
+      "viewer": {
+        "blockedBy": false,
+        "muted": false
+      }
+    },
+    "cid": "bafyreihfsiimyvfym4qsrpxlcri5hvvnltbt5kj7xlchz2iwjpql3ysbjy",
+    "embed": {
+      "$type": "app.bsky.embed.external#view",
+      "external": {
+        "description": "Attached: 1 video\n\nBy Led By Donkeys at Tesla Gigafactory Berlin-Brandenburg, Germany.\n-\nWhy Led By Donkeys Targeted Elon Musk with ‘Heil Tesla’ in Berlin: https://streetartutopia.com/2025/01/23/why-led-by-donkeys-targeted-elon-musk-with-heil-tesla-in-berlin/",
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreigphmj4bm7mptc6edill644fc2oictsmquc6hpjvwcpgqdrbolyq4@jpeg",
+        "title": "Street Art Utopia (@streetartutopia@mastodon.online)",
+        "uri": "https://mastodon.online/@streetartutopia/113877354369169766"
+      }
+    },
+    "indexedAt": "2025-01-26T16:37:02.431Z",
+    "labels": [],
+    "likeCount": 0,
+    "quoteCount": 0,
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2025-01-26T16:37:01.433229Z",
+      "embed": {
+        "$type": "app.bsky.embed.external",
+        "external": {
+          "description": "Attached: 1 video\n\nBy Led By Donkeys at Tesla Gigafactory Berlin-Brandenburg, Germany.\n-\nWhy Led By Donkeys Targeted Elon Musk with ‘Heil Tesla’ in Berlin: https://streetartutopia.com/2025/01/23/why-led-by-donkeys-targeted-elon-musk-with-heil-tesla-in-berlin/",
+          "thumb": {
+            "$type": "blob",
+            "mimeType": "image/png",
+            "ref": {
+              "$link": "bafkreigphmj4bm7mptc6edill644fc2oictsmquc6hpjvwcpgqdrbolyq4"
+            },
+            "size": 288206
+          },
+          "title": "Street Art Utopia (@streetartutopia@mastodon.online)",
+          "uri": "https://mastodon.online/@streetartutopia/113877354369169766"
+        }
+      },
+      "facets": [
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://streetartutopia.com/2025/01/23/why-led-by-donkeys-targeted-elon-musk-with-heil-tesla-in-berlin/"
+            }
+          ],
+          "index": {
+            "byteEnd": 268,
+            "byteStart": 165
+          }
+        }
+      ],
+      "text": "♻️ streetartutopia: By Led By Donkeys at Tesla Gigafactory Berlin-Brandenburg, Germany.\n-\nWhy Led By Donkeys Targeted Elon Musk with ‘Heil Tesla’ in Berlin: https://streetartutopia.com/2025/01/23/why-led-by-donkeys-targeted-elon-musk-with-heil-tesla-in-berlin/"
+    },
+    "replyCount": 0,
+    "repostCount": 0,
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3lgnucvo4kj2h",
+    "viewer": {
+      "embeddingDisabled": false,
+      "threadMuted": false
+    }
+  }
+}
