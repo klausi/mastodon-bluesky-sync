@@ -33,6 +33,8 @@ impl StatusUpdates {
 #[derive(Debug, Clone)]
 pub struct NewStatus {
     pub text: String,
+    // BCP47 language tag (e.g. "en", "de", "es").
+    pub language: String,
     pub attachments: Vec<NewMedia>,
     pub video_stream: Option<String>,
     pub original_post_url: String,
@@ -42,6 +44,23 @@ pub struct NewStatus {
     // This new status could be part of a thread, post it in reply to an
     // existing already synced status.
     pub in_reply_to_id: Option<String>,
+}
+
+// Provide a default NewStatus with sensible empty values and language preset
+// to "en" so callers that don't explicitly set a language still produce a
+// valid BCP47 tag required by some APIs.
+impl Default for NewStatus {
+    fn default() -> Self {
+        NewStatus {
+            text: String::new(),
+            language: "en".to_string(),
+            attachments: Vec::new(),
+            video_stream: None,
+            original_post_url: String::new(),
+            replies: Vec::new(),
+            in_reply_to_id: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -119,6 +138,7 @@ pub fn determine_posts(
 
         updates.toots.push(NewStatus {
             text: decoded_post,
+            language: bsky_get_language(post),
             attachments: bsky_get_attachments(post),
             original_post_url: post.post.uri.clone(),
             video_stream: bsky_get_video_stream(post),
@@ -168,6 +188,7 @@ pub fn determine_posts(
 
         updates.bsky_posts.push(NewStatus {
             text: post,
+            language: toot.language.clone().unwrap_or("en".to_string()),
             attachments: toot_get_attachments(toot),
             original_post_url: match &toot.reblog {
                 None => toot.url.clone().unwrap_or("".to_string()),
@@ -580,6 +601,19 @@ fn truncate_option_string(stringy: Option<String>, max_chars: usize) -> Option<S
         },
         None => None,
     }
+}
+
+// Extract first language tag from Bluesky post if available (record.langs is optional Vec<String>).
+fn bsky_get_language(bsky_post: &Object<FeedViewPostData>) -> String {
+    if let Ok(record) = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+        bsky_post.post.record.clone(),
+    ) && let Some(langs) = record.langs
+        && let Some(lang) = langs.first()
+    {
+        // Convert to &str via AsRef if implemented.
+        return lang.as_ref().to_string();
+    }
+    "en".to_string()
 }
 
 #[cfg(test)]

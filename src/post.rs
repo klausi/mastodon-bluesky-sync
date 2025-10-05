@@ -8,6 +8,7 @@ use anyhow::Result;
 use anyhow::bail;
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::types::BlobRef;
+use bsky_sdk::api::types::string::Language;
 use image_compressor::Factor;
 use image_compressor::compressor::Compressor;
 use megalodon::Megalodon;
@@ -22,6 +23,7 @@ use serde_json::to_string;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
+use std::vec;
 use tempfile::NamedTempFile;
 use tempfile::tempdir;
 use tokio::fs::File;
@@ -146,6 +148,7 @@ async fn send_single_post_to_mastodon(
                 media_ids: Some(media_ids),
                 sensitive: Some(false),
                 visibility: Some(StatusVisibility::Public),
+                language: Some(toot.language.clone()),
                 ..Default::default()
             }),
         )
@@ -327,6 +330,16 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
     }
 
     let rt = get_rich_text(&post.text);
+    let languages = match Language::new(post.language.clone()) {
+        Ok(lang) => Some(vec![lang]),
+        Err(e) => {
+            eprintln!(
+                "Warning: ignoring invalid language tag '{}' for post '{}': {e}",
+                post.language, post.text
+            );
+            None
+        }
+    };
     let record = bsky_agent
         .create_record(bsky_sdk::api::app::bsky::feed::post::RecordData {
             created_at: bsky_sdk::api::types::string::Datetime::now(),
@@ -334,7 +347,7 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
             entities: None,
             facets: rt.facets,
             labels: None,
-            langs: None,
+            langs: languages,
             reply: None,
             tags: None,
             text: rt.text,
