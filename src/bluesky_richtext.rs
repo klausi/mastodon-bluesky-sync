@@ -29,11 +29,6 @@ pub enum FacetFeaturesItem {
     Tag(Box<Tag>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MentionWithoutResolution {
-    pub handle: String,
-}
-
 fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
     let mut facets = Vec::new();
     // links
