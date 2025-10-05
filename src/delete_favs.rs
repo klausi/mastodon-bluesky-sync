@@ -1,6 +1,5 @@
 use anyhow::Context;
 use anyhow::Result;
-use anyhow::bail;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use bsky_sdk::api::types::TryFromUnknown;
 use bsky_sdk::api::types::string::AtIdentifier;
@@ -130,30 +129,44 @@ fn mastodon_parse_next_max_id(link_header: &str) -> Option<u64> {
     None
 }
 
-// Delete old favorites of this account that are older than 90 days.
+// Delete old favorites (likes) of this account that are older than 90 days.
 pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) -> Result<()> {
-    // In order not to fetch old posts every time keep them in a cache file
-    // keyed by their dates.
-    let cache_file = &cache_file("bluesky_fav_cache.json");
-    let dates = bluesky_fetch_fav_dates(bsky_agent, cache_file).await?;
+    // Cache like record URIs -> the like record's createdAt.
+    let cache_file = &cache_file("bluesky_like_cache.json");
+    let dates = bluesky_fetch_like_dates(bsky_agent, cache_file).await?;
     let three_months_ago = Utc::now() - Duration::days(90);
     let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
-    for (post_uri, date) in dates.iter().filter(|(_, date)| date < &&three_months_ago) {
-        println!("Deleting Bluesky favorite from {date}: {post_uri}");
-        // Do nothing on a dry run, just print what would be done.
+    for (like_uri, date) in dates.iter().filter(|(_, date)| date < &&three_months_ago) {
+        println!("Deleting Bluesky like (older than 90d) from {date}: {like_uri}");
         if dry_run {
             continue;
         }
-        let parts = post_uri
+        // Expected like URI format: at://<did>/app.bsky.feed.like/<rkey>
+        let parts = like_uri
             .strip_prefix("at://")
-            .with_context(|| format!("Invalid At URI prefix {post_uri} when deleting fav"))?
+            .with_context(|| format!("Invalid At URI prefix {like_uri} when deleting like"))?
             .splitn(3, '/')
             .collect::<Vec<_>>();
+        if parts.len() != 3 {
+            eprintln!("Skipping malformed like URI: {like_uri}");
+            continue;
+        }
+        let collection = parts[1];
+        if collection != "app.bsky.feed.like" {
+            // Legacy cache entry from old implementation referencing a post URI -> just drop it.
+            eprintln!("Skipping non-like cached entry: {like_uri}");
+            remove_date_from_cache(like_uri, cache_file).await?;
+            continue;
+        }
         let rkey = match parts[2].parse::<RecordKey>() {
             Ok(rkey) => rkey,
-            Err(e) => bail!("Invalid At URI rkey {post_uri} when deleting fav: {e}"),
+            Err(e) => {
+                eprintln!("Invalid like rkey in {like_uri}: {e}");
+                remove_date_from_cache(like_uri, cache_file).await?;
+                continue;
+            }
         };
-        bsky_agent
+        if let Err(e) = bsky_agent
             .api
             .com
             .atproto
@@ -168,86 +181,90 @@ pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) ->
                 }
                 .into(),
             )
-            .await?;
-        remove_date_from_cache(post_uri, cache_file).await?;
+            .await
+        {
+            // If the record is already gone treat it as success.
+            eprintln!("Error deleting like {like_uri}: {e:#?}");
+            // We still remove it from cache to avoid trying again forever; adjust if you prefer retry.
+        }
+        remove_date_from_cache(like_uri, cache_file).await?;
     }
     Ok(())
 }
 
-async fn bluesky_fetch_fav_dates(
+// Fetch (or extend cached) like record creation dates by listing our own like records.
+async fn bluesky_fetch_like_dates(
     bsky_agent: &BskyAgent,
     cache_file_name: &str,
 ) -> Result<DatePostList> {
+    // Load existing cache (may contain legacy post URIs which we'll ignore on delete).
     let mut dates = (load_dates_from_cache(cache_file_name).await?).unwrap_or_default();
-    // The Bluesky API does not provide a way to get all favorites of an actor
-    // efficiently. It returns a cursor to fetch the next page of potential
-    // favorites, but will return lots of empty pages. We stop after 100
-    // requests and save the cursor for the next run.
-    let cursor_file = &cache_file("bluesky_fav_cursor_cache.json");
-    let mut cursor = if let Ok(json) = fs::read_to_string(cursor_file).await {
-        match serde_json::from_str(&json)? {
-            Some(cursor) => Some(cursor),
-            None => {
-                if !dates.is_empty() {
-                    // Return early: the stored cursor is None which means
-                    // all old favs have been fetched.
-                    return Ok(dates);
-                }
-                None
-            }
-        }
+
+    // Cursor cache for incremental listing of like records.
+    let cursor_file = &cache_file("bluesky_like_cursor_cache.json");
+    let mut cursor: Option<String> = if let Ok(json) = fs::read_to_string(cursor_file).await {
+        serde_json::from_str(&json).unwrap_or(None)
     } else {
         None
     };
 
+    if !dates.is_empty() && cursor.is_none() {
+        // We already have a full cache and don't need to fetch likes.
+        return Ok(dates);
+    }
+
     let actor: AtIdentifier = bsky_agent.get_session().await.unwrap().did.clone().into();
-    let mut counter = 0;
+    let mut counter = 0usize;
 
     loop {
         println!(
-            "Fetching Bluesky favorites older than {}",
-            cursor.as_ref().unwrap_or(&"now".to_string())
+            "Listing Bluesky like records starting from {}",
+            cursor.as_ref().map(|c| c.as_str()).unwrap_or("beginning")
         );
-        // Try to fetch as many posts as possible at once, Bluesky API docs say
-        // that is 100.
-        let feed = match bsky_agent
+        // Use list_records on our repo for the like collection.
+        let response = match bsky_agent
             .api
-            .app
-            .bsky
-            .feed
-            .get_actor_likes(
-                bsky_sdk::api::app::bsky::feed::get_actor_likes::ParametersData {
-                    actor: actor.clone(),
+            .com
+            .atproto
+            .repo
+            .list_records(
+                bsky_sdk::api::com::atproto::repo::list_records::ParametersData {
+                    repo: actor.clone(),
+                    collection: Nsid::new("app.bsky.feed.like".to_string()).unwrap(),
                     cursor: cursor.clone(),
                     limit: Some(LimitedNonZeroU8::try_from(100).unwrap()),
+                    reverse: None,
                 }
                 .into(),
             )
             .await
         {
-            Ok(posts) => posts,
+            Ok(r) => r,
             Err(e) => {
-                eprintln!("Error fetching favorites from Bluesky: {e:#?}");
-                break;
+                eprintln!("Error listing like records: {e:#?}");
+                break; // Keep what we have so far.
             }
         };
 
-        for post in &feed.feed {
-            let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
-                post.post.record.clone(),
+        for rec in &response.records {
+            // Parse like record value to extract its createdAt (time we liked the post).
+            let like_record = bsky_sdk::api::app::bsky::feed::like::RecordData::try_from_unknown(
+                rec.value.clone(),
             )
-            .expect("Failed to parse Bluesky post record for favorites");
-            dates.insert(post.post.uri.clone(), (*record.created_at.as_ref()).into());
+            .expect("Failed to parse like record");
+            dates.insert(rec.uri.clone(), (*like_record.created_at.as_ref()).into());
         }
-        if feed.cursor.is_none() || feed.cursor == cursor {
-            // The cursor did not change, we are at the beginning of the feed.
-            // Reset the cursor and stop.
+
+        let new_cursor = response.cursor.clone();
+        if new_cursor.is_none() || new_cursor == cursor {
+            // Completed traversal.
             cursor = None;
             break;
         }
-        cursor = feed.cursor.clone();
+        cursor = new_cursor;
         counter += 1;
         if counter >= 100 {
+            // Throttle to avoid huge traversals in one run.
             break;
         }
     }
