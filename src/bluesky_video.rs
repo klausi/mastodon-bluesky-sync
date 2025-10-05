@@ -1,13 +1,13 @@
 use crate::BskyAgent;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use atrium_xrpc_client::reqwest::ReqwestClient;
 use bsky_sdk::api::{
     client::AtpServiceClient,
-    types::{string::Did, BlobRef},
+    types::{BlobRef, string::Did},
     xrpc::{
-        http::{uri::Builder, Request, Response},
-        types::AuthorizationToken,
         HttpClient, XrpcClient,
+        http::{Request, Response, uri::Builder},
+        types::AuthorizationToken,
     },
 };
 use serde::Serialize;

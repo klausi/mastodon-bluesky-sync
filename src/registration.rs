@@ -48,7 +48,9 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
 
 pub async fn bluesky_register() -> Result<BlueskyConfig> {
     let email = console_input("Enter your Bluesky email address")?;
-    let app_password = console_input("Generate a Bluesky App password at https://bsky.app/settings/app-passwords and paste it here")?;
+    let app_password = console_input(
+        "Generate a Bluesky App password at https://bsky.app/settings/app-passwords and paste it here",
+    )?;
     let _agent = get_new_bluesky_agent(&email, &app_password).await?;
     // Bluesky access tokens do not work for longer periods of time, so we need
     // to store an app password here.

@@ -1,22 +1,22 @@
-use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
+use anyhow::bail;
+use bsky_sdk::api::types::LimitedNonZeroU8;
+use bsky_sdk::api::types::TryFromUnknown;
 use bsky_sdk::api::types::string::AtIdentifier;
 use bsky_sdk::api::types::string::Nsid;
 use bsky_sdk::api::types::string::RecordKey;
-use bsky_sdk::api::types::LimitedNonZeroU8;
-use bsky_sdk::api::types::TryFromUnknown;
-use chrono::prelude::*;
 use chrono::Duration;
+use chrono::prelude::*;
+use megalodon::Megalodon;
 use megalodon::error::Kind;
 use megalodon::megalodon::GetFavouritesInputOptions;
-use megalodon::Megalodon;
 use std::collections::BTreeMap;
 use tokio::fs;
 
+use crate::BskyAgent;
 use crate::cache_file;
 use crate::config::*;
-use crate::BskyAgent;
 
 // Delete old favourites of this account that are older than 90 days.
 pub async fn mastodon_delete_older_favs(
@@ -52,8 +52,8 @@ pub async fn mastodon_delete_older_favs(
                                 // Mastodon API rate limit exceeded, stopping fav deletion for now.
                                 429 => {
                                     println!(
-                                    "Mastodon API rate limit exceeded, stopping fav deletion for now."
-                                );
+                                        "Mastodon API rate limit exceeded, stopping fav deletion for now."
+                                    );
                                     return Ok(());
                                 }
                                 _ => return Err(error.into()),

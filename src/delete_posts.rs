@@ -1,16 +1,16 @@
 use anyhow::Result;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use bsky_sdk::api::types::TryFromUnknown;
-use chrono::prelude::*;
 use chrono::Duration;
+use chrono::prelude::*;
 use std::collections::BTreeMap;
 
+use crate::BskyAgent;
+use crate::DatePostList;
 use crate::cache_file;
 use crate::load_dates_from_cache;
 use crate::remove_date_from_cache;
 use crate::save_dates_to_cache;
-use crate::BskyAgent;
-use crate::DatePostList;
 
 // Delete old posts of this account that are older than 90 days.
 pub async fn bluesky_delete_older_posts(bsky_agent: &BskyAgent, dry_run: bool) -> Result<()> {

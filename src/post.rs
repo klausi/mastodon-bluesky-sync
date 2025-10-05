@@ -1,18 +1,18 @@
+use crate::BskyAgent;
+use crate::NewMedia;
 use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
-use crate::BskyAgent;
-use crate::NewMedia;
-use anyhow::bail;
 use anyhow::Context;
 use anyhow::Result;
+use anyhow::bail;
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::types::BlobRef;
-use image_compressor::compressor::Compressor;
 use image_compressor::Factor;
+use image_compressor::compressor::Compressor;
+use megalodon::Megalodon;
 use megalodon::megalodon::PostStatusOutput;
 use megalodon::megalodon::UploadMediaInputOptions;
-use megalodon::Megalodon;
 use megalodon::{
     entities::{self, StatusVisibility},
     error,
@@ -22,10 +22,10 @@ use serde_json::to_string;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
-use tempfile::tempdir;
 use tempfile::NamedTempFile;
-use tokio::fs::metadata;
+use tempfile::tempdir;
 use tokio::fs::File;
+use tokio::fs::metadata;
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 use tokio::time::sleep;

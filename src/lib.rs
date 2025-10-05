@@ -1,8 +1,8 @@
 use anyhow::Context;
 use anyhow::Result;
 use atrium_xrpc_client::reqwest::ReqwestClient;
+use bsky_sdk::agent::BskyAtpAgentBuilder;
 use bsky_sdk::agent::config::FileStore;
-use bsky_sdk::agent::BskyAgentBuilder;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use delete_posts::bluesky_delete_older_posts;
 use log::debug;
@@ -101,7 +101,7 @@ pub async fn run(args: Args) -> Result<()> {
             .await
         {
             Ok(bsky_config) => {
-                match BskyAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
+                match BskyAtpAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
                     .config(bsky_config)
                     .build()
                     .await
@@ -239,7 +239,7 @@ fn cache_file(name: &str) -> String {
 }
 
 async fn get_new_bluesky_agent(email: &str, app_password: &str) -> Result<BskyAgent> {
-    let agent = BskyAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
+    let agent = BskyAtpAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
         .build()
         .await?;
     let _session = agent.login(email, app_password).await?;

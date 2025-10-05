@@ -479,7 +479,7 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
     let mut links = Vec::new();
 
     // Collect images directly on the post.
-    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(ref image_box))) =
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(image_box))) =
         &bsky_post.post.embed
     {
         let images = &image_box.images;
@@ -525,7 +525,7 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
 // Extract the video stream URL from a Bluesky post.
 fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
     // Check video directly on the post.
-    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(ref video_box))) =
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(video_box))) =
         &bsky_post.post.embed
     {
         return Some(video_box.playlist.clone());
@@ -594,7 +594,7 @@ pub mod tests {
     use megalodon::entities::Status;
     use std::fs;
 
-    use crate::{determine_posts, sync::toot_shorten, SyncOptions};
+    use crate::{SyncOptions, determine_posts, sync::toot_shorten};
 
     // Test that embedded quote posts are included correctly.
     #[test]
@@ -674,7 +674,10 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].text,
             "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
         );
-        assert_eq!(posts.toots[0].attachments[0].attachment_url, "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg");
+        assert_eq!(
+            posts.toots[0].attachments[0].attachment_url,
+            "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg"
+        );
     }
 
     // Test that a video attachment is extracted correctly.
@@ -690,7 +693,10 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].text,
             "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
-        assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
+        assert_eq!(
+            posts.toots[0].video_stream.clone().unwrap(),
+            "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
+        );
     }
 
     // Test that a video attached to a quote post is extracted correctly.
@@ -708,7 +714,10 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 
 💬 mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
-        assert_eq!(posts.toots[0].video_stream.clone().unwrap(), "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8");
+        assert_eq!(
+            posts.toots[0].video_stream.clone().unwrap(),
+            "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
+        );
     }
 
     // Test that a link embed is attached as link if the URL is not in the post
