@@ -51,27 +51,23 @@ impl HttpClient for VideoClient {
     ) -> Result<Response<Vec<u8>>, Box<dyn std::error::Error + Send + Sync + 'static>> {
         let is_upload_video = request.uri().path() == UPLOAD_VIDEO_PATH;
         // Hack: Append query parameters
-        if is_upload_video {
-            if let Some(params) = &self.params {
-                *request.uri_mut() = Builder::from(request.uri().clone())
-                    .path_and_query(format!(
-                        "{UPLOAD_VIDEO_PATH}?{}",
-                        serde_html_form::to_string(params)?
-                    ))
-                    .build()?;
-            }
+        if is_upload_video && let Some(params) = &self.params {
+            *request.uri_mut() = Builder::from(request.uri().clone())
+                .path_and_query(format!(
+                    "{UPLOAD_VIDEO_PATH}?{}",
+                    serde_html_form::to_string(params)?
+                ))
+                .build()?;
         }
         let mut response = self.inner.send_http(request).await;
         // Hack: Formatting an incorrect response body
-        if is_upload_video {
-            if let Ok(res) = response.as_mut() {
-                *res.body_mut() = [
-                    b"{\"jobStatus\":".to_vec(),
-                    res.body().to_vec(),
-                    b"}".to_vec(),
-                ]
-                .concat();
-            }
+        if is_upload_video && let Ok(res) = response.as_mut() {
+            *res.body_mut() = [
+                b"{\"jobStatus\":".to_vec(),
+                res.body().to_vec(),
+                b"}".to_vec(),
+            ]
+            .concat();
         }
         response
     }
@@ -127,7 +123,7 @@ pub async fn bluesky_upload_video(
         let filename = video_url
             .path_segments()
             .unwrap()
-            .last()
+            .next_back()
             .filter(|&s| !s.is_empty())
             .map(|s| s.to_string())
             .unwrap_or("video.mp4".to_string());

@@ -84,13 +84,12 @@ pub fn determine_posts(
             continue;
         }
 
-        if !options.sync_reposts {
-            if let Some(_reskeet) = &post.post.viewer {
-                if let Some(_repost) = &_reskeet.repost {
-                    // Skip reskeets when sync_reposts is disabled
-                    continue;
-                }
-            }
+        if !options.sync_reposts
+            && let Some(_reskeet) = &post.post.viewer
+            && let Some(_repost) = &_reskeet.repost
+        {
+            // Skip reskeets when sync_reposts is disabled
+            continue;
         }
 
         for toot in mastodon_statuses {
@@ -110,11 +109,12 @@ pub fn determine_posts(
         let decoded_post = bsky_post_unshorten_decode(post);
 
         // Check if hashtag filtering is enabled and if the post matches.
-        if let Some(sync_hashtag) = &options.sync_hashtag_bluesky {
-            if !sync_hashtag.is_empty() && !decoded_post.contains(sync_hashtag) {
-                // Skip if a sync hashtag is set and the string doesn't match.
-                continue;
-            }
+        if let Some(sync_hashtag) = &options.sync_hashtag_bluesky
+            && !sync_hashtag.is_empty()
+            && !decoded_post.contains(sync_hashtag)
+        {
+            // Skip if a sync hashtag is set and the string doesn't match.
+            continue;
         }
 
         updates.toots.push(NewStatus {
@@ -158,11 +158,12 @@ pub fn determine_posts(
 
         // The toot is not on Bluesky yet, check if we should post it.
         // Check if hashtag filtering is enabled and if the post matches.
-        if let Some(sync_hashtag) = &options.sync_hashtag_mastodon {
-            if !sync_hashtag.is_empty() && !fulltext.contains(sync_hashtag) {
-                // Skip if a sync hashtag is set and the string doesn't match.
-                continue;
-            }
+        if let Some(sync_hashtag) = &options.sync_hashtag_mastodon
+            && !sync_hashtag.is_empty()
+            && !fulltext.contains(sync_hashtag)
+        {
+            // Skip if a sync hashtag is set and the string doesn't match.
+            continue;
         }
 
         updates.bsky_posts.push(NewStatus {
@@ -236,10 +237,10 @@ fn unify_post_content(content: &str, toot: &Status) -> String {
     if let Some(url) = &toot.url {
         result = result.replace(url, "");
     }
-    if let Some(reblog) = &toot.reblog {
-        if let Some(url) = &reblog.url {
-            result = result.replace(url, "");
-        }
+    if let Some(reblog) = &toot.reblog
+        && let Some(url) = &reblog.url
+    {
+        result = result.replace(url, "");
     }
     result = result.to_lowercase().trim().to_string();
 
@@ -256,28 +257,26 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
     let mut text = bsky_record_get_text(record);
 
     // Add prefix for reposts.
-    if let Some(viewer) = &bsky_post.post.viewer {
-        if let Some(_repost) = &viewer.repost {
-            text = format!("♻️ {}: {}", bsky_post.post.author.handle.as_str(), text);
-        }
+    if let Some(viewer) = &bsky_post.post.viewer
+        && let Some(_repost) = &viewer.repost
+    {
+        text = format!("♻️ {}: {}", bsky_post.post.author.handle.as_str(), text);
     }
 
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
         &bsky_post.post.embed
+        && let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record
     {
-        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
-            let quote_record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
-                quote.value.clone(),
-            )
-            .expect("Failed to parse Bluesky quote post record");
-            let quote_text = bsky_record_get_text(quote_record);
-            text = format!(
-                "{text}\n\n💬 {}: {quote_text}",
-                quote.author.handle.as_str()
-            )
-            .trim()
-            .to_string();
-        }
+        let quote_record =
+            bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(quote.value.clone())
+                .expect("Failed to parse Bluesky quote post record");
+        let quote_text = bsky_record_get_text(quote_record);
+        text = format!(
+            "{text}\n\n💬 {}: {quote_text}",
+            quote.author.handle.as_str()
+        )
+        .trim()
+        .to_string();
     }
     toot_shorten(&text, &bsky_post.post)
 }
@@ -308,10 +307,9 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
     // Check if there is a link embed. Add the link to the text if it is not in
     // there already.
     if let Some(Union::Refs(RecordEmbedRefs::AppBskyEmbedExternalMain(embed))) = &bsky_record.embed
+        && !text.contains(&embed.external.uri)
     {
-        if !text.contains(&embed.external.uri) {
-            text = format!("{text}\n\n{}", embed.external.uri);
-        }
+        text = format!("{text}\n\n{}", embed.external.uri);
     }
     text
 }
@@ -497,23 +495,22 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
     // Collect images from a quote post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
         &bsky_post.post.embed
+        && let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record
     {
-        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
-            for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
-                if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedImagesView(image_box)) =
-                    quote_embed
-                {
-                    let images = &image_box.images;
-                    for image in images {
-                        links.push(NewMedia {
-                            attachment_url: image.fullsize.clone(),
-                            alt_text: if image.alt.is_empty() {
-                                None
-                            } else {
-                                Some(image.alt.clone())
-                            },
-                        });
-                    }
+        for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
+            if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedImagesView(image_box)) =
+                quote_embed
+            {
+                let images = &image_box.images;
+                for image in images {
+                    links.push(NewMedia {
+                        attachment_url: image.fullsize.clone(),
+                        alt_text: if image.alt.is_empty() {
+                            None
+                        } else {
+                            Some(image.alt.clone())
+                        },
+                    });
                 }
             }
         }
@@ -533,14 +530,12 @@ fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String>
     // Check video on a quote post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
         &bsky_post.post.embed
+        && let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record
     {
-        if let Union::Refs(ViewRecordRefs::ViewRecord(quote)) = &embed_record.record {
-            for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
-                if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedVideoView(video_box)) =
-                    quote_embed
-                {
-                    return Some(video_box.playlist.clone());
-                }
+        for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
+            if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedVideoView(video_box)) = quote_embed
+            {
+                return Some(video_box.playlist.clone());
             }
         }
     }
@@ -553,10 +548,10 @@ pub fn toot_get_attachments(toot: &Status) -> Vec<NewMedia> {
     let mut attachments = &toot.media_attachments;
     // If there are no attachments check if this is a boost and if there might
     // be some attachments there.
-    if attachments.is_empty() {
-        if let Some(boost) = &toot.reblog {
-            attachments = &boost.media_attachments;
-        }
+    if attachments.is_empty()
+        && let Some(boost) = &toot.reblog
+    {
+        attachments = &boost.media_attachments;
     }
     for attachment in attachments {
         links.push(NewMedia {

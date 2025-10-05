@@ -84,11 +84,11 @@ async fn bluesky_fetch_post_dates(
             .expect("Failed to parse Bluesky post record");
 
             // Check if this post is a repost.
-            if let Some(viewer) = &post.post.viewer {
-                if let Some(repost) = &viewer.repost {
-                    dates.insert(repost.to_string(), (*record.created_at.as_ref()).into());
-                    continue;
-                }
+            if let Some(viewer) = &post.post.viewer
+                && let Some(repost) = &viewer.repost
+            {
+                dates.insert(repost.to_string(), (*record.created_at.as_ref()).into());
+                continue;
             }
             dates.insert(post.post.uri.clone(), (*record.created_at.as_ref()).into());
         }

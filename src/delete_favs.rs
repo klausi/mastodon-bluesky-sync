@@ -39,25 +39,24 @@ pub async fn mastodon_delete_older_favs(
                 remove_date_from_cache(toot_id, cache_file).await?;
             }
             Err(error) => {
-                if let megalodon::error::Error::OwnError(ref own_error) = error {
-                    if let Kind::HTTPStatusError = own_error.kind {
-                        if let Some(status) = own_error.status {
-                            match status {
-                                // The status could have been deleted already by the user, ignore API
-                                // errors in that case.
-                                404 => {
-                                    remove_date_from_cache(toot_id, cache_file).await?;
-                                }
-                                // Mastodon API rate limit exceeded, stopping fav deletion for now.
-                                429 => {
-                                    println!(
-                                        "Mastodon API rate limit exceeded, stopping fav deletion for now."
-                                    );
-                                    return Ok(());
-                                }
-                                _ => return Err(error.into()),
-                            }
+                if let megalodon::error::Error::OwnError(ref own_error) = error
+                    && let Kind::HTTPStatusError = own_error.kind
+                    && let Some(status) = own_error.status
+                {
+                    match status {
+                        // The status could have been deleted already by the user, ignore API
+                        // errors in that case.
+                        404 => {
+                            remove_date_from_cache(toot_id, cache_file).await?;
                         }
+                        // Mastodon API rate limit exceeded, stopping fav deletion for now.
+                        429 => {
+                            println!(
+                                "Mastodon API rate limit exceeded, stopping fav deletion for now."
+                            );
+                            return Ok(());
+                        }
+                        _ => return Err(error.into()),
                     }
                 }
             }
@@ -119,12 +118,11 @@ async fn mastodon_fetch_fav_dates(
 // Todo: Megalodon should provide API methods for pagination.
 fn mastodon_parse_next_max_id(link_header: &str) -> Option<u64> {
     let re = regex::Regex::new(r#"max_id=(\d+)"#).unwrap();
-    if let Some(captures) = re.captures(link_header) {
-        if let Some(max_id) = captures.get(1) {
-            if let Ok(max_id) = max_id.as_str().parse::<u64>() {
-                return Some(max_id);
-            }
-        }
+    if let Some(captures) = re.captures(link_header)
+        && let Some(max_id) = captures.get(1)
+        && let Ok(max_id) = max_id.as_str().parse::<u64>()
+    {
+        return Some(max_id);
     }
     None
 }
@@ -175,7 +173,7 @@ pub async fn bluesky_delete_older_favs(bsky_agent: &BskyAgent, dry_run: bool) ->
                 bsky_sdk::api::com::atproto::repo::delete_record::InputData {
                     collection: Nsid::new("app.bsky.feed.like".to_string()).unwrap(),
                     repo: actor.clone(),
-                    rkey: rkey.into(),
+                    rkey,
                     swap_commit: None,
                     swap_record: None,
                 }
@@ -219,7 +217,7 @@ async fn bluesky_fetch_like_dates(
     loop {
         println!(
             "Listing Bluesky like records starting from {}",
-            cursor.as_ref().map(|c| c.as_str()).unwrap_or("beginning")
+            cursor.as_deref().unwrap_or("beginning")
         );
         // Use list_records on our repo for the like collection.
         let response = match bsky_agent

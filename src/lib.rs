@@ -174,11 +174,11 @@ pub async fn run(args: Args) -> Result<()> {
     posts = filter_posted_before(posts, &post_cache)?;
 
     for toot in posts.toots {
-        if !args.skip_existing_posts {
-            if let Err(e) = post_to_mastodon(&*mastodon, &toot, args.dry_run).await {
-                eprintln!("Error posting toot to Mastodon: {e:#?}");
-                continue;
-            }
+        if !args.skip_existing_posts
+            && let Err(e) = post_to_mastodon(&*mastodon, &toot, args.dry_run).await
+        {
+            eprintln!("Error posting toot to Mastodon: {e:#?}");
+            continue;
         }
         // Posting API call was successful: store text in cache to prevent any
         // double posting next time.
@@ -189,11 +189,11 @@ pub async fn run(args: Args) -> Result<()> {
     }
 
     for post in posts.bsky_posts {
-        if !args.skip_existing_posts {
-            if let Err(e) = post_to_bluesky(&bsky_agent, &post, args.dry_run).await {
-                eprintln!("Error posting to Bluesky: {e:#?}");
-                continue;
-            }
+        if !args.skip_existing_posts
+            && let Err(e) = post_to_bluesky(&bsky_agent, &post, args.dry_run).await
+        {
+            eprintln!("Error posting to Bluesky: {e:#?}");
+            continue;
         }
         // Posting API call was successful: store text in cache to prevent any
         // double posting next time.

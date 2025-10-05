@@ -37,4 +37,5 @@ jobs:
           cargo check
           cargo test
           cargo fmt --all -- --check
-          cargo clippy
+          # Fail the build on any Clippy warning or error
+          cargo clippy -- -D warnings
