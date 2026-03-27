@@ -148,23 +148,35 @@ pub fn get_rich_text(text: &str) -> RichText {
                         0usize
                     };
                     let display_uri = &uri[protocol_len..];
+                    let www_len = if display_uri.starts_with("www.") {
+                        4usize
+                    } else {
+                        0usize
+                    };
+                    let display_uri = &display_uri[www_len..];
                     let display_uri_length = display_uri.graphemes(true).count();
                     // If the display link is longer than 23 characters, shorten it.
                     if display_uri_length > 23 {
                         let link_part = display_uri.chars().take(22).collect::<String>();
-                        // Replace the link with a shortened version (no protocol).
-                        richtext
-                            .insert(facet.index.byte_start + protocol_len + link_part.len(), "…");
+                        // Replace the link with a shortened version (no protocol, no www).
+                        richtext.insert(
+                            facet.index.byte_start + protocol_len + www_len + link_part.len(),
+                            "…",
+                        );
                         richtext.delete(
-                            facet.index.byte_start + protocol_len + link_part.len() + "…".len(),
+                            facet.index.byte_start
+                                + protocol_len
+                                + www_len
+                                + link_part.len()
+                                + "…".len(),
                             facet.index.byte_end + "…".len(),
                         );
                     }
-                    // Delete the protocol prefix.
+                    // Delete the protocol prefix and www.
                     if protocol_len > 0 {
                         richtext.delete(
                             facet.index.byte_start,
-                            facet.index.byte_start + protocol_len,
+                            facet.index.byte_start + protocol_len + www_len,
                         );
                     }
                 }
@@ -182,6 +194,17 @@ pub mod tests {
     #[test]
     fn test_shorten_url() {
         let text = "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let richtext = get_rich_text(text);
+        assert_eq!(
+            richtext.text,
+            "Test toot with long link example.com/aaaaaaaaaa…"
+        );
+    }
+
+    // Test www removal.
+    #[test]
+    fn test_shorten_url_www() {
+        let text = "Test toot with long link http://www.example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         let richtext = get_rich_text(text);
         assert_eq!(
             richtext.text,
