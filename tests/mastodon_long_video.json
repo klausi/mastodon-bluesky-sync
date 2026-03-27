@@ -166,7 +166,8 @@
     "language": "en",
     "pinned": null,
     "emoji_reactions": null,
-    "quote": false,
+    "quote": null,
+    "quote_approval": {"automatic": [], "manual": [], "current_user": "unknown"},
     "bookmarked": false
   },
   "content": "",
@@ -192,6 +193,7 @@
   "language": null,
   "pinned": null,
   "emoji_reactions": null,
-  "quote": false,
+  "quote": null,
+  "quote_approval": {"automatic": [], "manual": [], "current_user": "unknown"},
   "bookmarked": false
 }
