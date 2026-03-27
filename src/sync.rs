@@ -792,6 +792,17 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert!(posts.bsky_posts.is_empty());
     }
 
+    // Test that URLs get shortened for bluesky.
+    #[test]
+    fn mastodon_url_encoded() {
+        let post = read_mastodon_post_from_json("tests/mastodon_url_encoded.json");
+        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "RE: https://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0\n\nTRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at… https://mastodon.social/@testuser/116299190222149167"
+        );
+    }
+
     // Read static bluesky post from test file.
     fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
         let json = fs::read_to_string(file_name).unwrap();

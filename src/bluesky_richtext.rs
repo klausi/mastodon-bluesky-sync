@@ -128,13 +128,9 @@ fn detect_facets(text: &str) -> RichText {
     }
 }
 
-// Shorten links if necessary so that the text stays below the 300 character
-// limit on Bluesky.
+// Shorten links so that the text stays compact and links look good on Bluesky.
 pub fn get_rich_text(text: &str) -> RichText {
     let mut richtext = detect_facets(text);
-    if richtext.grapheme_len() <= 300 {
-        return richtext;
-    }
     if let Some(ref facets) = richtext.facets {
         // Start replacing links from the end of the text.
         let mut reversed_facets = facets.clone();
@@ -142,30 +138,34 @@ pub fn get_rich_text(text: &str) -> RichText {
         for facet in reversed_facets {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
-                    // If the link is longer than 23 characters, shorten it.
                     let uri = &link.uri;
-                    let uri_length = uri.graphemes(true).count();
-                    if uri_length > 23 {
-                        let text_length = richtext.grapheme_len();
-                        let overflow = text_length - uri_length + 23;
-                        let link_part = if overflow > 300 {
-                            // Text will still be too long, shorten to the minimum of 23 characters.
-                            uri.chars().take(22).collect::<String>()
-                        } else {
-                            uri.chars()
-                                .take(300 - (text_length - uri_length) - 1)
-                                .collect::<String>()
-                        };
-                        // Replace the link with a shortened version.
-                        richtext.insert(facet.index.byte_start + link_part.len(), "…");
+                    // Strip protocol prefix for display.
+                    let protocol_len = if uri.starts_with("https://") {
+                        8usize
+                    } else if uri.starts_with("http://") {
+                        7usize
+                    } else {
+                        0usize
+                    };
+                    let display_uri = &uri[protocol_len..];
+                    let display_uri_length = display_uri.graphemes(true).count();
+                    // If the display link is longer than 23 characters, shorten it.
+                    if display_uri_length > 23 {
+                        let link_part = display_uri.chars().take(22).collect::<String>();
+                        // Replace the link with a shortened version (no protocol).
+                        richtext
+                            .insert(facet.index.byte_start + protocol_len + link_part.len(), "…");
                         richtext.delete(
-                            facet.index.byte_start + link_part.len() + "…".len(),
+                            facet.index.byte_start + protocol_len + link_part.len() + "…".len(),
                             facet.index.byte_end + "…".len(),
                         );
-                        // If the text is short enough we can stop already.
-                        if richtext.grapheme_len() <= 300 {
-                            return richtext;
-                        }
+                    }
+                    // Delete the protocol prefix.
+                    if protocol_len > 0 {
+                        richtext.delete(
+                            facet.index.byte_start,
+                            facet.index.byte_start + protocol_len,
+                        );
                     }
                 }
             }
@@ -178,17 +178,6 @@ pub fn get_rich_text(text: &str) -> RichText {
 pub mod tests {
     use crate::bluesky_richtext::get_rich_text;
 
-    // Test that short text should stay unchanged.
-    #[test]
-    fn test_short_text_unchanged() {
-        let text = "Test toot with a link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        let richtext = get_rich_text(text);
-        assert_eq!(
-            richtext.text,
-            "Test toot with a link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        );
-    }
-
     // Test URL shortening.
     #[test]
     fn test_shorten_url() {
@@ -196,7 +185,7 @@ pub mod tests {
         let richtext = get_rich_text(text);
         assert_eq!(
             richtext.text,
-            "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa…"
+            "Test toot with long link example.com/aaaaaaaaaa…"
         );
     }
 
@@ -207,7 +196,7 @@ pub mod tests {
         let richtext = get_rich_text(text);
         assert_eq!(
             richtext.text,
-            "♻️ bensaufley.com: This is awful from start to finish. The documentation of this guy's descent into hate is really chilling, to me. It's a story we seem to be seeing more and more, and to hear the personal side of this, from a warm and collaborative friend to this secret … villain … it's just so sad, and so scary.\n\n💬 lizthegrey.com:… https://mastodon.socia…"
+            "♻️ bensaufley.com: This is awful from start to finish. The documentation of this guy's descent into hate is really chilling, to me. It's a story we seem to be seeing more and more, and to hear the personal side of this, from a warm and collaborative friend to this secret … villain … it's just so sad, and so scary.\n\n💬 lizthegrey.com:… mastodon.social/@klaus…"
         );
     }
 }
