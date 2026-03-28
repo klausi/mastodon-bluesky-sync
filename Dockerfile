@@ -1,7 +1,6 @@
 # This is for an image based on alpine.
 
-#FROM --platform=$BUILDPLATFORM rust:1-alpine AS vendor
-FROM rust:1-alpine AS vendor
+FROM --platform=$BUILDPLATFORM rust:1-alpine AS vendor
 
 ENV USER=root
 WORKDIR /code
