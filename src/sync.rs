@@ -419,12 +419,23 @@ fn mastodon_text_length(text: &str) -> usize {
 
 // Prefix boost toots with the author and strip HTML tags.
 pub fn mastodon_toot_get_text(toot: &Status) -> String {
+    mastodon_toot_get_text_internal(toot)
+}
+
+fn mastodon_toot_get_text_internal(toot: &Status) -> String {
     let mut replaced = match toot.reblog {
         None => toot.content.clone(),
         Some(ref reblog) => format!("♻️ {}: {}", reblog.account.username, reblog.content),
     };
+    let inline_quote_link_regex =
+        Regex::new(r#"<p class=\"quote-inline\">RE: <a href=\"([^\"]+)\"[^>]*>.*?</a></p>"#)
+            .unwrap();
+    let inline_quote_link = inline_quote_link_regex
+        .captures(&replaced)
+        .and_then(|captures| captures.get(1).map(|url| url.as_str().to_string()));
+
     // Mastodon can inline quote links in HTML content. Remove this marker and
-    // rely on structured quote data below to format quotes consistently.
+    // then append structured quote content below.
     let quote_inline_regex = Regex::new(r#"<p class=\"quote-inline\">.*?</p>"#).unwrap();
     replaced = quote_inline_regex.replace_all(&replaced, "").to_string();
     replaced = replaced.replace("<br />", "\n");
@@ -435,18 +446,28 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
 
     replaced = voca_rs::strip::strip_tags(&replaced);
 
-    if let Some(QuotedStatus::Quote(quote)) = &toot.quote
-        && let Some(quoted_status) = &quote.quoted_status
-    {
-        let quote_text = mastodon_toot_get_text(quoted_status);
-        replaced = format!(
-            "{}\n\n💬 {}: {}",
-            replaced.trim(),
-            quoted_status.account.acct,
-            quote_text.trim()
-        )
-        .trim()
-        .to_string();
+    match &toot.quote {
+        Some(QuotedStatus::Quote(quote)) => {
+            if let Some(quoted_status) = &quote.quoted_status {
+                let quote_text = mastodon_toot_get_text_internal(quoted_status);
+                replaced = format!(
+                    "{}\n\n💬 {}: {}",
+                    replaced.trim(),
+                    quoted_status.account.acct,
+                    quote_text.trim()
+                )
+                .trim()
+                .to_string();
+            } else if let Some(url) = inline_quote_link {
+                replaced = format!("{}\n\n{}", replaced.trim(), url).trim().to_string();
+            }
+        }
+        Some(QuotedStatus::ShallowQuote(_quote)) => {
+            if let Some(url) = inline_quote_link {
+                replaced = format!("{}\n\n{}", replaced.trim(), url).trim().to_string();
+            }
+        }
+        None => {}
     }
 
     html_escape::decode_html_entities(&replaced).to_string()
@@ -829,6 +850,17 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert_eq!(
             fulltext,
             "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\nhttps://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub \n\nPosted into Sports @sports-Independent"
+        );
+    }
+
+    // Test nested quote handling where the quoted post itself has a quote.
+    #[test]
+    fn mastodon_nested_quote_post() {
+        let post = read_mastodon_post_from_json("tests/mastodon_nested_quote.json");
+        let fulltext = mastodon_toot_get_text(&post);
+        assert_eq!(
+            fulltext,
+            "Testing quoting myself!\n\n💬 klausi: The Olympic committee finally found the #transgender gene to ban trans women from participating! \n\nI'm sure this will not backfire and no cis women will be banned by this ruling. \n\nAs we all know determining gender is easy and biology is not a complicated mess 👍👍👍\n\nhttps://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0"
         );
     }
 

@@ -1,0 +1,164 @@
+{
+  "id": "116306893976751357",
+  "created_at": "2026-03-28T12:52:41.708Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "en",
+  "uri": "https://mastodon.social/users/klausi/statuses/116306893976751357",
+  "url": "https://mastodon.social/@klausi/116306893976751357",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "<p class=\"quote-inline\">RE: <a href=\"https://mastodon.social/@klausi/116299578737765488\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">mastodon.social/@klausi/116299</span><span class=\"invisible\">578737765488</span></a></p><p>Testing quoting myself!</p>",
+  "reblog": null,
+  "application": {
+    "name": "Web",
+    "website": null
+  },
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 585,
+    "following_count": 1128,
+    "statuses_count": 193,
+    "last_status_at": "2026-03-28",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": true,
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2019-11-23T23:49:42.885+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": {
+    "state": "accepted",
+    "quoted_status": {
+      "id": "116299578737765488",
+      "created_at": "2026-03-27T05:52:20.022Z",
+      "in_reply_to_id": null,
+      "in_reply_to_account_id": null,
+      "sensitive": false,
+      "spoiler_text": "",
+      "visibility": "public",
+      "language": "en",
+      "uri": "https://mastodon.social/users/klausi/statuses/116299578737765488",
+      "url": "https://mastodon.social/@klausi/116299578737765488",
+      "replies_count": 1,
+      "reblogs_count": 1,
+      "favourites_count": 1,
+      "quotes_count": 1,
+      "edited_at": null,
+      "content": "<p class=\"quote-inline\">RE: <a href=\"https://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">flipboard.com/@independent/spo</span><span class=\"invisible\">rts-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0</span></a></p><p>The Olympic committee finally found the <a href=\"https://mastodon.social/tags/transgender\" class=\"mention hashtag\" rel=\"tag\">#<span>transgender</span></a> gene to ban trans women from participating! </p><p>I&#39;m sure this will not backfire and no cis women will be banned by this ruling. </p><p>As we all know determining gender is easy and biology is not a complicated mess 👍👍👍</p>",
+      "reblog": null,
+      "application": {
+        "name": "Mastodon for Android",
+        "website": "https://app.joinmastodon.org/android"
+      },
+      "account": {
+        "id": "28407",
+        "username": "klausi",
+        "acct": "klausi",
+        "display_name": "klausi",
+        "locked": false,
+        "bot": false,
+        "discoverable": true,
+        "indexable": true,
+        "group": false,
+        "created_at": "2017-04-01T00:00:00.000Z",
+        "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+        "url": "https://mastodon.social/@klausi",
+        "uri": "https://mastodon.social/users/klausi",
+        "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+        "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+        "avatar_description": "",
+        "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+        "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+        "header_description": "",
+        "followers_count": 585,
+        "following_count": 1128,
+        "statuses_count": 193,
+        "last_status_at": "2026-03-28",
+        "hide_collections": false,
+        "show_media": true,
+        "show_media_replies": true,
+        "show_featured": true,
+        "noindex": true,
+        "emojis": [],
+        "roles": [],
+        "fields": [
+          {
+            "name": "Blog",
+            "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+            "verified_at": "2019-11-23T23:49:42.885+00:00"
+          }
+        ]
+      },
+      "media_attachments": [],
+      "mentions": [],
+      "tags": [
+        {
+          "name": "transgender",
+          "url": "https://mastodon.social/tags/transgender"
+        }
+      ],
+      "emojis": [],
+      "tagged_collections": [],
+      "quote": {
+        "state": "accepted",
+        "quoted_status_id": "116299120713810941"
+      },
+      "card": null,
+      "poll": null,
+      "quote_approval": {
+        "automatic": [
+          "public"
+        ],
+        "manual": [],
+        "current_user": "denied"
+      }
+    }
+  },
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}
