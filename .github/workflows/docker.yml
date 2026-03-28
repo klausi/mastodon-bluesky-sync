@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - 'main'
+    tags:
+      - '**'
     # Only build Docker images if relevant files change.
     paths:
       - .github/workflows/docker.yml
@@ -95,4 +97,13 @@ jobs:
             digest="$(basename "$f")"
             refs="$refs klausi/mastodon-bluesky-sync@sha256:$digest"
           done
-          docker buildx imagetools create -t klausi/mastodon-bluesky-sync:latest $refs
+
+          tags=""
+          if [ "${{ github.ref_type }}" = "branch" ] && [ "${{ github.ref_name }}" = "main" ]; then
+            tags="$tags -t klausi/mastodon-bluesky-sync:latest"
+          fi
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            tags="$tags -t klausi/mastodon-bluesky-sync:${{ github.ref_name }}"
+          fi
+
+          docker buildx imagetools create $tags $refs
