@@ -1,6 +1,6 @@
 use crate::BskyAgent;
 use crate::NewMedia;
-use crate::bluesky_richtext::get_rich_text;
+use crate::bluesky_richtext::{get_link_uris, get_rich_text};
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
 use anyhow::Context;
@@ -19,7 +19,9 @@ use megalodon::{
     error,
     megalodon::PostStatusInputOptions,
 };
+use scraper::{Html, Selector};
 use serde_json::to_string;
+use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
@@ -31,6 +33,14 @@ use tokio::fs::metadata;
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 use tokio::time::sleep;
+use url::Url;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LinkPreviewMetadata {
+    title: String,
+    description: String,
+    image_url: String,
+}
 
 /// Send new status with any given replies to Mastodon.
 pub async fn post_to_mastodon(
@@ -322,11 +332,17 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
     }
     // If there is no video then use the images.
     if embed.is_none() {
-        embed = Some(bsky_sdk::api::types::Union::Refs(
-            bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(
-                Box::new(bsky_sdk::api::app::bsky::embed::images::MainData { images }.into()),
-            ),
-        ));
+        if !images.is_empty() {
+            embed = Some(bsky_sdk::api::types::Union::Refs(
+                bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedImagesMain(
+                    Box::new(bsky_sdk::api::app::bsky::embed::images::MainData { images }.into()),
+                ),
+            ));
+        } else {
+            // If there are no attachments, try to create a link preview embed
+            // if there are any links in the post.
+            embed = bluesky_link_preview_embed(&post.text, bsky_agent).await;
+        }
     }
 
     let rt = get_rich_text(&post.text);
@@ -356,6 +372,163 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
         .context(format!("Failed posting to Bluesky {}", post.text))?;
 
     Ok(to_string(&record.cid)?)
+}
+
+async fn bluesky_link_preview_embed(
+    text: &str,
+    bsky_agent: &BskyAgent,
+) -> Option<bsky_sdk::api::types::Union<RecordEmbedRefs>> {
+    let links = get_link_uris(text);
+    for url in links.into_iter().rev() {
+        if let Some(embed) = fetch_link_preview_embed(&url, bsky_agent).await {
+            return Some(embed);
+        }
+    }
+    None
+}
+
+async fn fetch_link_preview_embed(
+    url: &str,
+    bsky_agent: &BskyAgent,
+) -> Option<bsky_sdk::api::types::Union<RecordEmbedRefs>> {
+    let response = match reqwest::get(url).await {
+        Ok(response) => response,
+        Err(error) => {
+            eprintln!("Warning: failed fetching link preview {url}: {error}");
+            return None;
+        }
+    };
+    if !response.status().is_success() {
+        eprintln!(
+            "Warning: failed fetching link preview {url}: HTTP {}",
+            response.status()
+        );
+        return None;
+    }
+    let final_url = response.url().clone();
+    let html = match response.text().await {
+        Ok(html) => html,
+        Err(error) => {
+            eprintln!("Warning: failed reading link preview body {url}: {error}");
+            return None;
+        }
+    };
+    let metadata = match extract_link_preview_metadata(&html, &final_url) {
+        Some(metadata) => metadata,
+        None => return None,
+    };
+
+    let thumb_response = match reqwest::get(&metadata.image_url).await {
+        Ok(response) => response,
+        Err(error) => {
+            eprintln!(
+                "Warning: failed downloading link preview image {}: {error}",
+                metadata.image_url
+            );
+            return None;
+        }
+    };
+    if !thumb_response.status().is_success() {
+        eprintln!(
+            "Warning: failed downloading link preview image {}: HTTP {}",
+            metadata.image_url,
+            thumb_response.status()
+        );
+        return None;
+    }
+    let thumb_bytes = match thumb_response.bytes().await {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            eprintln!(
+                "Warning: failed reading link preview image {}: {error}",
+                metadata.image_url
+            );
+            return None;
+        }
+    };
+    let thumb = match bluesky_upload_image(&thumb_bytes, &metadata.image_url, bsky_agent).await {
+        Ok(blob) => blob,
+        Err(error) => {
+            eprintln!(
+                "Warning: failed uploading link preview image {}: {error:#}",
+                metadata.image_url
+            );
+            return None;
+        }
+    };
+
+    Some(bsky_sdk::api::types::Union::Refs(
+        bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedExternalMain(Box::new(
+            bsky_sdk::api::app::bsky::embed::external::MainData {
+                external: bsky_sdk::api::app::bsky::embed::external::ExternalData {
+                    description: metadata.description,
+                    thumb: Some(thumb),
+                    title: metadata.title,
+                    uri: final_url.to_string(),
+                }
+                .into(),
+            }
+            .into(),
+        )),
+    ))
+}
+
+fn extract_link_preview_metadata(html: &str, base_url: &Url) -> Option<LinkPreviewMetadata> {
+    let metadata = parse_social_metadata(html);
+    let title = metadata
+        .get("og:title")
+        .or_else(|| metadata.get("twitter:title"))?
+        .trim()
+        .to_string();
+    let image = metadata
+        .get("og:image")
+        .or_else(|| metadata.get("twitter:image"))?
+        .trim();
+    if title.is_empty() || image.is_empty() {
+        return None;
+    }
+    let image_url = match base_url.join(image) {
+        Ok(url) => url.to_string(),
+        Err(_) => image.to_string(),
+    };
+    let description = metadata
+        .get("og:description")
+        .or_else(|| metadata.get("twitter:description"))
+        .map(|description| description.trim().to_string())
+        .unwrap_or_default();
+
+    Some(LinkPreviewMetadata {
+        title,
+        description,
+        image_url,
+    })
+}
+
+fn parse_social_metadata(html: &str) -> HashMap<String, String> {
+    let mut metadata = HashMap::new();
+    let document = Html::parse_document(html);
+    let selector = Selector::parse("meta").expect("valid meta selector");
+
+    for tag in document.select(&selector) {
+        let Some(content) = tag.value().attr("content") else {
+            continue;
+        };
+        if let Some(key) = tag
+            .value()
+            .attr("property")
+            .or_else(|| tag.value().attr("name"))
+        {
+            let key = key.to_ascii_lowercase();
+            let value = html_escape::decode_html_entities(content)
+                .trim()
+                .to_string();
+            // Keep the first metadata value because pages often publish
+            // multiple candidates ordered by preference.
+            metadata.entry(key).or_insert(value);
+        }
+    }
+
+    metadata
 }
 
 async fn resize_image_if_needed(download_bytes: &[u8], url: &str) -> Result<Vec<u8>> {
@@ -514,4 +687,96 @@ async fn bluesky_upload_image(
         .await
         .context(format!("Failed uploading image to Bluesky {}", image_url))?;
     Ok(output.data.blob)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{extract_link_preview_metadata, parse_social_metadata};
+    use url::Url;
+
+    #[test]
+    fn parse_social_metadata_supports_property_and_name_attributes() {
+        let html = r#"
+            <html>
+                <head>
+                    <meta property="og:title" content="Example title" />
+                    <meta property="og:image" content="/images/example.jpg" />
+                    <meta name="twitter:description" content="Preview description" />
+                </head>
+            </html>
+        "#;
+
+        let metadata = parse_social_metadata(html);
+
+        assert_eq!(metadata.get("og:title"), Some(&"Example title".to_string()));
+        assert_eq!(
+            metadata.get("og:image"),
+            Some(&"/images/example.jpg".to_string())
+        );
+        assert_eq!(
+            metadata.get("twitter:description"),
+            Some(&"Preview description".to_string())
+        );
+    }
+
+    #[test]
+    fn extract_link_preview_metadata_requires_title_and_image() {
+        let html = r#"
+            <html>
+                <head>
+                    <meta property="og:title" content="Example title" />
+                </head>
+            </html>
+        "#;
+
+        assert!(
+            extract_link_preview_metadata(html, &Url::parse("https://example.com/post").unwrap())
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn extract_link_preview_metadata_resolves_relative_image_urls() {
+        let html = r#"
+            <html>
+                <head>
+                    <meta name="twitter:title" content="Twitter title" />
+                    <meta name="twitter:image" content="images/card.png" />
+                    <meta property="og:description" content="Description" />
+                </head>
+            </html>
+        "#;
+
+        let metadata = extract_link_preview_metadata(
+            html,
+            &Url::parse("https://example.com/articles/post").unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(metadata.title, "Twitter title");
+        assert_eq!(metadata.description, "Description");
+        assert_eq!(
+            metadata.image_url,
+            "https://example.com/articles/images/card.png"
+        );
+    }
+
+    #[test]
+    fn parse_social_metadata_keeps_first_og_image() {
+        let html = r#"
+            <html>
+                <head>
+                    <meta property="og:image" content="https://example.com/first.jpg" />
+                    <meta property="og:image" content="https://example.com/second.jpg" />
+                </head>
+            </html>
+        "#;
+
+        let metadata = parse_social_metadata(html);
+
+        assert_eq!(
+            metadata.get("og:image"),
+            Some(&"https://example.com/first.jpg".to_string())
+        );
+    }
 }
