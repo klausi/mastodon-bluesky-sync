@@ -4,7 +4,7 @@ use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostV
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::{Object, TryFromUnknown, Union};
-use megalodon::entities::Status;
+use megalodon::entities::{QuotedStatus, Status};
 use regex::Regex;
 use std::collections::HashSet;
 use std::fs;
@@ -423,6 +423,10 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
         None => toot.content.clone(),
         Some(ref reblog) => format!("♻️ {}: {}", reblog.account.username, reblog.content),
     };
+    // Mastodon can inline quote links in HTML content. Remove this marker and
+    // rely on structured quote data below to format quotes consistently.
+    let quote_inline_regex = Regex::new(r#"<p class=\"quote-inline\">.*?</p>"#).unwrap();
+    replaced = quote_inline_regex.replace_all(&replaced, "").to_string();
     replaced = replaced.replace("<br />", "\n");
     replaced = replaced.replace("<br>", "\n");
     replaced = replaced.replace("</p><p>", "\n\n");
@@ -430,6 +434,20 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
     replaced = replaced.replace("</p>", "");
 
     replaced = voca_rs::strip::strip_tags(&replaced);
+
+    if let Some(QuotedStatus::Quote(quote)) = &toot.quote
+        && let Some(quoted_status) = &quote.quoted_status
+    {
+        let quote_text = mastodon_toot_get_text(quoted_status);
+        replaced = format!(
+            "{}\n\n💬 {}: {}",
+            replaced.trim(),
+            quoted_status.account.acct,
+            quote_text.trim()
+        )
+        .trim()
+        .to_string();
+    }
 
     html_escape::decode_html_entities(&replaced).to_string()
 }
@@ -623,7 +641,7 @@ pub mod tests {
     use megalodon::entities::Status;
     use std::fs;
 
-    use crate::{SyncOptions, determine_posts, sync::toot_shorten};
+    use crate::{SyncOptions, determine_posts, sync::mastodon_toot_get_text, sync::toot_shorten};
 
     // Test that embedded quote posts are included correctly.
     #[test]
@@ -799,7 +817,18 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
-            "RE: https://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0\n\nTRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at… https://mastodon.social/@testuser/116299190222149167"
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists… https://mastodon.social/@testuser/116299190222149167"
+        );
+    }
+
+    // Test that quoted post content on Mastodon is appended consistently.
+    #[test]
+    fn mastodon_quote_post() {
+        let post = read_mastodon_post_from_json("tests/mastodon_url_encoded.json");
+        let fulltext = mastodon_toot_get_text(&post);
+        assert_eq!(
+            fulltext,
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\nhttps://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub \n\nPosted into Sports @sports-Independent"
         );
     }
 
