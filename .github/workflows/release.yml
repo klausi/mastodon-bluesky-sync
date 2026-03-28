@@ -21,10 +21,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
-        uses: taiki-e/create-gh-release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          changelog: ${{ steps.github_release.outputs.changelog }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          body: ${{steps.github_release.outputs.changelog}}
 
   upload-assets:
     strategy:
