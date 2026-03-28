@@ -77,9 +77,8 @@ Every run of the program only synchronizes the accounts once. Use Cron to run it
 
 Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
-- Add open graph link preview when posting to Bluesky
 - Parallel execution of fetching and syncing requests at the same time
 
 ## Acknowledgements
 
-Thanks to [Yoshihiro Sugi (sugyan)](https://github.com/sugyan) for his continuous support when implementing Bluesky API access with [Atrium](https://github.com/sugyan/atrium).
+Thanks to [Yoshihiro Sugi (sugyan)](https://github.com/sugyan) for his continuous support when implementing Bluesky API access with [Atrium](https://github.com/atrium-rs/atrium).
