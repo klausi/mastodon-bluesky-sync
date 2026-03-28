@@ -24,9 +24,6 @@ jobs:
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     environment: Docker
-    concurrency:
-      group: docker
-      cancel-in-progress: true
     steps:
       -
         name: Checkout
