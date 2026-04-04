@@ -222,7 +222,7 @@ checksum = "944b35cc08732d40ddbb3356be9e38d11aed4b4c40c33f5b0f235e0650eff296"
 dependencies = [
  "http",
  "serde",
- "serde_html_form 0.2.8",
+ "serde_html_form",
  "serde_json",
  "thiserror 1.0.69",
  "trait-variant",
@@ -1758,7 +1758,7 @@ dependencies = [
 
 [[package]]
 name = "mastodon-bluesky-sync"
-version = "0.4.0"
+version = "0.6.1"
 dependencies = [
  "anyhow",
  "atrium-xrpc-client",
@@ -1774,8 +1774,8 @@ dependencies = [
  "reqwest",
  "scraper",
  "serde",
- "serde_html_form 0.4.0",
  "serde_json",
+ "serde_urlencoded",
  "serde_with",
  "tempfile",
  "tokio",
@@ -2925,18 +2925,6 @@ checksum = "b2f2d7ff8a2140333718bb329f5c40fc5f0865b84c426183ce14c97d2ab8154f"
 dependencies = [
  "form_urlencoded",
  "indexmap 2.13.1",
- "itoa",
- "ryu",
- "serde_core",
-]
-
-[[package]]
-name = "serde_html_form"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0946d52b4b7e28823148aebbeceb901012c595ad737920d504fa8634bb099e6f"
-dependencies = [
- "form_urlencoded",
  "itoa",
  "ryu",
  "serde_core",

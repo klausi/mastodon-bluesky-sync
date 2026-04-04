@@ -55,7 +55,7 @@ impl HttpClient for VideoClient {
             *request.uri_mut() = Builder::from(request.uri().clone())
                 .path_and_query(format!(
                     "{UPLOAD_VIDEO_PATH}?{}",
-                    serde_html_form::to_string(params)?
+                    serde_urlencoded::to_string(params)?
                 ))
                 .build()?;
         }
