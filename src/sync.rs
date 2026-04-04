@@ -98,15 +98,16 @@ pub fn determine_posts(
         toots: Vec::new(),
     };
     'bsky: for post in bsky_statuses {
+        let is_repost = bsky_post_is_repost(post);
+
         // Skip replies, they are handled in determine_thread_replies().
-        if let Some(_reply) = &post.reply {
+        // Exception: reposts should always be synced when sync_reposts is
+        // enabled, even if the original post is a reply.
+        if post.reply.is_some() && !is_repost {
             continue;
         }
 
-        if !options.sync_reposts
-            && let Some(_reskeet) = &post.post.viewer
-            && let Some(_repost) = &_reskeet.repost
-        {
+        if !options.sync_reposts && is_repost {
             // Skip reskeets when sync_reposts is disabled
             continue;
         }
@@ -306,9 +307,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
     let mut text = bsky_record_get_text(record);
 
     // Add prefix for reposts.
-    if let Some(viewer) = &bsky_post.post.viewer
-        && let Some(_repost) = &viewer.repost
-    {
+    if bsky_post_is_repost(bsky_post) {
         text = format!("♻️ {}: {}", bsky_post.post.author.handle.as_str(), text);
     }
 
@@ -328,6 +327,17 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
         .to_string();
     }
     toot_shorten(&text, &bsky_post.post)
+}
+
+fn bsky_post_is_repost(post: &Object<FeedViewPostData>) -> bool {
+    if let Some(viewer) = &post.post.viewer
+        && viewer.repost.is_some()
+    {
+        return true;
+    }
+
+    // In some feeds, reposted entries are only marked in `reason`.
+    post.reason.is_some()
 }
 
 // Get the full text of a bluesky post.
@@ -737,6 +747,19 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 2) https://www.youtube.com/live/jATJBLcI2MA?si=7Gm1GudFuSmW2iRH
 3) https://www.youtube.com/live/fmz3vj-L9U8?si=Uzn12ksO-lDwQRqc"
         );
+    }
+
+    // Reposts should always be synced, even if the reposted post is a reply.
+    #[test]
+    fn bsky_repost_of_reply_gets_synced() {
+        let post = read_bsky_post_from_json("tests/bsky_repost_reply.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(posts.toots.len(), 1);
+        assert!(posts.toots[0].text.starts_with("♻️ bohrn-mena.at: "));
     }
 
     // Test that a post with a long link gets fully posted to Mastodon.

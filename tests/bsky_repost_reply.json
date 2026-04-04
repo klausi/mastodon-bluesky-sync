@@ -1,0 +1,344 @@
+{
+  "post": {
+    "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3mino5wjgu22x",
+    "cid": "bafyreibpydcn5scynmjminjo2leb4i4tdscctceem2oabc3rvy7dhhm4ke",
+    "author": {
+      "did": "did:plc:h47a5d6qebplrk2ficoy6ksn",
+      "handle": "bohrn-mena.at",
+      "displayName": "Sebastian Bohrn Mena",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreicqkego4vau5nprrsbfrg5ibc67mzh6dk7zkwitdm466rkbdmvype",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-10-15T18:16:09.455Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+            "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3ltjpxrpc6f2f",
+            "isValid": true,
+            "createdAt": "2025-07-09T11:36:05.308Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      }
+    },
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2026-04-04T07:03:27.624Z",
+      "embed": {
+        "$type": "app.bsky.embed.external",
+        "external": {
+          "description": "An einem Beispiel der Kanzlei GEISTWERT zeigen wir, wieso uns das nicht egal ist - auch wenn es sich dabei um Personen handelt, die uns öffentlich herabgewürdigt haben.",
+          "thumb": {
+            "$type": "blob",
+            "ref": {
+              "$link": "bafkreihqdeazy4jnsuik7gjaxeefziojypz7mcqbtwdmsh6maxiytv3wm4"
+            },
+            "mimeType": "image/jpeg",
+            "size": 299349
+          },
+          "title": "Zigtausende Euro: Wie Täter von ihren Anwälten in die Kostenfalle...",
+          "uri": "https://steady.page/de/bohrnundmena/posts/56494eec-b7d7-48da-b3a4-d18aadda9a45"
+        }
+      },
+      "facets": [
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://steady.page/de/bohrnundmena/posts/56494eec-b7d7-48da-b3a4-d18aadda9a45"
+            }
+          ],
+          "index": {
+            "byteEnd": 303,
+            "byteStart": 276
+          }
+        }
+      ],
+      "langs": [
+        "de"
+      ],
+      "reply": {
+        "parent": {
+          "cid": "bafyreifau5brypq5wcutd4siqyakf3zcmvrm5tlwfgb2js2l5p5ruaytku",
+          "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3mino2tvvcs2x"
+        },
+        "root": {
+          "cid": "bafyreihedfjlauqle6b5evrarw6zpu57vpcjxxhaltjzjdaai2ioggot4e",
+          "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3minnrikjbk2x"
+        }
+      },
+      "text": "Ärgerlich sind auch gewisse Anwälte, die ihre Mandanten in mMn aussichtslose Verfahren drängen. Daran verdienen sie vermutlich gut, es kann aber zum finanz. Desaster für die Beklagten werden. Völlig ohne Not. Wegen uns muss das nicht sein, wir bieten Vergleiche an. (4)\n\nsteady.page/de/bohrnundm..."
+    },
+    "embed": {
+      "external": {
+        "uri": "https://steady.page/de/bohrnundmena/posts/56494eec-b7d7-48da-b3a4-d18aadda9a45",
+        "title": "Zigtausende Euro: Wie Täter von ihren Anwälten in die Kostenfalle...",
+        "description": "An einem Beispiel der Kanzlei GEISTWERT zeigen wir, wieso uns das nicht egal ist - auch wenn es sich dabei um Personen handelt, die uns öffentlich herabgewürdigt haben.",
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreihqdeazy4jnsuik7gjaxeefziojypz7mcqbtwdmsh6maxiytv3wm4"
+      },
+      "$type": "app.bsky.embed.external#view"
+    },
+    "bookmarkCount": 0,
+    "replyCount": 1,
+    "repostCount": 2,
+    "likeCount": 10,
+    "quoteCount": 0,
+    "indexedAt": "2026-04-04T07:03:29.951Z",
+    "labels": []
+  },
+  "reason": {
+    "by": {
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "handle": "klau.si",
+      "displayName": "klausi",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-12-24T10:54:53.475Z"
+    },
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.repost/3minxlpnvvp2r",
+    "cid": "bafyreibbstb6ylsmwk5ckl2xvqhava3iq4qyg44i7s3s4iqdf2eb22brv4",
+    "indexedAt": "2026-04-04T09:52:14.253Z",
+    "$type": "app.bsky.feed.defs#reasonRepost"
+  },
+  "reply": {
+    "root": {
+      "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3minnrikjbk2x",
+      "cid": "bafyreihedfjlauqle6b5evrarw6zpu57vpcjxxhaltjzjdaai2ioggot4e",
+      "author": {
+        "did": "did:plc:h47a5d6qebplrk2ficoy6ksn",
+        "handle": "bohrn-mena.at",
+        "displayName": "Sebastian Bohrn Mena",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreicqkego4vau5nprrsbfrg5ibc67mzh6dk7zkwitdm466rkbdmvype",
+        "associated": {
+          "activitySubscription": {
+            "allowSubscriptions": "followers"
+          }
+        },
+        "labels": [],
+        "createdAt": "2023-10-15T18:16:09.455Z",
+        "verification": {
+          "verifications": [
+            {
+              "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+              "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3ltjpxrpc6f2f",
+              "isValid": true,
+              "createdAt": "2025-07-09T11:36:05.308Z"
+            }
+          ],
+          "verifiedStatus": "valid",
+          "trustedVerifierStatus": "none"
+        }
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-04-04T06:56:30.325Z",
+        "embed": {
+          "$type": "app.bsky.embed.images",
+          "images": [
+            {
+              "alt": "Textbild von Bohrn & Mena: Über 1.000 Personen ausgeforscht, mehr als 500 Verfahren anhängig",
+              "aspectRatio": {
+                "height": 1350,
+                "width": 1350
+              },
+              "image": {
+                "$type": "blob",
+                "ref": {
+                  "$link": "bafkreifjjfpavhaajvesvo4gwns66izclqmryaklxukeutxi6w62jxfw5m"
+                },
+                "mimeType": "image/jpeg",
+                "size": 373229
+              }
+            }
+          ]
+        },
+        "facets": [
+          {
+            "$type": "app.bsky.richtext.facet",
+            "features": [
+              {
+                "$type": "app.bsky.richtext.facet#mention",
+                "did": "did:plc:wvw3fm7erjzg3tysjlfqbyok"
+              }
+            ],
+            "index": {
+              "byteEnd": 230,
+              "byteStart": 207
+            }
+          },
+          {
+            "features": [
+              {
+                "$type": "app.bsky.richtext.facet#link",
+                "uri": "https://steady.page/de/bohrnundmena/posts"
+              }
+            ],
+            "index": {
+              "byteEnd": 300,
+              "byteStart": 273
+            }
+          }
+        ],
+        "langs": [
+          "de"
+        ],
+        "text": "Zwischenstand nach 9 Monaten: +1.000 Täter ausgeforscht, +500 Verfahren anhängig. Die wohl größte Serie an Klagen gegen Hass im Netz in der österr. Geschichte. Und wir stehen immer noch erst am Anfang. @vbohrnmena.bsky.social und ich wehren uns gegen digitale Gewalt: steady.page/de/bohrnundm... (1)"
+      },
+      "embed": {
+        "images": [
+          {
+            "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreifjjfpavhaajvesvo4gwns66izclqmryaklxukeutxi6w62jxfw5m",
+            "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreifjjfpavhaajvesvo4gwns66izclqmryaklxukeutxi6w62jxfw5m",
+            "alt": "Textbild von Bohrn & Mena: Über 1.000 Personen ausgeforscht, mehr als 500 Verfahren anhängig",
+            "aspectRatio": {
+              "height": 1350,
+              "width": 1350
+            }
+          }
+        ],
+        "$type": "app.bsky.embed.images#view"
+      },
+      "bookmarkCount": 1,
+      "replyCount": 1,
+      "repostCount": 28,
+      "likeCount": 109,
+      "quoteCount": 0,
+      "indexedAt": "2026-04-04T06:56:33.153Z",
+      "labels": [],
+      "$type": "app.bsky.feed.defs#postView"
+    },
+    "parent": {
+      "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3mino2tvvcs2x",
+      "cid": "bafyreifau5brypq5wcutd4siqyakf3zcmvrm5tlwfgb2js2l5p5ruaytku",
+      "author": {
+        "did": "did:plc:h47a5d6qebplrk2ficoy6ksn",
+        "handle": "bohrn-mena.at",
+        "displayName": "Sebastian Bohrn Mena",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreicqkego4vau5nprrsbfrg5ibc67mzh6dk7zkwitdm466rkbdmvype",
+        "associated": {
+          "activitySubscription": {
+            "allowSubscriptions": "followers"
+          }
+        },
+        "labels": [],
+        "createdAt": "2023-10-15T18:16:09.455Z",
+        "verification": {
+          "verifications": [
+            {
+              "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+              "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3ltjpxrpc6f2f",
+              "isValid": true,
+              "createdAt": "2025-07-09T11:36:05.308Z"
+            }
+          ],
+          "verifiedStatus": "valid",
+          "trustedVerifierStatus": "none"
+        }
+      },
+      "record": {
+        "$type": "app.bsky.feed.post",
+        "createdAt": "2026-04-04T07:01:44.224Z",
+        "embed": {
+          "$type": "app.bsky.embed.external",
+          "external": {
+            "description": "Hasskommentare gegen Veronika & Sebastian Bohrn Mena auf FPÖ-Seite, u.a. „Verbrecher Bande“ und „Klagsf(l)ut“, Handelsgericht sieht Wiederholungsgefahr",
+            "thumb": {
+              "$type": "blob",
+              "ref": {
+                "$link": "bafkreihgyspoybwosyzntf3w3d4ysaxdhkrfozpsu5d3a6jjttw5shxi3y"
+              },
+              "mimeType": "image/jpeg",
+              "size": 775982
+            },
+            "title": "„Gerichtliches Machtwort“: Einstweilige Verfügung gegen FPÖ Wien",
+            "uri": "https://steady.page/de/bohrnundmena/posts/740f205e-61ff-41eb-9436-9d999ef39bd5"
+          }
+        },
+        "facets": [
+          {
+            "features": [
+              {
+                "$type": "app.bsky.richtext.facet#link",
+                "uri": "https://steady.page/de/bohrnundmena/posts/740f205e-61ff-41eb-9436-9d999ef39bd5"
+              }
+            ],
+            "index": {
+              "byteEnd": 256,
+              "byteStart": 229
+            }
+          }
+        ],
+        "langs": [
+          "de"
+        ],
+        "reply": {
+          "parent": {
+            "cid": "bafyreia2wbod4uevftwifgypy7rcy2qbdfxox4p7hmqskglum4gm3hmbzm",
+            "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3minnvn3eck2x"
+          },
+          "root": {
+            "cid": "bafyreihedfjlauqle6b5evrarw6zpu57vpcjxxhaltjzjdaai2ioggot4e",
+            "uri": "at://did:plc:h47a5d6qebplrk2ficoy6ksn/app.bsky.feed.post/3minnrikjbk2x"
+          }
+        },
+        "text": "In Phase 2 gehts drum die Verantwortlichen zur Verantwortung zu ziehen. Die wehren sich mitunter mit Händen & Füßen, was das Ganze enorm zeitintensiv, anstrengend und teuer macht. Das sieht man etwa am Beispiel der FPÖ. (3)\n\nsteady.page/de/bohrnundm..."
+      },
+      "embed": {
+        "external": {
+          "uri": "https://steady.page/de/bohrnundmena/posts/740f205e-61ff-41eb-9436-9d999ef39bd5",
+          "title": "„Gerichtliches Machtwort“: Einstweilige Verfügung gegen FPÖ Wien",
+          "description": "Hasskommentare gegen Veronika & Sebastian Bohrn Mena auf FPÖ-Seite, u.a. „Verbrecher Bande“ und „Klagsf(l)ut“, Handelsgericht sieht Wiederholungsgefahr",
+          "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreihgyspoybwosyzntf3w3d4ysaxdhkrfozpsu5d3a6jjttw5shxi3y"
+        },
+        "$type": "app.bsky.embed.external#view"
+      },
+      "bookmarkCount": 0,
+      "replyCount": 1,
+      "repostCount": 0,
+      "likeCount": 14,
+      "quoteCount": 0,
+      "indexedAt": "2026-04-04T07:01:47.155Z",
+      "labels": [],
+      "$type": "app.bsky.feed.defs#postView"
+    },
+    "grandparentAuthor": {
+      "did": "did:plc:h47a5d6qebplrk2ficoy6ksn",
+      "handle": "bohrn-mena.at",
+      "displayName": "Sebastian Bohrn Mena",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:h47a5d6qebplrk2ficoy6ksn/bafkreicqkego4vau5nprrsbfrg5ibc67mzh6dk7zkwitdm466rkbdmvype",
+      "associated": {
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-10-15T18:16:09.455Z",
+      "verification": {
+        "verifications": [
+          {
+            "issuer": "did:plc:z72i7hdynmk6r22z27h6tvur",
+            "uri": "at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.graph.verification/3ltjpxrpc6f2f",
+            "isValid": true,
+            "createdAt": "2025-07-09T11:36:05.308Z"
+          }
+        ],
+        "verifiedStatus": "valid",
+        "trustedVerifierStatus": "none"
+      }
+    }
+  }
+}
