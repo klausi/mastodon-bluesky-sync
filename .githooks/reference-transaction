@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -eu
+
+state=${1:-}
+
+if [ "$state" != "prepared" ]; then
+  exit 0
+fi
+
+repo_root=$(git rev-parse --show-toplevel)
+cargo_toml="$repo_root/Cargo.toml"
+
+if [ ! -f "$cargo_toml" ]; then
+  echo "reference-transaction: Cargo.toml not found at $cargo_toml" >&2
+  exit 1
+fi
+
+cargo_version=$(sed -n 's/^version = "\([^"]*\)"$/\1/p' "$cargo_toml" | head -n 1)
+
+if [ -z "$cargo_version" ]; then
+  echo "reference-transaction: could not read package version from Cargo.toml" >&2
+  exit 1
+fi
+
+while IFS=' ' read -r old_oid new_oid ref_name; do
+  case "$ref_name" in
+    refs/tags/*)
+      if [ "$new_oid" = "0000000000000000000000000000000000000000" ]; then
+        continue
+      fi
+
+      tag_name=${ref_name#refs/tags/}
+      expected_tag="v$cargo_version"
+
+      if [ "$tag_name" != "$expected_tag" ]; then
+        echo "reference-transaction: refusing tag $tag_name because Cargo.toml version is $cargo_version (expected $expected_tag)" >&2
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+exit 0

@@ -79,6 +79,10 @@ Todo list for the future, not implemented yet:
 - Your own threads (your replies to your own posts) will be synced both ways
 - Parallel execution of fetching and syncing requests at the same time
 
+## Development docs
+
+See [DEVELOPMENT.md](DEVELOPMENT.md).
+
 ## Acknowledgements
 
 Thanks to [Yoshihiro Sugi (sugyan)](https://github.com/sugyan) for his continuous support when implementing Bluesky API access with [Atrium](https://github.com/atrium-rs/atrium).
