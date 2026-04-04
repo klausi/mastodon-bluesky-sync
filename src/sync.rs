@@ -247,7 +247,35 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
         return true;
     }
 
+    // Bluesky can attach an external link preview URL that was not part of
+    // the original post text. Ignore that trailing link for equality checks to
+    // prevent sync loops back to Mastodon.
+    if let Some(embed_uri) = bsky_external_embed_uri(bsky_post) {
+        let bsky_without_embed = strip_trailing_embed_uri(&bsky_text, &embed_uri);
+        if toot_text == bsky_without_embed || shortened_toot == bsky_without_embed {
+            return true;
+        }
+    }
+
     false
+}
+
+fn bsky_external_embed_uri(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedExternalView(embed))) =
+        &bsky_post.post.embed
+    {
+        return Some(embed.external.uri.clone());
+    }
+    None
+}
+
+fn strip_trailing_embed_uri(text: &str, uri: &str) -> String {
+    let trimmed = text.trim_end();
+    let suffix = format!("\n\n{uri}");
+    match trimmed.strip_suffix(&suffix) {
+        Some(prefix) => prefix.trim_end().to_string(),
+        None => trimmed.to_string(),
+    }
 }
 
 // Unifies bluesky text or toot text to a common format.
@@ -827,6 +855,22 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             ..Default::default()
         };
         let posts = determine_posts(&vec![mastodon_post], &vec![bsky_post], &sync_options);
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
+    }
+
+    // Regression test: a Mastodon post that became a Bluesky post with a link
+    // embed must not be synced back to Mastodon as new content.
+    #[test]
+    fn mastodon_bsky_link_embed_roundtrip() {
+        let mastodon_post =
+            read_mastodon_post_from_json("tests/mastodon_link_embed_roundtrip.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_link_embed_roundtrip.json");
+        let posts = determine_posts(
+            &vec![mastodon_post],
+            &vec![bsky_post],
+            &SyncOptions::default(),
+        );
         assert!(posts.toots.is_empty());
         assert!(posts.bsky_posts.is_empty());
     }

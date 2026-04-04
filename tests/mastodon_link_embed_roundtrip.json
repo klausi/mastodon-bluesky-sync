@@ -1,0 +1,105 @@
+{
+  "id": "116312500459309966",
+  "created_at": "2026-03-29T12:38:29.845Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "en",
+  "uri": "https://mastodon.social/users/klausi/statuses/116312500459309966",
+  "url": "https://mastodon.social/@klausi/116312500459309966",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "<p>Search Engine: An Anthropology of Gooners</p><p>Wank contests, self identifying as <a href=\"https://mastodon.social/tags/pornsexual\" class=\"mention hashtag\" rel=\"tag\">#<span>pornsexual</span></a> , very weird stuff 😳</p><p>Episode webpage: <a href=\"http://www.pjvogt.com\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">http://www.</span><span class=\"\">pjvogt.com</span><span class=\"invisible\"></span></a></p><p>Media file: <a href=\"https://pdst.fm/e/tracking.swap.fm/track/v9Uiw3bGr54f6BVZKSyc/pscrb.fm/rss/p/traffic.megaphone.fm/CAD3679384298.mp3?updated=1762898953\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">pdst.fm/e/tracking.swap.fm/tra</span><span class=\"invisible\">ck/v9Uiw3bGr54f6BVZKSyc/pscrb.fm/rss/p/traffic.megaphone.fm/CAD3679384298.mp3?updated=1762898953</span></a></p><p><a href=\"https://mastodon.social/tags/gooning\" class=\"mention hashtag\" rel=\"tag\">#<span>gooning</span></a></p>",
+  "reblog": null,
+  "application": {
+    "name": "Mastodon for Android",
+    "website": "https://app.joinmastodon.org/android"
+  },
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 584,
+    "following_count": 1127,
+    "statuses_count": 185,
+    "last_status_at": "2026-04-04",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": true,
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2019-11-23T23:49:42.885+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [
+    {
+      "name": "pornsexual",
+      "url": "https://mastodon.social/tags/pornsexual"
+    },
+    {
+      "name": "gooning",
+      "url": "https://mastodon.social/tags/gooning"
+    }
+  ],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": {
+    "url": "http://www.pjvogt.com/",
+    "title": "Search Engine with PJ Vogt | Substack",
+    "description": "Welcome to Search Engine, a newsletter for a podcast that tries to answer every question. No question too big, no question too small. Click to read Search Engine with PJ Vogt, a Substack publication with tens of thousands of subscribers.",
+    "language": "en",
+    "type": "link",
+    "author_name": "",
+    "author_url": "",
+    "provider_name": "",
+    "provider_url": "",
+    "html": "",
+    "width": 665,
+    "height": 347,
+    "image": "https://files.mastodon.social/cache/preview_cards/images/042/570/242/original/3d7df61b170027cb.jpg",
+    "image_description": "",
+    "embed_url": "",
+    "blurhash": "U.QSMgD7MyayoyoNnna#xdsrj^j[s;o2bFj[",
+    "published_at": null,
+    "authors": []
+  },
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}
