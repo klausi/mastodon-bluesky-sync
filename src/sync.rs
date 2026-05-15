@@ -352,7 +352,7 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
         // Sort facets backwards so that we can replace the links in the text
         // from behind.
         let mut sorted_facets = facets.clone();
-        sorted_facets.sort_by(|a, b| b.index.byte_start.cmp(&a.index.byte_start));
+        sorted_facets.sort_by_key(|b| std::cmp::Reverse(b.index.byte_start));
         for facet in sorted_facets {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
