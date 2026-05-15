@@ -220,14 +220,6 @@ pub fn determine_posts(
 
 // Returns true if a Mastodon toot and a Bluesky post are considered equal.
 pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostData>) -> bool {
-    // Make sure the structure is the same: both must be replies or both must
-    // not be replies.
-    if (toot.in_reply_to_id.is_some() && bsky_post.reply.is_none())
-        || (toot.in_reply_to_id.is_none() && bsky_post.reply.is_some())
-    {
-        return false;
-    }
-
     // Strip markup from Mastodon toot and unify message for comparison.
     let toot_text = unify_post_content(&mastodon_toot_get_text(toot), toot);
     // Populate URLs in the post text.
@@ -273,10 +265,21 @@ fn bsky_external_embed_uri(bsky_post: &Object<FeedViewPostData>) -> Option<Strin
 fn strip_trailing_embed_uri(text: &str, uri: &str) -> String {
     let trimmed = text.trim_end();
     let suffix = format!("\n\n{uri}");
-    match trimmed.strip_suffix(&suffix) {
-        Some(prefix) => prefix.trim_end().to_string(),
-        None => trimmed.to_string(),
+    if let Some(prefix) = trimmed.strip_suffix(&suffix) {
+        return prefix.trim_end().to_string();
     }
+
+    // The URI might have been altered in the sync process. Also try to strip
+    // the lowercase version.
+    let lowercase_uri = uri.to_lowercase();
+    if lowercase_uri != uri {
+        let lowercase_suffix = format!("\n\n{lowercase_uri}");
+        if let Some(prefix) = trimmed.strip_suffix(&lowercase_suffix) {
+            return prefix.trim_end().to_string();
+        }
+    }
+
+    trimmed.to_string()
 }
 
 // Unifies bluesky text or toot text to a common format.
@@ -700,7 +703,10 @@ pub mod tests {
     use megalodon::entities::Status;
     use std::fs;
 
-    use crate::{SyncOptions, determine_posts, sync::mastodon_toot_get_text, sync::toot_shorten};
+    use crate::{
+        SyncOptions, determine_posts, sync::mastodon_toot_get_text, sync::toot_and_post_are_equal,
+        sync::toot_shorten,
+    };
 
     // Test that embedded quote posts are included correctly.
     #[test]
@@ -896,6 +902,15 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         );
         assert!(posts.toots.is_empty());
         assert!(posts.bsky_posts.is_empty());
+    }
+
+    // Regression test for looping repost sync: these real-world fixtures should
+    // be considered equal.
+    #[test]
+    fn mastodon_reblog_and_bsky_repost_should_be_equal() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_reblog_loop_case.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_repost_loop_case.json");
+        assert!(toot_and_post_are_equal(&mastodon_post, &bsky_post));
     }
 
     // Test that URLs get shortened for bluesky.
