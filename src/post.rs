@@ -386,9 +386,10 @@ async fn bluesky_link_preview_embed(
         for facet in facets.iter().rev() {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature
-                    && let Some(embed) = fetch_link_preview_embed(&link.uri, bsky_agent).await {
-                        return Some(embed);
-                    }
+                    && let Some(embed) = fetch_link_preview_embed(&link.uri, bsky_agent).await
+                {
+                    return Some(embed);
+                }
             }
         }
     }
