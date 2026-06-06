@@ -46,10 +46,10 @@ fn element_contains_invisible_spans(element: &ElementRef<'_>) -> bool {
     }
 
     for child in element.children() {
-        if let Some(child_element) = ElementRef::wrap(child) {
-            if element_contains_invisible_spans(&child_element) {
-                return true;
-            }
+        if let Some(child_element) = ElementRef::wrap(child)
+            && element_contains_invisible_spans(&child_element)
+        {
+            return true;
         }
     }
     false
@@ -116,12 +116,12 @@ fn anchor_text(anchor: ElementRef<'_>) -> String {
 
     let text = html_escape::decode_html_entities(&text).to_string();
     let mut text_trimmed = text.trim().to_string();
-    
+
     // If the anchor contains invisible spans, append ellipsis to indicate truncation
     if element_contains_invisible_spans(&anchor) {
         text_trimmed.push('…');
     }
-    
+
     let href = anchor
         .attr("href")
         .map(|value| html_escape::decode_html_entities(value).trim().to_string())

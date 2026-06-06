@@ -8,8 +8,8 @@ use bsky_sdk::{
     },
     rich_text::RichText,
 };
-use scraper::{ElementRef, Html, Node};
 use regex::Regex;
+use scraper::{ElementRef, Html, Node};
 use std::sync::OnceLock;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -93,17 +93,6 @@ fn detect_facets_without_resolution(text: &str) -> Vec<FacetWithoutResolution> {
         }
     }
     facets
-}
-
-pub fn get_link_uris(text: &str) -> Vec<String> {
-    detect_facets_without_resolution(text)
-        .into_iter()
-        .flat_map(|facet| facet.features.into_iter())
-        .filter_map(|feature| match feature {
-            FacetFeaturesItem::Link(link) => Some(link.uri.clone()),
-            FacetFeaturesItem::Tag(_) => None,
-        })
-        .collect()
 }
 
 // Build RichText while preserving Mastodon anchors (<a href="...">text</a>)
@@ -270,8 +259,7 @@ pub fn get_rich_text(text: &str) -> RichText {
                         .text
                         .get(facet.index.byte_start..facet.index.byte_end)
                         .unwrap_or("");
-                    if !visible_text.starts_with("https://")
-                        && !visible_text.starts_with("http://")
+                    if !visible_text.starts_with("https://") && !visible_text.starts_with("http://")
                     {
                         continue;
                     }
@@ -329,7 +317,7 @@ pub mod tests {
     use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
     use bsky_sdk::api::types::Union;
 
-    use crate::bluesky_richtext::{get_link_uris, get_rich_text};
+    use crate::bluesky_richtext::get_rich_text;
 
     // Test URL shortening.
     #[test]
@@ -361,18 +349,6 @@ pub mod tests {
         assert_eq!(
             richtext.text,
             "♻️ bensaufley.com: This is awful from start to finish. The documentation of this guy's descent into hate is really chilling, to me. It's a story we seem to be seeing more and more, and to hear the personal side of this, from a warm and collaborative friend to this secret … villain … it's just so sad, and so scary.\n\n💬 lizthegrey.com:… mastodon.social/@klaus…"
-        );
-    }
-
-    #[test]
-    fn test_get_link_uris_preserves_order_and_strips_punctuation() {
-        let text = "First https://example.com/one, then http://example.com/two! #tag";
-        assert_eq!(
-            get_link_uris(text),
-            vec![
-                "https://example.com/one".to_string(),
-                "http://example.com/two".to_string(),
-            ]
         );
     }
 

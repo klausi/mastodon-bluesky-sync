@@ -1,14 +1,16 @@
 use crate::BskyAgent;
 use crate::NewMedia;
-use crate::bluesky_richtext::{get_link_uris, get_rich_text};
+use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
 use crate::sync::NewStatus;
 use anyhow::Context;
 use anyhow::Result;
 use anyhow::bail;
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
-use bsky_sdk::api::types::BlobRef;
+use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
 use bsky_sdk::api::types::string::Language;
+use bsky_sdk::api::types::{BlobRef, Union};
+use bsky_sdk::rich_text::RichText;
 use image_compressor::Factor;
 use image_compressor::compressor::Compressor;
 use megalodon::Megalodon;
@@ -290,6 +292,8 @@ pub async fn post_to_bluesky(
 
 /// Sends the given new status to Bluesky.
 async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -> Result<String> {
+    // Compute richtext once to extract links for preview embeds and to use in the record
+    let rt = get_rich_text(&post.text);
     let mut images = Vec::new();
     let mut embed = None;
     for attachment in &post.attachments {
@@ -341,11 +345,9 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
         } else {
             // If there are no attachments, try to create a link preview embed
             // if there are any links in the post.
-            embed = bluesky_link_preview_embed(&post.text, bsky_agent).await;
+            embed = bluesky_link_preview_embed(&rt, bsky_agent).await;
         }
     }
-
-    let rt = get_rich_text(&post.text);
     let languages = match Language::new(post.language.clone()) {
         Ok(lang) => Some(vec![lang]),
         Err(e) => {
@@ -374,14 +376,20 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
     Ok(to_string(&record.cid)?)
 }
 
+// Extract links from richtext facets and fetch preview embeds for the first successful link
 async fn bluesky_link_preview_embed(
-    text: &str,
+    rt: &RichText,
     bsky_agent: &BskyAgent,
 ) -> Option<bsky_sdk::api::types::Union<RecordEmbedRefs>> {
-    let links = get_link_uris(text);
-    for url in links.into_iter().rev() {
-        if let Some(embed) = fetch_link_preview_embed(&url, bsky_agent).await {
-            return Some(embed);
+    // Try to fetch a link preview for each link facet, in reverse order
+    if let Some(facets) = &rt.facets {
+        for facet in facets.iter().rev() {
+            for feature in &facet.features {
+                if let Union::Refs(MainFeaturesItem::Link(link)) = feature
+                    && let Some(embed) = fetch_link_preview_embed(&link.uri, bsky_agent).await {
+                        return Some(embed);
+                    }
+            }
         }
     }
     None
