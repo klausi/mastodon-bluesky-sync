@@ -285,9 +285,10 @@ fn strip_trailing_embed_uri(text: &str, uri: &str) -> String {
 
 // Unifies bluesky text or toot text to a common format.
 fn unify_post_content(content: &str, toot: &Status) -> String {
+    let normalized = normalize_links_for_comparison(content);
     // Remove links to the respective posts themselves, they could have been
     // added because of a too long video.
-    let mut result = content.to_string();
+    let mut result = normalized;
     if let Some(url) = &toot.url {
         result = result.replace(url, "");
     }
@@ -299,6 +300,27 @@ fn unify_post_content(content: &str, toot: &Status) -> String {
     result = result.to_lowercase().trim().to_string();
 
     result
+}
+
+// Normalize preserved anchor links into raw URIs so sync comparisons stay
+// stable across Mastodon HTML and Bluesky facet representations.
+fn normalize_links_for_comparison(content: &str) -> String {
+    let richtext = get_rich_text(content);
+    let mut bytes = richtext.text.as_bytes().to_vec();
+    if let Some(mut facets) = richtext.facets {
+        facets.sort_by_key(|facet| std::cmp::Reverse(facet.index.byte_start));
+        for facet in facets {
+            for feature in &facet.features {
+                if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    bytes.splice(
+                        facet.index.byte_start..facet.index.byte_end,
+                        link.uri.as_bytes().iter().cloned(),
+                    );
+                }
+            }
+        }
+    }
+    String::from_utf8(bytes).expect("Invalid UTF-8 after normalizing link facets for comparison")
 }
 
 // Extend URLs and HTML entity decode &amp;.
@@ -378,13 +400,14 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
 }
 
 pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
-    let mut char_count = text.graphemes(true).count();
+    let rendered_text = get_rich_text(text).text;
+    let mut char_count = rendered_text.graphemes(true).count();
     // Hard-coding the Bluesky limit of 300 here for now, could be configurable.
     if char_count <= 300 {
         return text.to_string();
     }
     // Try to shorten links first.
-    let mut richtext = get_rich_text(text);
+    let mut richtext = get_rich_text(&rendered_text);
     // If the result is below 300 characters we can return the original text, it
     // will be shortened on posting.
     char_count = richtext.grapheme_len();
@@ -394,7 +417,7 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
 
     // Remove words one by one from the end until the text is short enough.
     let re = Regex::new(r"[^\s]+$").unwrap();
-    let mut shortened = text.trim().to_string();
+    let mut shortened = rendered_text.trim().to_string();
     let mut with_link = shortened.clone();
 
     // Bluesky has a limit of 300 characters.
@@ -769,7 +792,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
-            "Test toot with long link http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            "Test toot with long link <a href=\"http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</a>"
         );
     }
 
@@ -914,7 +937,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let fulltext = mastodon_toot_get_text(&post);
         assert_eq!(
             fulltext,
-            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\nhttps://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub \n\nPosted into Sports @sports-Independent"
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub</a>\n\nPosted into Sports @sports-Independent"
         );
     }
 
@@ -937,7 +960,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert_eq!(posts.bsky_posts.len(), 1);
         assert_eq!(
             posts.bsky_posts[0].text,
-            "Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.\n\nAfD lässt Migranten Straße put... https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing"
+            "Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.\n\n<a href=\"https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing\">AfD lässt Migranten Straße put...</a>"
         );
     }
 

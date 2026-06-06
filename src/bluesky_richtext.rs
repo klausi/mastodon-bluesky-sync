@@ -8,6 +8,7 @@ use bsky_sdk::{
     },
     rich_text::RichText,
 };
+use scraper::{ElementRef, Html, Node};
 use regex::Regex;
 use std::sync::OnceLock;
 use unicode_segmentation::UnicodeSegmentation;
@@ -105,6 +106,122 @@ pub fn get_link_uris(text: &str) -> Vec<String> {
         .collect()
 }
 
+// Build RichText while preserving Mastodon anchors (<a href="...">text</a>)
+// as clickable link facets.
+fn detect_facets_with_mastodon_links(text: &str) -> RichText {
+    if !text.contains("<a ") {
+        return detect_facets(text);
+    }
+
+    let fragment = Html::parse_fragment(text);
+    let mut plain_text = String::new();
+    let mut anchor_facets = Vec::new();
+
+    for child in fragment.tree.root().children() {
+        append_text_and_anchor_facets(child, &mut plain_text, &mut anchor_facets);
+    }
+
+    // Preserve existing automatic URL and hashtag detection.
+    let mut richtext = detect_facets(&plain_text);
+    let mut merged_facets = richtext.facets.take().unwrap_or_default();
+    merged_facets.extend(anchor_facets);
+
+    if merged_facets.is_empty() {
+        richtext.facets = None;
+    } else {
+        // Keep deterministic order and remove duplicates caused by url-like link text.
+        merged_facets.sort_by_key(|facet| (facet.index.byte_start, facet.index.byte_end));
+        merged_facets.dedup_by(|left, right| {
+            if left.index.byte_start != right.index.byte_start
+                || left.index.byte_end != right.index.byte_end
+            {
+                return false;
+            }
+
+            let left_link = left.features.iter().find_map(|feature| {
+                if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    Some(link.uri.as_str())
+                } else {
+                    None
+                }
+            });
+            let right_link = right.features.iter().find_map(|feature| {
+                if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    Some(link.uri.as_str())
+                } else {
+                    None
+                }
+            });
+            left_link.is_some() && left_link == right_link
+        });
+        richtext.facets = Some(merged_facets);
+    }
+
+    richtext
+}
+
+// Traverse parsed nodes, copying visible text and creating link facets for
+// preserved external anchor tags.
+fn append_text_and_anchor_facets(
+    node: ego_tree::NodeRef<'_, Node>,
+    plain_text: &mut String,
+    anchor_facets: &mut Vec<bsky_sdk::api::app::bsky::richtext::facet::Main>,
+) {
+    if let Some(element) = ElementRef::wrap(node)
+        && element.value().name() == "a"
+    {
+        let href = element
+            .attr("href")
+            .map(|value| html_escape::decode_html_entities(value).trim().to_string())
+            .unwrap_or_default();
+        let is_external = href.starts_with("http://") || href.starts_with("https://");
+        let start = plain_text.len();
+        for child in node.children() {
+            append_plain_text(child, plain_text);
+        }
+        let end = plain_text.len();
+        if is_external && end > start {
+            anchor_facets.push(
+                bsky_sdk::api::app::bsky::richtext::facet::MainData {
+                    features: vec![Union::Refs(MainFeaturesItem::Link(Box::new(
+                        LinkData { uri: href }.into(),
+                    )))],
+                    index: ByteSliceData {
+                        byte_start: start,
+                        byte_end: end,
+                    }
+                    .into(),
+                }
+                .into(),
+            );
+        }
+        return;
+    }
+
+    if ElementRef::wrap(node).is_some() {
+        for child in node.children() {
+            append_text_and_anchor_facets(child, plain_text, anchor_facets);
+        }
+        return;
+    }
+
+    append_plain_text(node, plain_text);
+}
+
+// Recursively collect only rendered text from a node subtree.
+fn append_plain_text(node: ego_tree::NodeRef<'_, Node>, plain_text: &mut String) {
+    if let Some(_element) = ElementRef::wrap(node) {
+        for child in node.children() {
+            append_plain_text(child, plain_text);
+        }
+        return;
+    }
+
+    if let Node::Text(text) = node.value() {
+        plain_text.push_str(text);
+    }
+}
+
 fn detect_facets(text: &str) -> RichText {
     let facets_without_resolution = detect_facets_without_resolution(text);
     let facets = if facets_without_resolution.is_empty() {
@@ -141,7 +258,7 @@ fn detect_facets(text: &str) -> RichText {
 
 // Shorten links so that the text stays compact and links look good on Bluesky.
 pub fn get_rich_text(text: &str) -> RichText {
-    let mut richtext = detect_facets(text);
+    let mut richtext = detect_facets_with_mastodon_links(text);
     if let Some(ref facets) = richtext.facets {
         // Start replacing links from the end of the text.
         let mut reversed_facets = facets.clone();
@@ -149,6 +266,16 @@ pub fn get_rich_text(text: &str) -> RichText {
         for facet in reversed_facets {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    let visible_text = richtext
+                        .text
+                        .get(facet.index.byte_start..facet.index.byte_end)
+                        .unwrap_or("");
+                    if !visible_text.starts_with("https://")
+                        && !visible_text.starts_with("http://")
+                    {
+                        continue;
+                    }
+
                     let uri = &link.uri;
                     // Strip protocol prefix for display.
                     let protocol_len = if uri.starts_with("https://") {
@@ -199,6 +326,9 @@ pub fn get_rich_text(text: &str) -> RichText {
 
 #[cfg(test)]
 pub mod tests {
+    use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
+    use bsky_sdk::api::types::Union;
+
     use crate::bluesky_richtext::{get_link_uris, get_rich_text};
 
     // Test URL shortening.
@@ -244,5 +374,22 @@ pub mod tests {
                 "http://example.com/two".to_string(),
             ]
         );
+    }
+
+    #[test]
+    fn test_get_rich_text_with_mastodon_links() {
+        let text = "Read <a href=\"https://example.com/path\">this article</a> now.";
+        let richtext = get_rich_text(text);
+
+        assert_eq!(richtext.text, "Read this article now.");
+        let facets = richtext.facets.expect("expected link facet");
+        assert_eq!(facets.len(), 1);
+        assert_eq!(facets[0].index.byte_start, 5);
+        assert_eq!(facets[0].index.byte_end, 17);
+        if let Union::Refs(MainFeaturesItem::Link(link)) = &facets[0].features[0] {
+            assert_eq!(link.uri, "https://example.com/path");
+        } else {
+            panic!("expected link facet");
+        }
     }
 }

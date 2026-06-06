@@ -86,7 +86,7 @@ fn append_html_text(
     }
 }
 
-// Convert an anchor element to plain text and append href for non-mention links.
+// Convert an anchor element to plain text and preserve external links as tags.
 fn anchor_text(anchor: ElementRef<'_>) -> String {
     let mut text = String::new();
     let mut ignored_inline_quote_link = None;
@@ -112,8 +112,8 @@ fn anchor_text(anchor: ElementRef<'_>) -> String {
     let is_mention_or_hashtag = class.contains("mention") || class.contains("hashtag");
     let is_external_link = href.starts_with("http://") || href.starts_with("https://");
 
-    if is_external_link && !is_mention_or_hashtag && !text_trimmed.contains(&href) {
-        format!("{text_trimmed} {href}")
+    if is_external_link && !is_mention_or_hashtag {
+        format!("<a href=\"{href}\">{text_trimmed}</a>")
     } else {
         text
     }
@@ -128,7 +128,7 @@ mod tests {
         let html = "<p>Read <a href=\"https://example.com/path?x=1&amp;y=2\" rel=\"nofollow\">this article</a> now.</p>";
         assert_eq!(
             parse_html_and_extract_inline_quote(html).0,
-            "Read this article https://example.com/path?x=1&y=2 now."
+            "Read <a href=\"https://example.com/path?x=1&y=2\">this article</a> now."
         );
     }
 
