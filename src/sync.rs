@@ -11,6 +11,7 @@ use std::fs;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::bluesky_richtext::get_rich_text;
+use crate::mastodon_html::parse_html_and_extract_inline_quote;
 
 // Represents new status updates that should be posted to Bluesky (bsky_posts)
 // and Mastodon (toots).
@@ -460,37 +461,19 @@ fn mastodon_text_length(text: &str) -> usize {
 
 // Prefix boost toots with the author and strip HTML tags.
 pub fn mastodon_toot_get_text(toot: &Status) -> String {
-    mastodon_toot_get_text_internal(toot)
-}
-
-fn mastodon_toot_get_text_internal(toot: &Status) -> String {
     let mut replaced = match toot.reblog {
         None => toot.content.clone(),
         Some(ref reblog) => format!("♻️ {}: {}", reblog.account.username, reblog.content),
     };
-    let inline_quote_link_regex =
-        Regex::new(r#"<p class=\"quote-inline\">RE: <a href=\"([^\"]+)\"[^>]*>.*?</a></p>"#)
-            .unwrap();
-    let inline_quote_link = inline_quote_link_regex
-        .captures(&replaced)
-        .and_then(|captures| captures.get(1).map(|url| url.as_str().to_string()));
-
     // Mastodon can inline quote links in HTML content. Remove this marker and
     // then append structured quote content below.
-    let quote_inline_regex = Regex::new(r#"<p class=\"quote-inline\">.*?</p>"#).unwrap();
-    replaced = quote_inline_regex.replace_all(&replaced, "").to_string();
-    replaced = replaced.replace("<br />", "\n");
-    replaced = replaced.replace("<br>", "\n");
-    replaced = replaced.replace("</p><p>", "\n\n");
-    replaced = replaced.replace("<p>", "");
-    replaced = replaced.replace("</p>", "");
-
-    replaced = voca_rs::strip::strip_tags(&replaced);
+    let (parsed_text, inline_quote_link) = parse_html_and_extract_inline_quote(&replaced);
+    replaced = parsed_text;
 
     match &toot.quote {
         Some(QuotedStatus::Quote(quote)) => {
             if let Some(quoted_status) = &quote.quoted_status {
-                let quote_text = mastodon_toot_get_text_internal(quoted_status);
+                let quote_text = mastodon_toot_get_text(quoted_status);
                 replaced = format!(
                     "{}\n\n💬 {}: {}",
                     replaced.trim(),
@@ -943,6 +926,18 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert_eq!(
             fulltext,
             "Testing quoting myself!\n\n💬 klausi: The Olympic committee finally found the #transgender gene to ban trans women from participating! \n\nI'm sure this will not backfire and no cis women will be banned by this ruling. \n\nAs we all know determining gender is easy and biology is not a complicated mess 👍👍👍\n\nhttps://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0"
+        );
+    }
+
+    // Integration-style regression test for HTML link conversion via determine_posts.
+    #[test]
+    fn mastodon_html_links_sync_to_bluesky_via_determine_posts() {
+        let post = read_mastodon_post_from_json("tests/mastodon_html_links_sync.json");
+        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        assert_eq!(posts.bsky_posts.len(), 1);
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.\n\nAfD lässt Migranten Straße put... https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing"
         );
     }
 

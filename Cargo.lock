@@ -1745,6 +1745,7 @@ dependencies = [
  "bsky-sdk",
  "chrono",
  "clap",
+ "ego-tree",
  "env_logger",
  "html-escape",
  "image_compressor",
@@ -1762,7 +1763,6 @@ dependencies = [
  "toml",
  "unicode-segmentation",
  "url",
- "voca_rs",
  "webpage",
 ]
 
@@ -3092,12 +3092,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
-name = "stfu8"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e51f1e89f093f99e7432c491c382b88a6860a5adbe6bf02574bf0a08efff1978"
-
-[[package]]
 name = "string_cache"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3680,17 +3674,6 @@ name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
-
-[[package]]
-name = "voca_rs"
-version = "1.15.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e44efbf25e32768d5ecd22244feacc3d3b3eca72d318f5ef0a4764c2c158e18"
-dependencies = [
- "regex",
- "stfu8",
- "unicode-segmentation",
-]
 
 [[package]]
 name = "want"

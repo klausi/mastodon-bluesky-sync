@@ -1,0 +1,104 @@
+{
+  "id": "116701739162592811",
+  "created_at": "2026-06-06T06:24:17.285Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "de",
+  "uri": "https://bsky.brid.gy/convert/ap/at://did:plc:x4mzdcf5dzxicy7n4dvlof7p/app.bsky.feed.post/3mnlzdv3yx226",
+  "url": "https://fed.brid.gy/r/https://bsky.app/profile/did:plc:x4mzdcf5dzxicy7n4dvlof7p/post/3mnlzdv3yx226",
+  "replies_count": 10,
+  "reblogs_count": 48,
+  "favourites_count": 10,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "<p>Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.<br><br><a href=\"https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&amp;at_campaign=wdraktuellapp&amp;at_campaign_name=wdraktuellapp-sitesharing\" rel=\"nofollow noopener\" target=\"_blank\">AfD lässt Migranten Straße put...</a></p>",
+  "reblog": null,
+  "account": {
+    "id": "113045109537181988",
+    "username": "politicalbeauty.bsky.social",
+    "acct": "politicalbeauty.bsky.social@bsky.brid.gy",
+    "display_name": "Zentrum für Politische Schönheit",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2024-08-29T00:00:00.000Z",
+    "note": "Die einzige nur von Björn Höcke anerkannte Terrororganisation. Werde jetzt Kompliz:in! Wir machen für Dich Stress und radikalen Humanismus: <a href=\"https://werde-komplizin.de\" rel=\"nofollow noopener\" target=\"_blank\">werde-komplizin.de</a><br><br>🌉 <a href=\"https://fed.brid.gy/bsky/politicalbeauty.bsky.social\" rel=\"nofollow noopener\" target=\"_blank\">bridged</a> from 🦋 <a href=\"https://bsky.app/profile/politicalbeauty.bsky.social\" rel=\"nofollow noopener\" target=\"_blank\">politicalbeauty.bsky.social</a>, follow <a class=\"h-card u-author mention\" rel=\"nofollow noopener\" href=\"https://bsky.brid.gy/bsky.brid.gy\" target=\"_blank\">@bsky.brid.gy</a> to interact",
+    "url": "https://bsky.brid.gy/r/https://bsky.app/profile/politicalbeauty.bsky.social",
+    "uri": "https://bsky.brid.gy/ap/did:plc:x4mzdcf5dzxicy7n4dvlof7p",
+    "avatar": "https://files.mastodon.social/cache/accounts/avatars/113/045/109/537/181/988/original/d4a2b3d9f94645e8.jpeg",
+    "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/113/045/109/537/181/988/original/d4a2b3d9f94645e8.jpeg",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/cache/accounts/headers/113/045/109/537/181/988/original/50a041803139d2e7.jpeg",
+    "header_static": "https://files.mastodon.social/cache/accounts/headers/113/045/109/537/181/988/original/50a041803139d2e7.jpeg",
+    "header_description": "",
+    "followers_count": 4742,
+    "following_count": 7,
+    "statuses_count": 0,
+    "last_status_at": "2026-06-06",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "feature_approval": {
+      "automatic": [],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "fields": [
+      {
+        "name": "Web site",
+        "value": "<a rel=\"nofollow noopener\" href=\"https://bsky.app/profile/politicalbeauty.bsky.social\" target=\"_blank\"><span class=\"invisible\">https://</span>bsky.app/profile/politicalbeauty.bsky.social</a>",
+        "verified_at": null
+      },
+      {
+        "name": "Link",
+        "value": "<a rel=\"nofollow noopener\" href=\"https://werde-komplizin.de\" target=\"_blank\"><span class=\"invisible\">https://</span>werde-komplizin.de</a>",
+        "verified_at": null
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": {
+    "url": "https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing",
+    "title": "Entsetzen über Video | AfD lässt Migranten in Gelsenkirchen putzen",
+    "description": "Die AfD filmt, wie sie Migranten in Gelsenkirchen die Straße putzen lässt. Ein Pfarrer schlägt Alarm. So reagieren Betroffene.",
+    "language": "de",
+    "type": "link",
+    "author_name": "Andreas Artz",
+    "author_url": "",
+    "provider_name": "WDR",
+    "provider_url": "",
+    "html": "",
+    "width": 640,
+    "height": 360,
+    "image": "https://files.mastodon.social/cache/preview_cards/images/195/482/792/original/f35c87277d4006f6.jpg",
+    "image_description": "",
+    "embed_url": "",
+    "blurhash": "UJGk{}IW?GE2~pa#t7V[D*V@NIxaRPRjt6kD",
+    "published_at": "2026-06-05T08:01:00.000Z",
+    "authors": [
+      {
+        "name": "Andreas Artz",
+        "url": "",
+        "account": null
+      }
+    ]
+  },
+  "poll": null,
+  "quote_approval": {
+    "automatic": [],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

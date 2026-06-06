@@ -26,6 +26,7 @@ mod bluesky_video;
 mod config;
 mod delete_favs;
 mod delete_posts;
+mod mastodon_html;
 mod post;
 mod registration;
 mod sync;

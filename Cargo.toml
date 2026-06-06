@@ -19,6 +19,7 @@ atrium-xrpc-client = { version = ">=0.1", default-features = false, features = [
 chrono = { version = ">=0.4.23", default-features = false, features = ["std"] }
 clap = { version = ">=3.2.22", features = ["derive"] }
 env_logger = ">=0.7.1"
+ego-tree = ">=0.11"
 html-escape = ">=0.2.11"
 image_compressor = ">=1"
 log = ">=0.4.8"
@@ -37,5 +38,4 @@ tokio = { version = ">=1", features = ["full"] }
 toml = ">=0.4.5"
 unicode-segmentation = ">=1.9"
 url = ">=2.3.1"
-voca_rs = ">=1.14.0"
 webpage = { version = ">=2", default-features = false }
