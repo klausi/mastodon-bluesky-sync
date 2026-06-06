@@ -39,8 +39,25 @@ fn find_first_anchor_href(node: NodeRef<'_, Node>) -> Option<String> {
     None
 }
 
+// Check if an element contains any descendants with class="invisible".
+fn element_contains_invisible_spans(element: &ElementRef<'_>) -> bool {
+    if element_has_class(element, "invisible") {
+        return true;
+    }
+
+    for child in element.children() {
+        if let Some(child_element) = ElementRef::wrap(child) {
+            if element_contains_invisible_spans(&child_element) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 // Walk an HTML node tree and write plain text while preserving line breaks.
 // Also skips quote-inline marker paragraphs and captures their first link.
+// Skips spans marked with class="invisible" used by Mastodon for link display formatting.
 fn append_html_text(
     node: NodeRef<'_, Node>,
     output: &mut String,
@@ -51,6 +68,9 @@ fn append_html_text(
             if inline_quote_link.is_none() {
                 *inline_quote_link = find_first_anchor_href(node);
             }
+            return;
+        }
+        if element_has_class(&element, "invisible") {
             return;
         }
         match element.value().name() {
@@ -95,13 +115,19 @@ fn anchor_text(anchor: ElementRef<'_>) -> String {
     }
 
     let text = html_escape::decode_html_entities(&text).to_string();
-    let text_trimmed = text.trim();
+    let mut text_trimmed = text.trim().to_string();
+    
+    // If the anchor contains invisible spans, append ellipsis to indicate truncation
+    if element_contains_invisible_spans(&anchor) {
+        text_trimmed.push('…');
+    }
+    
     let href = anchor
         .attr("href")
         .map(|value| html_escape::decode_html_entities(value).trim().to_string())
         .unwrap_or_default();
 
-    if text_trimmed.is_empty() {
+    if text_trimmed.is_empty() && !text_trimmed.contains('…') {
         return href;
     }
 
@@ -113,9 +139,9 @@ fn anchor_text(anchor: ElementRef<'_>) -> String {
     let is_external_link = href.starts_with("http://") || href.starts_with("https://");
 
     if is_external_link && !is_mention_or_hashtag {
-        format!("<a href=\"{href}\">{text_trimmed}</a>")
+        format!("<a href=\"{href}\">{}</a>", text_trimmed)
     } else {
-        text
+        text_trimmed
     }
 }
 
@@ -138,6 +164,15 @@ mod tests {
         assert_eq!(
             parse_html_and_extract_inline_quote(html).0,
             "Hello @mekkaokereke"
+        );
+    }
+
+    #[test]
+    fn mastodon_html_link_with_invisible_spans() {
+        let html = "<p>Check this <a href=\"https://example.com/path\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">example.com/</span><span class=\"invisible\">path</span></a> out.</p>";
+        assert_eq!(
+            parse_html_and_extract_inline_quote(html).0,
+            "Check this <a href=\"https://example.com/path\">example.com/…</a> out."
         );
     }
 }

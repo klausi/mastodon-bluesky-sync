@@ -1,0 +1,103 @@
+{
+  "id": "116702690019085550",
+  "created_at": "2026-06-06T10:28:50.029Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "de",
+  "uri": "https://mastodon.social/users/klausi/statuses/116702690019085550",
+  "url": "https://mastodon.social/@klausi/116702690019085550",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "<p>Das großartige am Klenk ist ja, dass er einfach eine whataboutism Schmutz Kübel Kampagne aufmacht wenn er bei den sachlichen Argumenten unterliegt und gekränkt ist <a href=\"https://bsky.app/profile/klenkflorian.bsky.social/post/3mnlwuddgqc2e\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">bsky.app/profile/klenkflorian.</span><span class=\"invisible\">bsky.social/post/3mnlwuddgqc2e</span></a></p><p>Macht der bohrn mena ein bisschen zweifelhaften Aktivismus? Vielleicht. </p><p>Darf er sich gegen Hass Kommentare und Hass likes wehren? JA!</p><p>Kontext: <a href=\"https://www.joyn.at/serien/breaking-media-machtmedienkompetenz/1-17-breaking-media-strafsache-like\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">joyn.at/serien/breaking-media-</span><span class=\"invisible\">machtmedienkompetenz/1-17-breaking-media-strafsache-like</span></a></p>",
+  "reblog": null,
+  "application": {
+    "name": "Web",
+    "website": null
+  },
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 603,
+    "following_count": 1156,
+    "statuses_count": 183,
+    "last_status_at": "2026-06-06",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": {
+    "url": "https://bsky.app/profile/klenkflorian.bsky.social/post/3mnlwuddgqc2e",
+    "title": "Florian Klenk 👨🏻‍💻 (@klenkflorian.bsky.social)",
+    "description": "Das Magazin Datum hat seine Recherche zu den Geschäftsmethoden der Bohrn-Menas freigeschaltet. Wie persönliche okönomische Interessen und politische Kampagnen vermischt und mit dem Boulevard propagiert werden. Ein sehr erhellendes investigatives Stück von Thomas Winkelmüller\nhttps://datum.at/das-system-bohrn-mena/?fbclid=IwZnRzaASQkctleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAo2NjI4NTY4Mzc5AAEee9RnKWJGBYLUCpjiEcOuCrz3T1Y-iLUejwEQgRKOReC70tMvwOe7d8pJRN4_aem_JfPvtoq3-lH_kZF-NS5Msw",
+    "language": null,
+    "type": "link",
+    "author_name": "",
+    "author_url": "",
+    "provider_name": "Bluesky Social",
+    "provider_url": "",
+    "html": "",
+    "width": 128,
+    "height": 128,
+    "image": "https://files.mastodon.social/cache/preview_cards/images/195/601/022/original/680293940055c09e.webp",
+    "image_description": "",
+    "embed_url": "",
+    "blurhash": "UhLENUof~q-;?bWB%May9FWBM{of%Mofxuj[",
+    "published_at": "2026-06-06T05:39:50.561Z",
+    "authors": []
+  },
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

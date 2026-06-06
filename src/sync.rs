@@ -400,24 +400,17 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
 }
 
 pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
-    let rendered_text = get_rich_text(text).text;
-    let mut char_count = rendered_text.graphemes(true).count();
+    let richtext = get_rich_text(text);
+    let mut char_count = richtext.grapheme_len();
     // Hard-coding the Bluesky limit of 300 here for now, could be configurable.
-    if char_count <= 300 {
-        return text.to_string();
-    }
-    // Try to shorten links first.
-    let mut richtext = get_rich_text(&rendered_text);
-    // If the result is below 300 characters we can return the original text, it
-    // will be shortened on posting.
-    char_count = richtext.grapheme_len();
     if char_count <= 300 {
         return text.to_string();
     }
 
     // Remove words one by one from the end until the text is short enough.
+    // Work with the original text to preserve anchor tags.
     let re = Regex::new(r"[^\s]+$").unwrap();
-    let mut shortened = rendered_text.trim().to_string();
+    let mut shortened = text.trim().to_string();
     let mut with_link = shortened.clone();
 
     // Bluesky has a limit of 300 characters.
@@ -430,8 +423,8 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
         } else {
             with_link = shortened.clone();
         }
-        richtext = get_rich_text(&with_link);
-        char_count = richtext.grapheme_len();
+        let richtext_shortened = get_rich_text(&with_link);
+        char_count = richtext_shortened.grapheme_len();
     }
     with_link
 }
@@ -792,7 +785,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
-            "Test toot with long link <a href=\"http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</a>"
+            "Test toot with long link <a href=\"http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">example.com/aaaaaaaaaaaaaaaaaa…</a>"
         );
     }
 
@@ -937,7 +930,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let fulltext = mastodon_toot_get_text(&post);
         assert_eq!(
             fulltext,
-            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub</a>\n\nPosted into Sports @sports-Independent"
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
         );
     }
 
@@ -963,7 +956,20 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             "Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.\n\n<a href=\"https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing\">AfD lässt Migranten Straße put...</a>"
         );
     }
-
+    // Integration test that Mastodon links with invisible span formatting are parsed
+    // correctly and synced to Bluesky. Invisible spans are used by Mastodon for URL
+    // display formatting and must be skipped to generate valid link facets.
+    // Anchor tags are preserved in the final output for display as rich text links.
+    #[test]
+    fn mastodon_link_issue_invisible_spans() {
+        let post = read_mastodon_post_from_json("tests/mastodon_link_issue.json");
+        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        assert_eq!(posts.bsky_posts.len(), 1);
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "Das großartige am Klenk ist ja, dass er einfach eine whataboutism Schmutz Kübel Kampagne aufmacht wenn er bei den sachlichen Argumenten unterliegt und gekränkt ist <a href=\"https://bsky.app/profile/klenkflorian.bsky.social/post/3mnlwuddgqc2e\">bsky.app/profile/klenkflorian.…</a>\n\nMacht der bohrn mena ein bisschen zweifelhaften Aktivismus? Vielleicht. \n\nDarf… https://mastodon.social/@klausi/116702690019085550"
+        );
+    }
     // Read static bluesky post from test file.
     fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
         let json = fs::read_to_string(file_name).unwrap();
