@@ -1,0 +1,119 @@
+{
+  "id": "116708009175983567",
+  "created_at": "2026-06-07T09:01:33.961Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": "en",
+  "uri": "https://mastodon.social/users/klausi/statuses/116708009175983567",
+  "url": "https://mastodon.social/@klausi/116708009175983567",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "<p><a href=\"https://mastodon.social/tags/GraphQL\" class=\"mention hashtag\" rel=\"tag\">#<span>GraphQL</span></a> for <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a> 5.0.0 stable released, congrats everyone! <a href=\"https://www.drupal.org/project/graphql/releases/5.0.0\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">drupal.org/project/graphql/rel</span><span class=\"invisible\">eases/5.0.0</span></a></p><p>I would personally like to thank all contributors and give a special shout-out to <span class=\"h-card\" translate=\"no\"><a href=\"https://hachyderm.io/@Kingdutch\" class=\"u-url mention\">@<span>Kingdutch</span></a></span> , who put it in a lot of thought and work making this module better. I could not do it without you!</p><p>If you like GraphQL 5.0 please leave a comment of appreciation for the contributors and maintainers in the planning issue: <a href=\"https://www.drupal.org/project/graphql/issues/3513158\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">drupal.org/project/graphql/iss</span><span class=\"invisible\">ues/3513158</span></a></p>",
+  "reblog": null,
+  "application": {
+    "name": "Web",
+    "website": null
+  },
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 603,
+    "following_count": 1157,
+    "statuses_count": 185,
+    "last_status_at": "2026-06-08",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [
+    {
+      "id": "109364258702071385",
+      "username": "Kingdutch",
+      "url": "https://hachyderm.io/@Kingdutch",
+      "acct": "Kingdutch@hachyderm.io"
+    }
+  ],
+  "tags": [
+    {
+      "name": "graphql",
+      "url": "https://mastodon.social/tags/graphql"
+    },
+    {
+      "name": "drupal",
+      "url": "https://mastodon.social/tags/drupal"
+    }
+  ],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": {
+    "url": "https://www.drupal.org/project/graphql/releases/5.0.0",
+    "title": "graphql 5.0.0",
+    "description": "First stable release of GraphQL 5.x! After a year of development we are happy to announce GraphQL 5.0.0 stable! API changes compared to 4.x The underlying webonyx/graphql-php library was updated to version 15.x. There are almost no noticeable breaking changes. In one project we had to change the moethod callGraphQL\\Server\\OperationParams::getOriginalInput('mutation_name') to a property access $operation->originalInput['mutation_name'] ?? ''.",
+    "language": null,
+    "type": "link",
+    "author_name": "",
+    "author_url": "",
+    "provider_name": "Drupal.org",
+    "provider_url": "",
+    "html": "",
+    "width": 0,
+    "height": 0,
+    "image": null,
+    "image_description": "",
+    "embed_url": "",
+    "blurhash": null,
+    "published_at": "2026-06-07T08:49:42.000Z",
+    "authors": []
+  },
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

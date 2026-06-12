@@ -219,73 +219,23 @@ pub fn determine_posts(
     }
 }*/
 
-// Returns true if a Mastodon toot and a Bluesky post are considered equal.
+/// Returns true if a Mastodon toot and a Bluesky post are considered equal.
+///
+/// Comparison is strict: both posts are normalized into a canonical form and
+/// then compared with equality.
 pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostData>) -> bool {
     // Strip markup from Mastodon toot and unify message for comparison.
     let toot_text = unify_post_content(&mastodon_toot_get_text(toot), toot);
     // Populate URLs in the post text.
     let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post), toot);
 
-    if toot_text == bsky_text {
-        return true;
-    }
-    // Mastodon allows up to 500 characters, so we might need to shorten the
-    // toot. If this is a reblog/boost then take the URL to the original toot.
-    let bsky_shortened = match &toot.reblog {
-        None => bsky_post_shorten(&toot_text, &toot.url),
-        Some(reblog) => bsky_post_shorten(&toot_text, &reblog.url),
-    };
-    let shortened_toot = unify_post_content(&bsky_shortened, toot);
-
-    if shortened_toot == bsky_text {
-        return true;
-    }
-
-    // Bluesky can attach an external link preview URL that was not part of
-    // the original post text. Ignore that trailing link for equality checks to
-    // prevent sync loops back to Mastodon.
-    if let Some(embed_uri) = bsky_external_embed_uri(bsky_post) {
-        let bsky_without_embed = strip_trailing_embed_uri(&bsky_text, &embed_uri);
-        if toot_text == bsky_without_embed || shortened_toot == bsky_without_embed {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn bsky_external_embed_uri(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
-    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedExternalView(embed))) =
-        &bsky_post.post.embed
-    {
-        return Some(embed.external.uri.clone());
-    }
-    None
-}
-
-fn strip_trailing_embed_uri(text: &str, uri: &str) -> String {
-    let trimmed = text.trim_end();
-    let suffix = format!("\n\n{uri}");
-    if let Some(prefix) = trimmed.strip_suffix(&suffix) {
-        return prefix.trim_end().to_string();
-    }
-
-    // The URI might have been altered in the sync process. Also try to strip
-    // the lowercase version.
-    let lowercase_uri = uri.to_lowercase();
-    if lowercase_uri != uri {
-        let lowercase_suffix = format!("\n\n{lowercase_uri}");
-        if let Some(prefix) = trimmed.strip_suffix(&lowercase_suffix) {
-            return prefix.trim_end().to_string();
-        }
-    }
-
-    trimmed.to_string()
+    toot_text == bsky_text
 }
 
 // Unifies bluesky text or toot text to a common format.
 fn unify_post_content(content: &str, toot: &Status) -> String {
     let normalized = normalize_links_for_comparison(content);
+    let normalized = normalize_mentions_for_comparison(&normalized);
     // Remove links to the respective posts themselves, they could have been
     // added because of a too long video.
     let mut result = normalized;
@@ -299,7 +249,73 @@ fn unify_post_content(content: &str, toot: &Status) -> String {
     }
     result = result.to_lowercase().trim().to_string();
 
+    // Remove shortening/embed suffixes so both network representations compare
+    // against the same payload.
+    result = strip_ellipsis_and_link_suffix(&result);
+
+    // Canonicalize to Bluesky's 300-character limit at a word boundary.
+    if result.chars().count() > 300 {
+        result = shorten_to_word_boundary(&result, 300);
+    }
+
     result
+}
+
+/// Strip trailing link-related patterns that are added during shortening or embedding.
+/// Handles ellipsis + space + URL and also double-newline + URL (Bluesky embed pattern).
+fn strip_ellipsis_and_link_suffix(text: &str) -> String {
+    let original = text.trim_end();
+
+    // First try to strip ellipsis + space + URL (the shortening pattern)
+    let re_with_link = Regex::new(r"…\s+https?://\S+$").expect("Invalid ellipsis link regex");
+    let replaced = re_with_link.replace(original, "");
+    let stripped = replaced.trim_end();
+    if stripped != original {
+        return stripped.to_string();
+    }
+
+    // Try to strip double newline + URL (Bluesky link embed pattern)
+    let re_embed_link = Regex::new(r"\n\nhttps?://\S+$").expect("Invalid embed link regex");
+    let replaced = re_embed_link.replace(original, "");
+    let stripped = replaced.trim_end();
+    if stripped != original {
+        return stripped.to_string();
+    }
+
+    // Also strip just trailing ellipsis (indicates truncation/shortening)
+    let final_stripped = original.trim_end_matches('…').trim_end();
+    final_stripped.to_string()
+}
+
+fn shorten_to_word_boundary(text: &str, max_chars: usize) -> String {
+    if text.chars().count() <= max_chars {
+        return text.to_string();
+    }
+
+    let mut last_space_idx: Option<usize> = None;
+    let mut boundary_idx = text.len();
+
+    for (char_count, (byte_idx, ch)) in text.char_indices().enumerate() {
+        if char_count == max_chars {
+            boundary_idx = byte_idx;
+            break;
+        }
+        if ch.is_whitespace() {
+            last_space_idx = Some(byte_idx);
+        }
+    }
+
+    let cut_idx = last_space_idx.unwrap_or(boundary_idx);
+    text[..cut_idx].trim_end().to_string()
+}
+
+// Mastodon mentions can include a domain (e.g. @user@example.org) while the
+// equivalent Bluesky text often only contains @user. Normalize both to @user
+// for robust cross-network equality checks.
+fn normalize_mentions_for_comparison(content: &str) -> String {
+    let mention_regex = Regex::new(r"@([\p{L}\p{N}_\.]+)@[\p{L}\p{N}\.-]+")
+        .expect("Invalid mention normalization regex");
+    mention_regex.replace_all(content, "@$1").to_string()
 }
 
 // Normalize preserved anchor links into raw URIs so sync comparisons stay
@@ -894,6 +910,21 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let mastodon_post =
             read_mastodon_post_from_json("tests/mastodon_link_embed_roundtrip.json");
         let bsky_post = read_bsky_post_from_json("tests/bsky_link_embed_roundtrip.json");
+        let posts = determine_posts(
+            &vec![mastodon_post],
+            &vec![bsky_post],
+            &SyncOptions::default(),
+        );
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
+    }
+
+    // Regression test: this real-world Mastodon/Bluesky post pair should be
+    // treated as already synced and must not produce a duplicate Mastodon post.
+    #[test]
+    fn mastodon_bsky_duplicate_sync_case_should_be_equal() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_duplicate_sync_case.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_duplicate_sync_case.json");
         let posts = determine_posts(
             &vec![mastodon_post],
             &vec![bsky_post],

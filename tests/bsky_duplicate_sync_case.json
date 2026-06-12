@@ -1,0 +1,87 @@
+{
+  "post": {
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3mnot37o6ic2n",
+    "cid": "bafyreid5zjiurdqayjqp3ywrirzkz62jyl6c74htyzxsttf6zysxqssnae",
+    "author": {
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "handle": "klau.si",
+      "displayName": "klausi",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-12-24T10:54:53.475Z"
+    },
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2026-06-07T09:10:03.085423Z",
+      "facets": [
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#tag",
+              "tag": "GraphQL"
+            }
+          ],
+          "index": {
+            "byteEnd": 8,
+            "byteStart": 0
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#tag",
+              "tag": "Drupal"
+            }
+          ],
+          "index": {
+            "byteEnd": 20,
+            "byteStart": 13
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://www.drupal.org/project/graphql/releases/5.0.0"
+            }
+          ],
+          "index": {
+            "byteEnd": 96,
+            "byteStart": 63
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://mastodon.social/@klausi/116708009175983567"
+            }
+          ],
+          "index": {
+            "byteEnd": 306,
+            "byteStart": 281
+          }
+        }
+      ],
+      "langs": [
+        "en"
+      ],
+      "text": "#GraphQL for #Drupal 5.0.0 stable released, congrats everyone! drupal.org/project/graphql/rel…\n\nI would personally like to thank all contributors and give a special shout-out to @Kingdutch , who put it in a lot of thought and work making this module better. I could not do it… mastodon.social/@klaus…"
+    },
+    "bookmarkCount": 0,
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 1,
+    "quoteCount": 0,
+    "indexedAt": "2026-06-07T09:10:04.887Z",
+    "labels": []
+  }
+}
