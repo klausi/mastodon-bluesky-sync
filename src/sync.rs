@@ -221,41 +221,28 @@ pub fn determine_posts(
 
 /// Returns true if a Mastodon toot and a Bluesky post are considered equal.
 ///
-/// Comparison is strict: both posts are normalized into a canonical form and
-/// then compared with equality.
+/// Comparison is lenient as posts can get shortened.
 pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostData>) -> bool {
     // Strip markup from Mastodon toot and unify message for comparison.
-    let toot_text = unify_post_content(&mastodon_toot_get_text(toot), toot);
+    let toot_text = unify_post_content(&mastodon_toot_get_text(toot));
     // Populate URLs in the post text.
-    let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post), toot);
+    let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post));
 
-    toot_text == bsky_text
+    toot_text.starts_with(&bsky_text) || bsky_text.starts_with(&toot_text)
 }
 
 // Unifies bluesky text or toot text to a common format.
-fn unify_post_content(content: &str, toot: &Status) -> String {
+fn unify_post_content(content: &str) -> String {
     let normalized = normalize_links_for_comparison(content);
     let normalized = normalize_mentions_for_comparison(&normalized);
-    // Remove links to the respective posts themselves, they could have been
-    // added because of a too long video.
-    let mut result = normalized;
-    if let Some(url) = &toot.url {
-        result = result.replace(url, "");
-    }
-    if let Some(reblog) = &toot.reblog
-        && let Some(url) = &reblog.url
-    {
-        result = result.replace(url, "");
-    }
-    result = result.to_lowercase().trim().to_string();
+    let mut result = normalized.to_lowercase().trim().to_string();
 
     // Remove shortening/embed suffixes so both network representations compare
     // against the same payload.
-    result = strip_ellipsis_and_link_suffix(&result);
-
-    // Canonicalize to Bluesky's 300-character limit at a word boundary.
-    if result.chars().count() > 300 {
-        result = shorten_to_word_boundary(&result, 300);
+    let mut stripped = "".to_string();
+    while stripped != result {
+        stripped = result.clone();
+        result = strip_ellipsis_and_link_suffix(&result);
     }
 
     result
@@ -264,49 +251,16 @@ fn unify_post_content(content: &str, toot: &Status) -> String {
 /// Strip trailing link-related patterns that are added during shortening or embedding.
 /// Handles ellipsis + space + URL and also double-newline + URL (Bluesky embed pattern).
 fn strip_ellipsis_and_link_suffix(text: &str) -> String {
-    let original = text.trim_end();
+    let original = text.trim();
 
-    // First try to strip ellipsis + space + URL (the shortening pattern)
-    let re_with_link = Regex::new(r"…\s+https?://\S+$").expect("Invalid ellipsis link regex");
+    // Try to strip space + URL (the shortening pattern)
+    let re_with_link = Regex::new(r"\s+https?://\S+$").expect("Invalid link regex");
     let replaced = re_with_link.replace(original, "");
     let stripped = replaced.trim_end();
-    if stripped != original {
-        return stripped.to_string();
-    }
-
-    // Try to strip double newline + URL (Bluesky link embed pattern)
-    let re_embed_link = Regex::new(r"\n\nhttps?://\S+$").expect("Invalid embed link regex");
-    let replaced = re_embed_link.replace(original, "");
-    let stripped = replaced.trim_end();
-    if stripped != original {
-        return stripped.to_string();
-    }
 
     // Also strip just trailing ellipsis (indicates truncation/shortening)
-    let final_stripped = original.trim_end_matches('…').trim_end();
+    let final_stripped = stripped.trim_end_matches('…').trim_end();
     final_stripped.to_string()
-}
-
-fn shorten_to_word_boundary(text: &str, max_chars: usize) -> String {
-    if text.chars().count() <= max_chars {
-        return text.to_string();
-    }
-
-    let mut last_space_idx: Option<usize> = None;
-    let mut boundary_idx = text.len();
-
-    for (char_count, (byte_idx, ch)) in text.char_indices().enumerate() {
-        if char_count == max_chars {
-            boundary_idx = byte_idx;
-            break;
-        }
-        if ch.is_whitespace() {
-            last_space_idx = Some(byte_idx);
-        }
-    }
-
-    let cut_idx = last_space_idx.unwrap_or(boundary_idx);
-    text[..cut_idx].trim_end().to_string()
 }
 
 // Mastodon mentions can include a domain (e.g. @user@example.org) while the
@@ -1001,13 +955,34 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             "Das großartige am Klenk ist ja, dass er einfach eine whataboutism Schmutz Kübel Kampagne aufmacht wenn er bei den sachlichen Argumenten unterliegt und gekränkt ist <a href=\"https://bsky.app/profile/klenkflorian.bsky.social/post/3mnlwuddgqc2e\">bsky.app/profile/klenkflorian.…</a>\n\nMacht der bohrn mena ein bisschen zweifelhaften Aktivismus? Vielleicht. \n\nDarf… https://mastodon.social/@klausi/116702690019085550"
         );
     }
+
+    #[test]
+    fn two_different_links_not_equal() {
+        use bsky_sdk::api::types::TryFromUnknown;
+
+        let mut mastodon_post =
+            read_mastodon_post_from_json("tests/mastodon_reblog_loop_case.json");
+        mastodon_post.content = "https://example.com".to_string();
+        mastodon_post.reblog = None;
+        let mut bsky_post = read_bsky_post_from_json("tests/bsky_repost_loop_case.json");
+        let mut record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+            bsky_post.post.record.clone(),
+        )
+        .unwrap();
+        record.text = "https://example2.com".to_string();
+        record.facets = Some(Vec::new());
+        bsky_post.post.record =
+            serde_json::from_value(serde_json::to_value(record).unwrap()).unwrap();
+        assert!(!toot_and_post_are_equal(&mastodon_post, &bsky_post));
+    }
+
     // Read static bluesky post from test file.
     fn read_bsky_post_from_json(file_name: &str) -> Object<FeedViewPostData> {
         let json = fs::read_to_string(file_name).unwrap();
         serde_json::from_str(&json).unwrap()
     }
 
-    // Read static Mastofon post from test file.
+    // Read static Mastodon post from test file.
     fn read_mastodon_post_from_json(file_name: &str) -> Status {
         let json = fs::read_to_string(file_name).unwrap();
         serde_json::from_str(&json).unwrap()
