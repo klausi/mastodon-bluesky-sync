@@ -234,7 +234,6 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
 // Unifies bluesky text or toot text to a common format.
 fn unify_post_content(content: &str) -> String {
     let normalized = normalize_links_for_comparison(content);
-    let normalized = normalize_mentions_for_comparison(&normalized);
     let mut result = normalized.to_lowercase().trim().to_string();
 
     // Remove shortening/embed suffixes so both network representations compare
@@ -267,15 +266,6 @@ fn strip_ellipsis_and_link_suffix(text: &str) -> String {
     // Also strip just trailing ellipsis (indicates truncation/shortening)
     let final_stripped = stripped.trim_end_matches('…').trim_end();
     final_stripped.to_string()
-}
-
-// Mastodon mentions can include a domain (e.g. @user@example.org) while the
-// equivalent Bluesky text often only contains @user. Normalize both to @user
-// for robust cross-network equality checks.
-fn normalize_mentions_for_comparison(content: &str) -> String {
-    let mention_regex = Regex::new(r"@([\p{L}\p{N}_\.]+)@[\p{L}\p{N}\.-]+")
-        .expect("Invalid mention normalization regex");
-    mention_regex.replace_all(content, "@$1").to_string()
 }
 
 // Normalize preserved anchor links into raw URIs so sync comparisons stay
