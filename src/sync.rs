@@ -228,7 +228,7 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
     // Populate URLs in the post text.
     let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post));
 
-    toot_text.starts_with(&bsky_text) || bsky_text.starts_with(&toot_text)
+    toot_text == bsky_text
 }
 
 // Unifies bluesky text or toot text to a common format.
@@ -245,7 +245,13 @@ fn unify_post_content(content: &str) -> String {
         result = strip_ellipsis_and_link_suffix(&result);
     }
 
+    // Trim by 277 (300 bluesky limit - 23 link limit).
     result
+        .graphemes(true)
+        .take(277)
+        .collect::<String>()
+        .trim_end()
+        .to_string()
 }
 
 /// Strip trailing link-related patterns that are added during shortening or embedding.
@@ -970,6 +976,26 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         )
         .unwrap();
         record.text = "https://example2.com".to_string();
+        record.facets = Some(Vec::new());
+        bsky_post.post.record =
+            serde_json::from_value(serde_json::to_value(record).unwrap()).unwrap();
+        assert!(!toot_and_post_are_equal(&mastodon_post, &bsky_post));
+    }
+
+    #[test]
+    fn two_different_texts_not_equal() {
+        use bsky_sdk::api::types::TryFromUnknown;
+
+        let mut mastodon_post =
+            read_mastodon_post_from_json("tests/mastodon_reblog_loop_case.json");
+        mastodon_post.content = "Some post.".to_string();
+        mastodon_post.reblog = None;
+        let mut bsky_post = read_bsky_post_from_json("tests/bsky_repost_loop_case.json");
+        let mut record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
+            bsky_post.post.record.clone(),
+        )
+        .unwrap();
+        record.text = "Some post. But with more.".to_string();
         record.facets = Some(Vec::new());
         bsky_post.post.record =
             serde_json::from_value(serde_json::to_value(record).unwrap()).unwrap();
