@@ -1,0 +1,229 @@
+{
+  "id": "116848734153209905",
+  "created_at": "2026-07-02T05:29:46.671Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": null,
+  "uri": "https://mastodon.social/users/klausi/statuses/116848734153209905/activity",
+  "url": "https://mastodon.social/users/klausi/statuses/116848734153209905/activity",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "",
+  "reblog": {
+    "id": "116845080831123777",
+    "created_at": "2026-07-01T14:00:38.000Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://social.growyourown.services/users/FediGarden/statuses/116845080640170748",
+    "url": "https://social.growyourown.services/@FediGarden/116845080640170748",
+    "replies_count": 0,
+    "reblogs_count": 9,
+    "favourites_count": 9,
+    "quotes_count": 1,
+    "edited_at": null,
+    "content": "<p>Drupal.community is a Mastodon server focused on Drupal, free open source software and web development, but any content is welcome as long as it adheres to the Drupal Code of Conduct.</p><p>:Fediverse: <a href=\"https://drupal.community\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">drupal.community</span><span class=\"invisible\"></span></a></p><p>You can find out more at <a href=\"https://drupal.community/about\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">drupal.community/about</span><span class=\"invisible\"></span></a> or contact the admin account <span class=\"h-card\" translate=\"no\"><a href=\"https://drupal.community/@pcambra\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>pcambra</span></a></span> </p><p><a href=\"https://social.growyourown.services/tags/FeaturedServer\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>FeaturedServer</span></a> <a href=\"https://social.growyourown.services/tags/Drupal\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Drupal</span></a> <a href=\"https://social.growyourown.services/tags/CMS\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>CMS</span></a> <a href=\"https://social.growyourown.services/tags/WebDev\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>WebDev</span></a> <a href=\"https://social.growyourown.services/tags/FOSS\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>FOSS</span></a> <a href=\"https://social.growyourown.services/tags/Mastodon\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Mastodon</span></a> <a href=\"https://social.growyourown.services/tags/Fediverse\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Fediverse</span></a> <a href=\"https://social.growyourown.services/tags/FreeFediverse\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>FreeFediverse</span></a></p>",
+    "reblog": null,
+    "account": {
+      "id": "109746862142002870",
+      "username": "FediGarden",
+      "acct": "FediGarden@social.growyourown.services",
+      "display_name": "Fedi.Garden",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2023-01-22T00:00:00.000Z",
+      "note": "<p>Highlighting nice servers to join on Mastodon and the wider Fediverse 🙂 </p><p>This account has a website directory of servers at <a href=\"https://fedi.garden\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">fedi.garden</span><span class=\"invisible\"></span></a>. All servers listed comply with rules detailed at <a href=\"https://fedi.garden/about-this-site\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">fedi.garden/about-this-site</span><span class=\"invisible\"></span></a> which includes responsible moderation, technical reliability and defederating Meta/Threads.</p><p>Maintained by <span class=\"h-card\" translate=\"no\"><a href=\"https://social.chinwag.org/@FediThing\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>FediThing</span></a></span></p>",
+      "url": "https://social.growyourown.services/@FediGarden",
+      "uri": "https://social.growyourown.services/users/FediGarden",
+      "avatar": "https://files.mastodon.social/cache/accounts/avatars/109/746/862/142/002/870/original/c663885573b51f32.png",
+      "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/109/746/862/142/002/870/original/c663885573b51f32.png",
+      "avatar_description": "",
+      "header": "https://files.mastodon.social/cache/accounts/headers/109/746/862/142/002/870/original/b26f070cb85d7114.png",
+      "header_static": "https://files.mastodon.social/cache/accounts/headers/109/746/862/142/002/870/original/b26f070cb85d7114.png",
+      "header_description": "",
+      "followers_count": 4817,
+      "following_count": 4,
+      "statuses_count": 1016,
+      "last_status_at": "2026-07-02",
+      "hide_collections": true,
+      "show_media": true,
+      "show_media_replies": true,
+      "show_featured": true,
+      "feature_approval": {
+        "automatic": [
+          "public"
+        ],
+        "manual": [],
+        "current_user": "denied"
+      },
+      "emojis": [],
+      "fields": [
+        {
+          "name": "Website",
+          "value": "<a href=\"https://fedi.garden\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">fedi.garden</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-07-02T13:28:52.371+00:00"
+        },
+        {
+          "name": "See also",
+          "value": "<span class=\"h-card\" translate=\"no\"><a href=\"https://social.growyourown.services/@FediTips\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>FediTips</span></a></span>, <span class=\"h-card\" translate=\"no\"><a href=\"https://social.growyourown.services/@FediFollows\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>FediFollows</span></a></span>, <span class=\"h-card\" translate=\"no\"><a href=\"https://social.growyourown.services/@FediVideo\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>FediVideo</span></a></span>, <span class=\"h-card\" translate=\"no\"><a href=\"https://social.growyourown.services/@homegrown\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>homegrown</span></a></span>",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [
+      {
+        "id": "109361704585858313",
+        "username": "pcambra",
+        "url": "https://drupal.community/@pcambra",
+        "acct": "pcambra@drupal.community"
+      }
+    ],
+    "tags": [
+      {
+        "name": "featuredserver",
+        "url": "https://mastodon.social/tags/featuredserver"
+      },
+      {
+        "name": "drupal",
+        "url": "https://mastodon.social/tags/drupal"
+      },
+      {
+        "name": "cms",
+        "url": "https://mastodon.social/tags/cms"
+      },
+      {
+        "name": "webdev",
+        "url": "https://mastodon.social/tags/webdev"
+      },
+      {
+        "name": "foss",
+        "url": "https://mastodon.social/tags/foss"
+      },
+      {
+        "name": "mastodon",
+        "url": "https://mastodon.social/tags/mastodon"
+      },
+      {
+        "name": "fediverse",
+        "url": "https://mastodon.social/tags/fediverse"
+      },
+      {
+        "name": "freefediverse",
+        "url": "https://mastodon.social/tags/freefediverse"
+      }
+    ],
+    "emojis": [
+      {
+        "shortcode": "Fediverse",
+        "url": "https://files.mastodon.social/cache/custom_emojis/images/000/520/733/original/8829193c780cdbc9.png",
+        "static_url": "https://files.mastodon.social/cache/custom_emojis/images/000/520/733/static/8829193c780cdbc9.png",
+        "visible_in_picker": true
+      }
+    ],
+    "tagged_collections": [],
+    "quote": null,
+    "card": {
+      "url": "https://drupal.community/",
+      "title": "Drupal Mastodon",
+      "description": "Mastodon instance focused on the Drupal CMS.",
+      "language": "en",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "Mastodon hosted on drupal.community",
+      "provider_url": "",
+      "html": "",
+      "width": 662,
+      "height": 348,
+      "image": "https://files.mastodon.social/cache/preview_cards/images/047/863/301/original/7fd1d974f6bb960b.png",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "U.NmTujF_Moz%1aeR+ofOXWBeTofjbayW;kC",
+      "published_at": null,
+      "authors": []
+    },
+    "poll": null,
+    "quote_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    }
+  },
+  "application": null,
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 606,
+    "following_count": 1160,
+    "statuses_count": 172,
+    "last_status_at": "2026-07-03",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

@@ -234,7 +234,15 @@ pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostDat
 // Unifies bluesky text or toot text to a common format.
 fn unify_post_content(content: &str) -> String {
     let normalized = normalize_links_for_comparison(content);
-    let mut result = normalized.to_lowercase().trim().to_string();
+    // Trim by 277 (300 bluesky limit - 23 link limit).
+    let mut result = normalized
+        .to_lowercase()
+        .trim()
+        .graphemes(true)
+        .take(277)
+        .collect::<String>()
+        .trim_end()
+        .to_string();
 
     // Remove shortening/embed suffixes so both network representations compare
     // against the same payload.
@@ -243,14 +251,7 @@ fn unify_post_content(content: &str) -> String {
         stripped = result.clone();
         result = strip_ellipsis_and_link_suffix(&result);
     }
-
-    // Trim by 277 (300 bluesky limit - 23 link limit).
     result
-        .graphemes(true)
-        .take(277)
-        .collect::<String>()
-        .trim_end()
-        .to_string()
 }
 
 /// Strip trailing link-related patterns that are added during shortening or embedding.
@@ -880,6 +881,26 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             &vec![bsky_post],
             &SyncOptions::default(),
         );
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
+    }
+
+    // Regression test: a real Mastodon boost with a link in the middle and its
+    // Bluesky sync should be considered equal so the sync does not repost them
+    // as new content.
+    #[test]
+    fn mastodon_boost_and_bsky_sync_should_not_duplicate_sync() {
+        let mastodon_post =
+            read_mastodon_post_from_json("tests/mastodon_boost_duplicate_case.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_boost_duplicate_case.json");
+        let sync_options = SyncOptions {
+            sync_reblogs: true,
+            sync_reposts: true,
+            ..Default::default()
+        };
+
+        let posts = determine_posts(&vec![mastodon_post], &vec![bsky_post], &sync_options);
+
         assert!(posts.toots.is_empty());
         assert!(posts.bsky_posts.is_empty());
     }
