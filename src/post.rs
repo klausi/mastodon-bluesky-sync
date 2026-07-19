@@ -78,7 +78,7 @@ pub async fn post_to_mastodon(
 
         println!(
             "Posting thread reply for {} to Mastodon: {}",
-            &parent_id, reply.text
+            parent_id, reply.text
         );
         let mut parent_status_id = "".to_string();
         if !dry_run {
@@ -276,7 +276,7 @@ pub async fn post_to_bluesky(
 
         println!(
             "Posting thread reply for {} to Bluesky: {}",
-            &parent_id, reply.text
+            parent_id, reply.text
         );
         let mut parent_status_id = "".to_string();
         if !dry_run {
@@ -308,12 +308,12 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
             .get("content-type")
             .context(format!(
                 "Failed getting content type of {}",
-                &attachment.attachment_url
+                attachment.attachment_url
             ))?
             .to_str()
             .context(format!(
                 "Failed converting content type of {} to string",
-                &attachment.attachment_url
+                attachment.attachment_url
             ))?
             .to_string();
         let bytes = response.bytes().await?;

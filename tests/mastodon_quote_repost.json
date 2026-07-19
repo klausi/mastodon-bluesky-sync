@@ -1,0 +1,285 @@
+{
+  "id": "116933952825361900",
+  "uri": "https://mastodon.social/users/klausi/statuses/116933952825361900/activity",
+  "url": "https://mastodon.social/users/klausi/statuses/116933952825361900/activity",
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "discoverable": true,
+    "group": false,
+    "noindex": false,
+    "moved": null,
+    "suspended": null,
+    "limited": null,
+    "created_at": "2017-04-01T00:00:00Z",
+    "followers_count": 608,
+    "following_count": 1162,
+    "statuses_count": 173,
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "emojis": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589Z",
+        "verified": null
+      }
+    ],
+    "bot": false,
+    "source": null,
+    "role": null,
+    "mute_expires_at": null
+  },
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "reblog": {
+    "id": "116929387813641556",
+    "uri": "https://mastodon.social/users/randulo/statuses/116929387813641556",
+    "url": "https://mastodon.social/@randulo/116929387813641556",
+    "account": {
+      "id": "72915",
+      "username": "randulo",
+      "acct": "randulo",
+      "display_name": "Randulo.com (Randy)",
+      "locked": false,
+      "discoverable": true,
+      "group": false,
+      "noindex": false,
+      "moved": null,
+      "suspended": null,
+      "limited": null,
+      "created_at": "2017-04-12T00:00:00Z",
+      "followers_count": 1682,
+      "following_count": 3642,
+      "statuses_count": 169,
+      "note": "<p>Playing, recording music, touring for over 60 years.</p><p><a href=\"https://mastodon.social/tags/OriginalMusic\" class=\"mention hashtag\" rel=\"tag\">#<span>OriginalMusic</span></a> <a href=\"https://mastodon.social/tags/food\" class=\"mention hashtag\" rel=\"tag\">#<span>food</span></a> <a href=\"https://mastodon.social/tags/cooking\" class=\"mention hashtag\" rel=\"tag\">#<span>cooking</span></a> <a href=\"https://mastodon.social/tags/tech\" class=\"mention hashtag\" rel=\"tag\">#<span>tech</span></a> <a href=\"https://mastodon.social/tags/social\" class=\"mention hashtag\" rel=\"tag\">#<span>social</span></a> <a href=\"https://mastodon.social/tags/guitar\" class=\"mention hashtag\" rel=\"tag\">#<span>guitar</span></a> <a href=\"https://mastodon.social/tags/saxophone\" class=\"mention hashtag\" rel=\"tag\">#<span>saxophone</span></a></p>",
+      "url": "https://mastodon.social/@randulo",
+      "avatar": "https://files.mastodon.social/accounts/avatars/000/072/915/original/8cee1588df8a97b1.png",
+      "avatar_static": "https://files.mastodon.social/accounts/avatars/000/072/915/original/8cee1588df8a97b1.png",
+      "header": "https://files.mastodon.social/accounts/headers/000/072/915/original/82954f497469bb77.jpg",
+      "header_static": "https://files.mastodon.social/accounts/headers/000/072/915/original/82954f497469bb77.jpg",
+      "emojis": [],
+      "fields": [
+        {
+          "name": "Archive of free music and writings",
+          "value": "<a href=\"https://randulo.com\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">randulo.com</span><span class=\"invisible\"></span></a>",
+          "verified_at": null,
+          "verified": null
+        },
+        {
+          "name": "Spotify",
+          "value": "<a href=\"https://open.spotify.com/artist/76Mc94TXj6u7ruadFVyJXq\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">open.spotify.com/artist/76Mc94</span><span class=\"invisible\">TXj6u7ruadFVyJXq</span></a>",
+          "verified_at": null,
+          "verified": null
+        },
+        {
+          "name": "Wikipedia page",
+          "value": "<a href=\"https://en.wikipedia.org/wiki/Randy_Resnick\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">en.wikipedia.org/wiki/Randy_Re</span><span class=\"invisible\">snick</span></a>",
+          "verified_at": null,
+          "verified": null
+        }
+      ],
+      "bot": false,
+      "source": null,
+      "role": null,
+      "mute_expires_at": null
+    },
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "reblog": null,
+    "content": "<p class=\"quote-inline\">RE: <a href=\"https://social.heise.de/@heiseonlineenglish/116929316985755360\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">social.heise.de/@heiseonlineen</span><span class=\"invisible\">glish/116929316985755360</span></a></p><p>Sorry to hear this as they had the best hardware service in Europe. (And we still have three phones from them that all work.)</p>",
+    "plain_content": null,
+    "created_at": "2026-07-16T11:21:03.862Z",
+    "edited_at": "2026-07-16T14:29:50.320Z",
+    "emojis": [],
+    "replies_count": 0,
+    "reblogs_count": 2,
+    "favourites_count": 2,
+    "reblogged": true,
+    "favourited": true,
+    "muted": false,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [],
+    "card": null,
+    "poll": null,
+    "application": null,
+    "language": "en",
+    "pinned": null,
+    "emoji_reactions": null,
+    "quote": {
+      "state": "accepted",
+      "quoted_status": {
+        "id": "116929317168207424",
+        "uri": "https://social.heise.de/users/heiseonlineenglish/statuses/116929316985755360",
+        "url": "https://social.heise.de/@heiseonlineenglish/116929316985755360",
+        "account": {
+          "id": "112881207531343185",
+          "username": "heiseonlineenglish",
+          "acct": "heiseonlineenglish@social.heise.de",
+          "display_name": "heise online English",
+          "locked": false,
+          "discoverable": true,
+          "group": false,
+          "noindex": null,
+          "moved": null,
+          "suspended": null,
+          "limited": null,
+          "created_at": "2024-07-31T00:00:00Z",
+          "followers_count": 813,
+          "following_count": 0,
+          "statuses_count": 20683,
+          "note": "<p>News all about technology, IT and digital.</p><p>heise.de/impressum.html &amp; <a href=\"http://heise.de/privacy\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">http://</span><span class=\"\">heise.de/privacy</span><span class=\"invisible\"></span></a></p>",
+          "url": "https://social.heise.de/@heiseonlineenglish",
+          "avatar": "https://files.mastodon.social/cache/accounts/avatars/112/881/207/531/343/185/original/79615d5f3174a660.jpg",
+          "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/112/881/207/531/343/185/original/79615d5f3174a660.jpg",
+          "header": "https://files.mastodon.social/cache/accounts/headers/112/881/207/531/343/185/original/0650c0a584ba8ae9.jpg",
+          "header_static": "https://files.mastodon.social/cache/accounts/headers/112/881/207/531/343/185/original/0650c0a584ba8ae9.jpg",
+          "emojis": [],
+          "fields": [
+            {
+              "name": "Website",
+              "value": "<a href=\"https://www.heise.de/en\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"\">heise.de/en</span><span class=\"invisible\"></span></a>",
+              "verified_at": null,
+              "verified": null
+            }
+          ],
+          "bot": true,
+          "source": null,
+          "role": null,
+          "mute_expires_at": null
+        },
+        "in_reply_to_id": null,
+        "in_reply_to_account_id": null,
+        "reblog": null,
+        "content": "<p>End of line for OnePlus: Manufacturer withdraws from Europe and North America</p><p>The former manufacturer of the “flagship killer” is at an end. OnePlus is withdrawing from Europe and the USA. Oppo is taking over.</p><p><a href=\"https://www.heise.de/en/news/End-of-line-for-OnePlus-Manufacturer-withdraws-from-Europe-and-North-America-11367159.html?wt_mc=sm.red.ho.mastodon.mastodon.md_beitraege.md_beitraege&amp;utm_source=mastodon\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">heise.de/en/news/End-of-line-f</span><span class=\"invisible\">or-OnePlus-Manufacturer-withdraws-from-Europe-and-North-America-11367159.html?wt_mc=sm.red.ho.mastodon.mastodon.md_beitraege.md_beitraege&amp;utm_source=mastodon</span></a></p><p><a href=\"https://social.heise.de/tags/Android\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Android</span></a> <a href=\"https://social.heise.de/tags/Handel\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Handel</span></a> <a href=\"https://social.heise.de/tags/Hardware\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Hardware</span></a> <a href=\"https://social.heise.de/tags/Mobilfunk\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Mobilfunk</span></a> <a href=\"https://social.heise.de/tags/Updates\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Updates</span></a> <a href=\"https://social.heise.de/tags/Wirtschaft\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Wirtschaft</span></a> <a href=\"https://social.heise.de/tags/news\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>news</span></a></p>",
+        "plain_content": null,
+        "created_at": "2026-07-16T11:03:03Z",
+        "edited_at": null,
+        "emojis": [],
+        "replies_count": 0,
+        "reblogs_count": 0,
+        "favourites_count": 0,
+        "reblogged": false,
+        "favourited": false,
+        "muted": false,
+        "sensitive": false,
+        "spoiler_text": "",
+        "visibility": "public",
+        "media_attachments": [],
+        "mentions": [],
+        "tags": [
+          {
+            "name": "android",
+            "url": "https://mastodon.social/tags/android"
+          },
+          {
+            "name": "handel",
+            "url": "https://mastodon.social/tags/handel"
+          },
+          {
+            "name": "hardware",
+            "url": "https://mastodon.social/tags/hardware"
+          },
+          {
+            "name": "mobilfunk",
+            "url": "https://mastodon.social/tags/mobilfunk"
+          },
+          {
+            "name": "updates",
+            "url": "https://mastodon.social/tags/updates"
+          },
+          {
+            "name": "wirtschaft",
+            "url": "https://mastodon.social/tags/wirtschaft"
+          },
+          {
+            "name": "news",
+            "url": "https://mastodon.social/tags/news"
+          }
+        ],
+        "card": {
+          "url": "https://www.heise.de/en/news/End-of-line-for-OnePlus-Manufacturer-withdraws-from-Europe-and-North-America-11367159.html?wt_mc=sm.red.ho.mastodon.mastodon.md_beitraege.md_beitraege&utm_source=mastodon",
+          "title": "End of line for OnePlus: Manufacturer withdraws from Europe and North America",
+          "description": "The former manufacturer of the “flagship killer” is at an end. OnePlus is withdrawing from Europe and the USA. Oppo is taking over.",
+          "type": "link",
+          "image": "https://files.mastodon.social/cache/preview_cards/images/200/369/618/original/6b20228806fbbfb1.webp",
+          "author_name": "Andreas Floemer",
+          "author_url": "/autor/Andreas-Floemer-4840945",
+          "provider_name": "heise online",
+          "provider_url": "",
+          "html": "",
+          "width": 640,
+          "height": 360,
+          "embed_url": "",
+          "blurhash": "UdO|U;xu~qWB?cRj9Fxu%fxuofIU-:ayt7t7"
+        },
+        "poll": null,
+        "application": null,
+        "language": "de",
+        "pinned": null,
+        "emoji_reactions": null,
+        "quote": null,
+        "quote_approval": {
+          "automatic": [
+            "public"
+          ],
+          "manual": [],
+          "current_user": "automatic"
+        },
+        "bookmarked": false
+      }
+    },
+    "quote_approval": {
+      "automatic": [
+        "followers"
+      ],
+      "manual": [],
+      "current_user": "automatic"
+    },
+    "bookmarked": false
+  },
+  "content": "",
+  "plain_content": null,
+  "created_at": "2026-07-17T06:42:00.410Z",
+  "edited_at": null,
+  "emojis": [],
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "reblogged": false,
+  "favourited": false,
+  "muted": false,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "card": null,
+  "poll": null,
+  "application": null,
+  "language": null,
+  "pinned": null,
+  "emoji_reactions": null,
+  "quote": null,
+  "quote_approval": {
+    "automatic": [
+      "followers"
+    ],
+    "manual": [],
+    "current_user": "automatic"
+  },
+  "bookmarked": false
+}

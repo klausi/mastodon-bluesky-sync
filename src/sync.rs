@@ -446,21 +446,34 @@ fn mastodon_text_length(text: &str) -> usize {
 pub fn mastodon_toot_get_text(toot: &Status) -> String {
     let mut replaced = match toot.reblog {
         None => toot.content.clone(),
-        Some(ref reblog) => format!("♻️ {}: {}", reblog.account.username, reblog.content),
+        Some(ref reblog) => reblog.content.clone(),
     };
     // Mastodon can inline quote links in HTML content. Remove this marker and
     // then append structured quote content below.
     let (parsed_text, inline_quote_link) = parse_html_and_extract_inline_quote(&replaced);
     replaced = parsed_text;
 
-    match &toot.quote {
+    // Add boost prefix after HTML parsing so paragraph handling stays stable
+    // and doesn't introduce a newline between prefix and content.
+    if let Some(reblog) = &toot.reblog {
+        replaced = format!("♻️ {}: {}", reblog.account.username, replaced.trim_start());
+    }
+
+    // For boosts, quote metadata lives on the reblogged status itself.
+    let quote = toot.quote.as_ref().or_else(|| {
+        toot.reblog
+            .as_ref()
+            .and_then(|reblog| reblog.quote.as_ref())
+    });
+
+    match quote {
         Some(QuotedStatus::Quote(quote)) => {
             if let Some(quoted_status) = &quote.quoted_status {
                 let quote_text = mastodon_toot_get_text(quoted_status);
                 replaced = format!(
                     "{}\n\n💬 {}: {}",
                     replaced.trim(),
-                    quoted_status.account.acct,
+                    quoted_status.account.username,
                     quote_text.trim()
                 )
                 .trim()
@@ -932,7 +945,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let fulltext = mastodon_toot_get_text(&post);
         assert_eq!(
             fulltext,
-            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent@flipboard.com: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
         );
     }
 
@@ -1011,6 +1024,23 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         bsky_post.post.record =
             serde_json::from_value(serde_json::to_value(record).unwrap()).unwrap();
         assert!(!toot_and_post_are_equal(&mastodon_post, &bsky_post));
+    }
+
+    #[test]
+    fn mastodon_quote_boost() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_quote_repost.json");
+        let sync_options = SyncOptions {
+            sync_reblogs: true,
+            sync_reposts: true,
+            ..Default::default()
+        };
+
+        let posts = determine_posts(&vec![mastodon_post], &vec![], &sync_options);
+
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "♻️ randulo: Sorry to hear this as they had the best hardware service in Europe. (And we still have three phones from them that all work.)\n\n💬 heiseonlineenglish: End of line for OnePlus: Manufacturer withdraws from Europe and North America\n\nThe former manufacturer of the… https://mastodon.social/@randulo/116929387813641556"
+        );
     }
 
     // Read static bluesky post from test file.
