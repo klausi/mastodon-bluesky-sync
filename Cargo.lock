@@ -1788,7 +1788,7 @@ dependencies = [
 
 [[package]]
 name = "mastodon-bluesky-sync"
-version = "0.6.1"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "atrium-xrpc-client",
