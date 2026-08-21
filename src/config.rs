@@ -41,6 +41,7 @@ pub struct MastodonConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlueskyConfig {
     pub email: String,
+    pub pds_url: String,
     pub app_password: String,
     #[serde(default = "config_true_default")]
     pub sync_reposts: bool,

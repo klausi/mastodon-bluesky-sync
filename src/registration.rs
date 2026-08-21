@@ -47,16 +47,18 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
 }
 
 pub async fn bluesky_register() -> Result<BlueskyConfig> {
-    let email = console_input("Enter your Bluesky email address")?;
+    let email = console_input("Enter your Bluesky / ATProto email address")?;
+    let pds_url = console_input("Provide the URL of your ATProto PDS, for example https://bsky.social")?;
     let app_password = console_input(
         "Generate a Bluesky App password at https://bsky.app/settings/app-passwords and paste it here",
     )?;
-    let _agent = get_new_bluesky_agent(&email, &app_password).await?;
+    let _agent = get_new_bluesky_agent(&email, &app_password, &pds_url).await?;
     // Bluesky access tokens do not work for longer periods of time, so we need
     // to store an app password here.
     // See https://github.com/sugyan/atrium/issues/246
     Ok(BlueskyConfig {
         email,
+        pds_url,
         app_password,
         sync_reposts: true,
         sync_hashtag: None,

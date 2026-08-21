@@ -3,6 +3,7 @@ use anyhow::Result;
 use atrium_xrpc_client::reqwest::ReqwestClient;
 use bsky_sdk::agent::BskyAtpAgentBuilder;
 use bsky_sdk::agent::config::FileStore;
+use bsky_sdk::agent::config::Config as AgentConfig;
 use bsky_sdk::api::types::LimitedNonZeroU8;
 use delete_posts::bluesky_delete_older_posts;
 use log::debug;
@@ -102,7 +103,7 @@ pub async fn run(args: Args) -> Result<()> {
             .await
         {
             Ok(bsky_config) => {
-                match BskyAtpAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
+                match BskyAtpAgentBuilder::new(ReqwestClient::new(&config.bluesky.pds_url))
                     .config(bsky_config)
                     .build()
                     .await
@@ -117,13 +118,13 @@ pub async fn run(args: Args) -> Result<()> {
                         agent
                     }
                     Err(_) => {
-                        get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password)
+                        get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password, &config.bluesky.pds_url)
                             .await?
                     }
                 }
             }
             Err(_) => {
-                get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password).await?
+                get_new_bluesky_agent(&config.bluesky.email, &config.bluesky.app_password, &config.bluesky.pds_url).await?
             }
         };
     let bsky_session = bsky_agent
@@ -239,10 +240,17 @@ fn cache_file(name: &str) -> String {
     name.into()
 }
 
-async fn get_new_bluesky_agent(email: &str, app_password: &str) -> Result<BskyAgent> {
-    let agent = BskyAtpAgentBuilder::new(ReqwestClient::new("https://bsky.social"))
-        .build()
-        .await?;
+async fn get_new_bluesky_agent(email: &str, app_password: &str, pds_url: &str) -> Result<BskyAgent> {
+    let builder = BskyAtpAgentBuilder::new(
+        ReqwestClient::new(pds_url)
+    );
+    let configured_builder = builder.config(AgentConfig {
+        endpoint: String::from(pds_url),
+        session: None,
+        labelers_header: None,
+        proxy_header: None,
+    });
+    let agent = configured_builder.build().await?;
     let _session = agent.login(email, app_password).await?;
     agent
         .to_config()
