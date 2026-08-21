@@ -241,16 +241,14 @@ fn cache_file(name: &str) -> String {
 }
 
 async fn get_new_bluesky_agent(email: &str, app_password: &str, pds_url: &str) -> Result<BskyAgent> {
-    let builder = BskyAtpAgentBuilder::new(
+    let agent = BskyAtpAgentBuilder::new(
         ReqwestClient::new(pds_url)
-    );
-    let configured_builder = builder.config(AgentConfig {
+    ).config(AgentConfig {
         endpoint: String::from(pds_url),
         session: None,
         labelers_header: None,
         proxy_header: None,
-    });
-    let agent = configured_builder.build().await?;
+    }).build().await?;
     let _session = agent.login(email, app_password).await?;
     agent
         .to_config()
