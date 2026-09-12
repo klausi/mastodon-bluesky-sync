@@ -222,7 +222,7 @@ async fn mastodon_upload_video_stream(
 async fn mastodon_wait_until_uploaded(
     client: &(dyn Megalodon + Send + Sync),
     id: &str,
-) -> Result<entities::Attachment, error::Error> {
+) -> Result<entities::Attachment> {
     loop {
         let res = client.get_media(id.to_string()).await;
         return match res {
@@ -233,9 +233,9 @@ async fn mastodon_wait_until_uploaded(
                         sleep(Duration::from_secs(1)).await;
                         continue;
                     }
-                    _ => Err(err),
+                    _ => Err(err.into()),
                 },
-                _ => Err(err),
+                _ => Err(err.into()),
             },
         };
     }
