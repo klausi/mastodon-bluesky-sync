@@ -1,5 +1,6 @@
 use anyhow::Result;
 use bsky_sdk::api::app::bsky::embed::record::{ViewRecordEmbedsItem, ViewRecordRefs};
+use bsky_sdk::api::app::bsky::embed::record_with_media::ViewMediaRefs;
 use bsky_sdk::api::app::bsky::feed::defs::{FeedViewPostData, PostViewData, PostViewEmbedRefs};
 use bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs;
 use bsky_sdk::api::app::bsky::richtext::facet::MainFeaturesItem;
@@ -607,6 +608,13 @@ fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String>
     {
         return Some(video_box.playlist.clone());
     }
+    // Check video attached alongside a quoted record.
+    if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordWithMediaView(embed))) =
+        &bsky_post.post.embed
+        && let Union::Refs(ViewMediaRefs::AppBskyEmbedVideoView(video)) = &embed.media
+    {
+        return Some(video.playlist.clone());
+    }
     // Check video on a quote post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
         &bsky_post.post.embed
@@ -800,6 +808,29 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         assert_eq!(
             posts.toots[0].video_stream.clone().unwrap(),
             "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
+        );
+    }
+
+    // A repost can attach its video alongside a quoted record.
+    #[test]
+    fn bsky_repost_video_attachment() {
+        let post = read_bsky_post_from_json("tests/bsky_repost_video.json");
+        let sync_options = SyncOptions {
+            sync_reposts: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        assert_eq!(posts.toots.len(), 1);
+        assert!(
+            posts.toots[0]
+                .text
+                .starts_with("♻️ csketch.bsky.social: Oh my god I think I found the video.")
+        );
+        assert_eq!(
+            posts.toots[0].video_stream.as_deref(),
+            Some(
+                "https://video.bsky.app/watch/did%3Aplc%3Azfvhyz53gmxsjg7u7ojhrzta/bafkreiaeonjsfx254asut3tggitis2ztl3fu7eik33crttgnvi4zgb2fai/playlist.m3u8"
+            )
         );
     }
 
