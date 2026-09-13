@@ -12,6 +12,7 @@ This tool synchronizes posts from [Mastodon](https://joinmastodon.org/) to [Blue
 - Your boost on Mastodon will be posted automatically to Bluesky with a "♻️ username:" prefix
 
 ## Old data deletion feature for better privacy
+
 - Optionally a configuration option can be set to delete posts from your Bluesky account that are older than 90 days.
 - Optionally a configuration option can be set to delete favorites (likes) from your Bluesky account that are older than 90 days.
 - Optionally a configuration option can be set to delete favorites from your Mastodon account that are older than 90 days.
@@ -40,6 +41,7 @@ delete_older_favs = true
 
 [bluesky]
 email = "klausi@example.com"
+pds_url = "https://bsky.social"
 app_password = "XXXXXXXXXXXXXXXXXXXXXXX"
 sync_reposts = true
 sync_hashtag = ""
@@ -76,6 +78,7 @@ Every run of the program only synchronizes the accounts once. Use Cron to run it
 ## Roadmap
 
 Todo list for the future, not implemented yet:
+
 - Your own threads (your replies to your own posts) will be synced both ways
 - Parallel execution of fetching and syncing requests at the same time
 
