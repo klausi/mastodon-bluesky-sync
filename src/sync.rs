@@ -30,7 +30,7 @@ impl StatusUpdates {
     }
 }
 
-// A new status for posting. Optionally has links to media (images) that should
+// A new status for posting. Optionally has links to media that should
 // be attached.
 #[derive(Debug, Clone)]
 pub struct NewStatus {
@@ -38,7 +38,6 @@ pub struct NewStatus {
     // BCP47 language tag (e.g. "en", "de", "es").
     pub language: String,
     pub attachments: Vec<NewMedia>,
-    pub video_stream: Option<String>,
     pub original_post_url: String,
     // A list of further statuses that are new replies to this new status. Used
     // to sync threads.
@@ -57,7 +56,6 @@ impl Default for NewStatus {
             text: String::new(),
             language: "en".to_string(),
             attachments: Vec::new(),
-            video_stream: None,
             original_post_url: String::new(),
             replies: Vec::new(),
             in_reply_to_id: None,
@@ -65,8 +63,15 @@ impl Default for NewStatus {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MediaType {
+    Image,
+    Video,
+}
+
 #[derive(Debug, Clone)]
 pub struct NewMedia {
+    pub media_type: MediaType,
     pub attachment_url: String,
     pub alt_text: Option<String>,
 }
@@ -144,7 +149,6 @@ pub fn determine_posts(
             language: bsky_get_language(post),
             attachments: bsky_get_attachments(post),
             original_post_url: post.post.uri.clone(),
-            video_stream: bsky_get_video_stream(post),
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -197,7 +201,6 @@ pub fn determine_posts(
                 None => toot.url.clone().unwrap_or("".to_string()),
                 Some(reblog) => reblog.url.clone().unwrap_or("".to_string()),
             },
-            video_stream: None,
             replies: Vec::new(),
             in_reply_to_id: None,
         });
@@ -556,6 +559,9 @@ pub fn read_post_cache(cache_file: &str) -> HashSet<String> {
 // Returns a list of direct links to attachments for download.
 pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedia> {
     let mut links = Vec::new();
+    if let Some(video) = bsky_get_video_attachment(bsky_post) {
+        links.push(video);
+    }
 
     // Collect images directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedImagesView(image_box))) =
@@ -564,6 +570,7 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
         let images = &image_box.images;
         for image in images {
             links.push(NewMedia {
+                media_type: MediaType::Image,
                 attachment_url: image.fullsize.clone(),
                 alt_text: if image.alt.is_empty() {
                     None
@@ -585,6 +592,7 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
                 let images = &image_box.images;
                 for image in images {
                     links.push(NewMedia {
+                        media_type: MediaType::Image,
                         attachment_url: image.fullsize.clone(),
                         alt_text: if image.alt.is_empty() {
                             None
@@ -600,20 +608,28 @@ pub fn bsky_get_attachments(bsky_post: &Object<FeedViewPostData>) -> Vec<NewMedi
     links
 }
 
-// Extract the video stream URL from a Bluesky post.
-fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String> {
+// Extract the video stream URL and alt text from a Bluesky post.
+fn bsky_get_video_attachment(bsky_post: &Object<FeedViewPostData>) -> Option<NewMedia> {
     // Check video directly on the post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedVideoView(video_box))) =
         &bsky_post.post.embed
     {
-        return Some(video_box.playlist.clone());
+        return Some(NewMedia {
+            media_type: MediaType::Video,
+            attachment_url: video_box.playlist.clone(),
+            alt_text: video_box.alt.clone(),
+        });
     }
     // Check video attached alongside a quoted record.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordWithMediaView(embed))) =
         &bsky_post.post.embed
         && let Union::Refs(ViewMediaRefs::AppBskyEmbedVideoView(video)) = &embed.media
     {
-        return Some(video.playlist.clone());
+        return Some(NewMedia {
+            media_type: MediaType::Video,
+            attachment_url: video.playlist.clone(),
+            alt_text: video.alt.clone(),
+        });
     }
     // Check video on a quote post.
     if let Some(Union::Refs(PostViewEmbedRefs::AppBskyEmbedRecordView(embed_record))) =
@@ -623,7 +639,11 @@ fn bsky_get_video_stream(bsky_post: &Object<FeedViewPostData>) -> Option<String>
         for quote_embed in quote.embeds.clone().unwrap_or(Vec::new()) {
             if let Union::Refs(ViewRecordEmbedsItem::AppBskyEmbedVideoView(video_box)) = quote_embed
             {
-                return Some(video_box.playlist.clone());
+                return Some(NewMedia {
+                    media_type: MediaType::Video,
+                    attachment_url: video_box.playlist.clone(),
+                    alt_text: video_box.alt.clone(),
+                });
             }
         }
     }
@@ -642,7 +662,14 @@ pub fn toot_get_attachments(toot: &Status) -> Vec<NewMedia> {
         attachments = &boost.media_attachments;
     }
     for attachment in attachments {
+        let media_type = match attachment.r#type {
+            megalodon::entities::attachment::AttachmentType::Image => MediaType::Image,
+            megalodon::entities::attachment::AttachmentType::Video
+            | megalodon::entities::attachment::AttachmentType::Gifv => MediaType::Video,
+            _ => continue,
+        };
         links.push(NewMedia {
+            media_type,
             attachment_url: attachment.url.clone(),
             // Bluesky only allows a max length of 1,000 characters for alt
             // text, so we need to cut it off here.
@@ -787,9 +814,124 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
         );
         assert_eq!(
+            posts.toots[0].attachments[0].media_type,
+            super::MediaType::Image
+        );
+        assert_eq!(
             posts.toots[0].attachments[0].attachment_url,
             "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg"
         );
+    }
+
+    #[test]
+    fn mastodon_attachment_types_reach_new_status() {
+        use super::MediaType;
+        use megalodon::entities::attachment::AttachmentType;
+
+        let boosted = read_mastodon_post_from_json("tests/mastodon_long_video.json");
+        let mut toot = *boosted.reblog.unwrap();
+        let original = toot.media_attachments[0].clone();
+        toot.media_attachments = [
+            AttachmentType::Image,
+            AttachmentType::Video,
+            AttachmentType::Gifv,
+            AttachmentType::Audio,
+            AttachmentType::Unknown,
+        ]
+        .into_iter()
+        .map(|media_type| {
+            let mut attachment = original.clone();
+            attachment.r#type = media_type;
+            attachment
+        })
+        .collect();
+
+        let posts = determine_posts(&vec![toot], &vec![], &SyncOptions::default());
+        let types: Vec<_> = posts.bsky_posts[0]
+            .attachments
+            .iter()
+            .map(|attachment| attachment.media_type)
+            .collect();
+        assert_eq!(
+            types,
+            vec![MediaType::Image, MediaType::Video, MediaType::Video]
+        );
+    }
+
+    #[test]
+    fn mastodon_video_alt_text_reaches_new_status() {
+        for description in [
+            None,
+            Some(String::new()),
+            Some("A bird flying 🐦".into()),
+            Some("🦀".repeat(1_001)),
+        ] {
+            for boosted in [false, true] {
+                let mut toot: megalodon::entities::Status =
+                    serde_json::from_str(include_str!("../tests/mastodon_long_video.json"))
+                        .unwrap();
+                toot.reblog.as_mut().unwrap().media_attachments[0].description =
+                    description.clone();
+                if !boosted {
+                    toot = *toot.reblog.take().unwrap();
+                }
+                let posts = determine_posts(
+                    &vec![toot],
+                    &vec![],
+                    &SyncOptions {
+                        sync_reblogs: true,
+                        ..Default::default()
+                    },
+                );
+                assert_eq!(posts.bsky_posts.len(), 1);
+                assert_eq!(posts.bsky_posts[0].attachments.len(), 1);
+                let expected = description
+                    .as_ref()
+                    .map(|text| text.chars().take(1_000).collect::<String>());
+                assert_eq!(
+                    posts.bsky_posts[0].attachments[0].media_type,
+                    super::MediaType::Video
+                );
+                assert_eq!(posts.bsky_posts[0].attachments[0].alt_text, expected);
+            }
+        }
+    }
+
+    #[test]
+    fn bluesky_video_alt_text_reaches_new_status() {
+        for (fixture, pointer) in [
+            (include_str!("../tests/bsky_video.json"), "/post/embed"),
+            (
+                include_str!("../tests/bsky_repost_video.json"),
+                "/post/embed/media",
+            ),
+            (
+                include_str!("../tests/bsky_quote_video.json"),
+                "/post/embed/record/embeds/0",
+            ),
+        ] {
+            for description in [None, Some(""), Some("A bird flying 🐦")] {
+                let mut post: serde_json::Value = serde_json::from_str(fixture).unwrap();
+                let video = post.pointer_mut(pointer).unwrap().as_object_mut().unwrap();
+                video.remove("alt");
+                if let Some(description) = description {
+                    video.insert("alt".into(), description.into());
+                }
+                let post = serde_json::from_value(post).unwrap();
+                let posts = crate::determine_posts(
+                    &vec![],
+                    &vec![post],
+                    &crate::SyncOptions {
+                        sync_reposts: true,
+                        ..Default::default()
+                    },
+                );
+                assert_eq!(posts.toots.len(), 1);
+                let video = &posts.toots[0].attachments[0];
+                assert_eq!(video.media_type, super::MediaType::Video);
+                assert_eq!(video.alt_text.as_deref(), description);
+            }
+        }
     }
 
     // Test that a video attachment is extracted correctly.
@@ -806,7 +948,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
         assert_eq!(
-            posts.toots[0].video_stream.clone().unwrap(),
+            posts.toots[0].attachments[0].attachment_url,
             "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
         );
     }
@@ -827,7 +969,10 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
                 .starts_with("♻️ csketch.bsky.social: Oh my god I think I found the video.")
         );
         assert_eq!(
-            posts.toots[0].video_stream.as_deref(),
+            posts.toots[0]
+                .attachments
+                .first()
+                .map(|video| video.attachment_url.as_str()),
             Some(
                 "https://video.bsky.app/watch/did%3Aplc%3Azfvhyz53gmxsjg7u7ojhrzta/bafkreiaeonjsfx254asut3tggitis2ztl3fu7eik33crttgnvi4zgb2fai/playlist.m3u8"
             )
@@ -850,7 +995,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 💬 mjfree.bsky.social: I'm going to post this video every day so we never forget"
         );
         assert_eq!(
-            posts.toots[0].video_stream.clone().unwrap(),
+            posts.toots[0].attachments[0].attachment_url,
             "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
         );
     }

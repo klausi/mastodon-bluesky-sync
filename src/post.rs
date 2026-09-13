@@ -2,7 +2,7 @@ use crate::BskyAgent;
 use crate::NewMedia;
 use crate::bluesky_richtext::get_rich_text;
 use crate::bluesky_video::bluesky_upload_video;
-use crate::sync::NewStatus;
+use crate::sync::{MediaType, NewStatus};
 use anyhow::Context;
 use anyhow::Result;
 use anyhow::bail;
@@ -99,13 +99,13 @@ async fn send_single_post_to_mastodon(
 ) -> Result<String> {
     // Post attachments first, if there are any.
     let mut media_ids = Vec::new();
-    if let Some(video_stream) = &toot.video_stream {
-        let media_id = mastodon_upload_video_stream(mastodon, video_stream).await?;
-        media_ids.push(media_id);
-    }
     // Temporary directory where we will download any file attachments to.
     let temp_dir = tempdir()?;
     for attachment in &toot.attachments {
+        if attachment.media_type == MediaType::Video {
+            media_ids.push(mastodon_upload_video_stream(mastodon, attachment).await?);
+            continue;
+        }
         let response = reqwest::get(&attachment.attachment_url)
             .await
             .context(format!(
@@ -126,21 +126,10 @@ async fn send_single_post_to_mastodon(
         let mut file = File::create(path).await?;
         file.write_all(&response.bytes().await?).await?;
 
-        let upload = match &attachment.alt_text {
-            None => mastodon.upload_media(string_path, None).await?,
-            Some(description) => {
-                mastodon
-                    .upload_media(
-                        string_path,
-                        Some(&UploadMediaInputOptions {
-                            description: Some(description.clone()),
-                            focus: None,
-                        }),
-                    )
-                    .await?
-            }
-        }
-        .json();
+        let upload = mastodon
+            .upload_media(string_path, mastodon_media_options(attachment).as_ref())
+            .await?
+            .json();
 
         match upload {
             entities::UploadMedia::Attachment(attachment) => {
@@ -176,12 +165,23 @@ async fn send_single_post_to_mastodon(
     }
 }
 
+fn mastodon_media_options(media: &NewMedia) -> Option<UploadMediaInputOptions> {
+    media
+        .alt_text
+        .as_ref()
+        .map(|description| UploadMediaInputOptions {
+            description: Some(description.clone()),
+            focus: None,
+        })
+}
+
 // Download a Bluesky video stream, convert it with ffmpeg and upload it to
 // Mastodon. Returns the media ID of the uploaded video.
 async fn mastodon_upload_video_stream(
     mastodon: &(dyn Megalodon + Send + Sync),
-    stream_url: &str,
+    video: &NewMedia,
 ) -> Result<String> {
+    let stream_url = &video.attachment_url;
     let temp_dir = tempdir()?;
     let path = temp_dir.path().join("video.mp4");
     let command = Command::new("ffmpeg")
@@ -206,7 +206,10 @@ async fn mastodon_upload_video_stream(
     }
 
     let upload = mastodon
-        .upload_media(path.to_string_lossy().to_string(), None)
+        .upload_media(
+            path.to_string_lossy().to_string(),
+            mastodon_media_options(video).as_ref(),
+        )
         .await?
         .json();
 
@@ -303,35 +306,26 @@ async fn send_single_post_to_bluesky(bsky_agent: &BskyAgent, post: &NewStatus) -
                 "Failed downloading attachment {}",
                 attachment.attachment_url
             ))?;
-        let content_type = response
-            .headers()
-            .get("content-type")
-            .context(format!(
-                "Failed getting content type of {}",
-                attachment.attachment_url
-            ))?
-            .to_str()
-            .context(format!(
-                "Failed converting content type of {} to string",
-                attachment.attachment_url
-            ))?
-            .to_string();
         let bytes = response.bytes().await?;
 
-        if content_type.starts_with("image/") {
-            images.push(
-                bsky_sdk::api::app::bsky::embed::images::ImageData {
-                    alt: attachment.alt_text.clone().unwrap_or_default(),
-                    aspect_ratio: None,
-                    image: bluesky_upload_image(&bytes, &attachment.attachment_url, bsky_agent)
-                        .await?,
-                }
-                .into(),
-            );
-        } else if content_type.starts_with("video/") {
-            embed =
-                Some(bluesky_upload_or_embed_video(&bytes, attachment, post, bsky_agent).await?);
-            break;
+        match attachment.media_type {
+            MediaType::Image => {
+                images.push(
+                    bsky_sdk::api::app::bsky::embed::images::ImageData {
+                        alt: attachment.alt_text.clone().unwrap_or_default(),
+                        aspect_ratio: None,
+                        image: bluesky_upload_image(&bytes, &attachment.attachment_url, bsky_agent)
+                            .await?,
+                    }
+                    .into(),
+                );
+            }
+            MediaType::Video => {
+                embed = Some(
+                    bluesky_upload_or_embed_video(&bytes, attachment, post, bsky_agent).await?,
+                );
+                break;
+            }
         }
     }
     // If there is no video then use the images.
@@ -666,17 +660,24 @@ async fn bluesky_upload_or_embed_video(
     } else {
         let blob = bluesky_upload_video(bsky_agent, &attachment.attachment_url, video_bytes.into())
             .await?;
-        let video = bsky_sdk::api::app::bsky::embed::video::MainData {
-            alt: attachment.alt_text.clone(),
-            aspect_ratio: None,
-            captions: None,
-            video: blob,
-        };
+        let video = bluesky_video_embed(blob, attachment);
         Ok(bsky_sdk::api::types::Union::Refs(
             bsky_sdk::api::app::bsky::feed::post::RecordEmbedRefs::AppBskyEmbedVideoMain(Box::new(
                 video.into(),
             )),
         ))
+    }
+}
+
+fn bluesky_video_embed(
+    blob: BlobRef,
+    attachment: &NewMedia,
+) -> bsky_sdk::api::app::bsky::embed::video::MainData {
+    bsky_sdk::api::app::bsky::embed::video::MainData {
+        alt: attachment.alt_text.clone(),
+        aspect_ratio: None,
+        captions: None,
+        video: blob,
     }
 }
 
