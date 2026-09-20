@@ -5,9 +5,14 @@ use std::io;
 use super::*;
 
 pub async fn mastodon_register() -> Result<MastodonConfig> {
-    let base_url = console_input(
-        "Provide the URL of your Mastodon instance, for example https://mastodon.social ",
+    let usr_base_url = console_input(
+        "Provide the URL of your Mastodon instance. Leave empty for default: https://mastodon.social ",
     )?;
+    let base_url = if !usr_base_url.is_empty() {
+        usr_base_url
+    } else {
+        "https://mastodon.social".to_string()
+    };
     let client = generator(megalodon::SNS::Mastodon, base_url.clone(), None, None)?;
     let options = megalodon::megalodon::AppInputOptions {
         scopes: Some(["read".to_string(), "write".to_string()].to_vec()),
@@ -47,16 +52,25 @@ pub async fn mastodon_register() -> Result<MastodonConfig> {
 }
 
 pub async fn bluesky_register() -> Result<BlueskyConfig> {
-    let email = console_input("Enter your Bluesky email address")?;
+    let email = console_input("Enter your Bluesky / ATProto email address")?;
+    let usr_pds_url = console_input(
+        "Provide the URL of your ATProto PDS. Leave empty for default: https://bsky.social",
+    )?;
+    let pds_url = if !usr_pds_url.is_empty() {
+        usr_pds_url
+    } else {
+        "https://bsky.social".to_string()
+    };
     let app_password = console_input(
         "Generate a Bluesky App password at https://bsky.app/settings/app-passwords and paste it here",
     )?;
-    let _agent = get_new_bluesky_agent(&email, &app_password).await?;
+    let _agent = get_new_bluesky_agent(&email, &app_password, &pds_url).await?;
     // Bluesky access tokens do not work for longer periods of time, so we need
     // to store an app password here.
     // See https://github.com/sugyan/atrium/issues/246
     Ok(BlueskyConfig {
         email,
+        pds_url,
         app_password,
         sync_reposts: true,
         sync_hashtag: None,
