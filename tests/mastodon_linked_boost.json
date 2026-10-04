@@ -1,0 +1,197 @@
+{
+  "id": "117380838460258034",
+  "created_at": "2026-10-04T04:50:54.047Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": null,
+  "uri": "https://mastodon.social/users/klausi/statuses/117380838460258034/activity",
+  "url": "https://mastodon.social/users/klausi/statuses/117380838460258034/activity",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "",
+  "reblog": {
+    "id": "117375856652560797",
+    "created_at": "2026-10-03T07:43:55.000Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://chaosfem.tw/users/ellieraejaye/statuses/117375856506127206",
+    "url": "https://chaosfem.tw/@ellieraejaye/117375856506127206",
+    "replies_count": 5,
+    "reblogs_count": 94,
+    "favourites_count": 55,
+    "quotes_count": 3,
+    "edited_at": null,
+    "content": "<p>Cis people, please read this:</p><p><a href=\"https://growinguptransgender.com/2026/10/02/leaving-the-uk-with-a-heavy-heart/\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">growinguptransgender.com/2026/</span><span class=\"invisible\">10/02/leaving-the-uk-with-a-heavy-heart/</span></a></p><p><a href=\"https://chaosfem.tw/tags/Trans\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Trans</span></a></p>",
+    "reblog": null,
+    "account": {
+      "id": "115385080990986491",
+      "username": "ellieraejaye",
+      "acct": "ellieraejaye@chaosfem.tw",
+      "display_name": "Ellie‽ (Radio Edit)",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2025-09-30T00:00:00.000Z",
+      "note": "<p>🏳️‍⚧️ she/her / UK</p><p>Tired? Probably. Autistic? Possibly.</p><p>Interrobang enthusiast.</p><p>Teetering on the edge of my fifth decade of existence, web designer by trade, a bit of art/design and music in my spare time. Servant to three cats. An occasional retro gamer, particularly fond of the 16-bit era (Amiga / Mega Drive / SNES).</p><p>Football fan (#Arsenal), <a href=\"https://chaosfem.tw/tags/F1\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>F1</span></a> fan (#McLaren) and starting to follow some baseball too (#ChicagoWhiteSox).</p><p>formerly <span class=\"h-card\" translate=\"no\"><a href=\"https://lgbtqia.space/@ellieraejaye\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>ellieraejaye</span></a></span></p>",
+      "url": "https://chaosfem.tw/@ellieraejaye",
+      "uri": "https://chaosfem.tw/users/ellieraejaye",
+      "avatar": "https://files.mastodon.social/cache/accounts/avatars/115/385/080/990/986/491/original/a69eeb962222fba3.jpg",
+      "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/115/385/080/990/986/491/original/a69eeb962222fba3.jpg",
+      "avatar_description": "A photo of Ellie who is looking towards the camera while standing in front of a plain off-white background. She's wearing glasses and large earrings.",
+      "header": "https://files.mastodon.social/cache/accounts/headers/115/385/080/990/986/491/original/dafa248860015873.jpg",
+      "header_static": "https://files.mastodon.social/cache/accounts/headers/115/385/080/990/986/491/original/dafa248860015873.jpg",
+      "header_description": "A partial screen capture of a Google Street View focussing on the signage of a restaurant called Ellie's Kebab Ye Fish & Chips.",
+      "followers_count": 748,
+      "following_count": 522,
+      "statuses_count": 4363,
+      "last_status_at": "2026-10-03",
+      "hide_collections": false,
+      "show_media": true,
+      "show_media_replies": true,
+      "show_featured": true,
+      "feature_approval": {
+        "automatic": [
+          "public"
+        ],
+        "manual": [],
+        "current_user": "denied"
+      },
+      "emojis": [],
+      "fields": [
+        {
+          "name": "My website:",
+          "value": "<a href=\"https://ellierae.uk/\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">ellierae.uk/</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-10-03T06:27:51.921+00:00"
+        },
+        {
+          "name": "My music:",
+          "value": "<a href=\"https://auraural.bandcamp.com/\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">auraural.bandcamp.com/</span><span class=\"invisible\"></span></a>",
+          "verified_at": null
+        },
+        {
+          "name": "My NSFW alt:",
+          "value": "<a href=\"https://girlcock.club/@ellieraejaye\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">girlcock.club/@ellieraejaye</span><span class=\"invisible\"></span></a>",
+          "verified_at": null
+        },
+        {
+          "name": "My Signal:",
+          "value": "Ask 😊",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "trans",
+        "url": "https://mastodon.social/tags/trans"
+      }
+    ],
+    "emojis": [],
+    "tagged_collections": [],
+    "quote": null,
+    "card": {
+      "url": "https://growinguptransgender.com/2026/10/02/leaving-the-uk-with-a-heavy-heart/",
+      "title": "Leaving the UK with a heavy heart",
+      "description": "Today, as a family, we have booked our flights and our one-way ticket out of the UK. This has not felt like a choice. This feels like fleeing to protect ourselves. For the past 7 years we have look…",
+      "language": "en",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "Growing Up Transgender",
+      "provider_url": "",
+      "html": "",
+      "width": 200,
+      "height": 200,
+      "image": "https://files.mastodon.social/cache/preview_cards/images/209/429/343/original/9aabef055d41ed7c.jpg",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "UDBO2[%MSvk8q@Rlf-kC3GNGw{xG9%o}RiV@",
+      "published_at": "2026-10-02T23:23:12.000Z",
+      "authors": []
+    },
+    "poll": null,
+    "quote_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    }
+  },
+  "application": null,
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 615,
+    "following_count": 1178,
+    "statuses_count": 201,
+    "last_status_at": "2026-10-04",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}

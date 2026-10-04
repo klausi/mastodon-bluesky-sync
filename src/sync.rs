@@ -283,6 +283,9 @@ fn normalize_links_for_comparison(content: &str) -> String {
         for facet in facets {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    if is_attribution_link(&richtext.text, &facet.index) {
+                        continue;
+                    }
                     bytes.splice(
                         facet.index.byte_start..facet.index.byte_end,
                         link.uri.as_bytes().iter().cloned(),
@@ -292,6 +295,15 @@ fn normalize_links_for_comparison(content: &str) -> String {
         }
     }
     String::from_utf8(bytes).expect("Invalid UTF-8 after normalizing link facets for comparison")
+}
+
+// Attribution links add navigation without changing the post's content.
+fn is_attribution_link(
+    text: &str,
+    index: &bsky_sdk::api::app::bsky::richtext::facet::ByteSlice,
+) -> bool {
+    let prefix = &text[..index.byte_start];
+    (prefix == "♻️ " || prefix.ends_with("\n\n💬 ")) && text[index.byte_end..].starts_with(':')
 }
 
 // Extend URLs and HTML entity decode &amp;.
@@ -350,6 +362,9 @@ fn bsky_record_get_text(bsky_record: bsky_sdk::api::app::bsky::feed::post::Recor
         for facet in sorted_facets {
             for feature in &facet.features {
                 if let Union::Refs(MainFeaturesItem::Link(link)) = feature {
+                    if is_attribution_link(&bsky_record.text, &facet.index) {
+                        continue;
+                    }
                     bytes.splice(
                         facet.index.byte_start..facet.index.byte_end,
                         link.uri.as_bytes().iter().cloned(),
@@ -460,7 +475,11 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
     // Add boost prefix after HTML parsing so paragraph handling stays stable
     // and doesn't introduce a newline between prefix and content.
     if let Some(reblog) = &toot.reblog {
-        replaced = format!("♻️ {}: {}", reblog.account.username, replaced.trim_start());
+        replaced = format!(
+            "♻️ {}: {}",
+            mastodon_author_link(reblog),
+            replaced.trim_start()
+        );
     }
 
     // For boosts, quote metadata lives on the reblogged status itself.
@@ -477,7 +496,7 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
                 replaced = format!(
                     "{}\n\n💬 {}: {}",
                     replaced.trim(),
-                    quoted_status.account.username,
+                    mastodon_author_link(quoted_status),
                     quote_text.trim()
                 )
                 .trim()
@@ -495,6 +514,13 @@ pub fn mastodon_toot_get_text(toot: &Status) -> String {
     }
 
     html_escape::decode_html_entities(&replaced).to_string()
+}
+
+fn mastodon_author_link(status: &Status) -> String {
+    match status.url.as_deref().filter(|url| !url.is_empty()) {
+        Some(url) => format!("<a href=\"{url}\">{}</a>", status.account.username),
+        None => status.account.username.clone(),
+    }
 }
 
 // Ensure that sync posts have not been made before to prevent syncing loops.
@@ -1103,6 +1129,23 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert!(toot_and_post_are_equal(&mastodon_post, &bsky_post));
     }
 
+    // A synced boost with a link on the username must not sync again.
+    #[test]
+    fn mastodon_linked_boost_and_bsky_sync_should_not_duplicate_sync() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_linked_boost.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_linked_boost.json");
+        let sync_options = SyncOptions {
+            sync_reblogs: true,
+            sync_reposts: true,
+            ..Default::default()
+        };
+
+        let posts = determine_posts(&[mastodon_post], &[bsky_post], &sync_options);
+
+        assert!(posts.toots.is_empty());
+        assert!(posts.bsky_posts.is_empty());
+    }
+
     // Test that URLs get shortened for bluesky.
     #[test]
     fn mastodon_url_encoded() {
@@ -1121,7 +1164,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let fulltext = mastodon_toot_get_text(&post);
         assert_eq!(
             fulltext,
-            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 Independent: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
+            "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 <a href=\"https://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0\">Independent</a>: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
         );
     }
 
@@ -1132,7 +1175,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let fulltext = mastodon_toot_get_text(&post);
         assert_eq!(
             fulltext,
-            "Testing quoting myself!\n\n💬 klausi: The Olympic committee finally found the #transgender gene to ban trans women from participating! \n\nI'm sure this will not backfire and no cis women will be banned by this ruling. \n\nAs we all know determining gender is easy and biology is not a complicated mess 👍👍👍\n\nhttps://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0"
+            "Testing quoting myself!\n\n💬 <a href=\"https://mastodon.social/@klausi/116299578737765488\">klausi</a>: The Olympic committee finally found the #transgender gene to ban trans women from participating! \n\nI'm sure this will not backfire and no cis women will be banned by this ruling. \n\nAs we all know determining gender is easy and biology is not a complicated mess 👍👍👍\n\nhttps://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0"
         );
     }
 
@@ -1215,7 +1258,7 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
 
         assert_eq!(
             posts.bsky_posts[0].text,
-            "♻️ randulo: Sorry to hear this as they had the best hardware service in Europe. (And we still have three phones from them that all work.)\n\n💬 heiseonlineenglish: End of line for OnePlus: Manufacturer withdraws from Europe and North America\n\nThe former manufacturer of the… https://mastodon.social/@randulo/116929387813641556"
+            "♻️ <a href=\"https://mastodon.social/@randulo/116929387813641556\">randulo</a>: Sorry to hear this as they had the best hardware service in Europe. (And we still have three phones from them that all work.)\n\n💬 <a href=\"https://social.heise.de/@heiseonlineenglish/116929316985755360\">heiseonlineenglish</a>: End of line for OnePlus: Manufacturer withdraws from Europe and North America\n\nThe former manufacturer of the… https://mastodon.social/@randulo/116929387813641556"
         );
     }
 

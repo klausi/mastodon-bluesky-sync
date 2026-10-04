@@ -1,0 +1,100 @@
+{
+  "post": {
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3mwzpwlxfyt23",
+    "cid": "bafyreiaenr7ajduaj7rh3sofz4qpmv65th7hjt2z4ktjwxnzlkmgf6cvg4",
+    "author": {
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "handle": "klau.si",
+      "displayName": "klausi",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-12-24T10:54:53.475Z"
+    },
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2026-10-04T05:59:48.742392Z",
+      "embed": {
+        "$type": "app.bsky.embed.external",
+        "external": {
+          "description": "Today, as a family, we have booked our flights and our one-way ticket out of the UK. This has not felt like a choice. This feels like fleeing to protect ourselves. For the past 7 years we have look…",
+          "thumb": {
+            "$type": "blob",
+            "ref": {
+              "$link": "bafkreif7s6ots2d5ldhtyrmgdgyjqrzkfiaiymbye7po7uogoljfzbogxe"
+            },
+            "mimeType": "image/jpeg",
+            "size": 6018
+          },
+          "title": "Leaving the UK with a heavy heart",
+          "uri": "https://growinguptransgender.com/2026/10/02/leaving-the-uk-with-a-heavy-heart/"
+        }
+      },
+      "facets": [
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://chaosfem.tw/@ellieraejaye/117375856506127206"
+            }
+          ],
+          "index": {
+            "byteEnd": 19,
+            "byteStart": 7
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://growinguptransgender.com/2026/10/02/leaving-the-uk-with-a-heavy-heart/"
+            }
+          ],
+          "index": {
+            "byteEnd": 85,
+            "byteStart": 52
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#tag",
+              "tag": "Trans"
+            }
+          ],
+          "index": {
+            "byteEnd": 93,
+            "byteStart": 87
+          }
+        }
+      ],
+      "langs": [
+        "en"
+      ],
+      "text": "♻️ ellieraejaye: Cis people, please read this:\n\ngrowinguptransgender.com/2026/…\n\n#Trans"
+    },
+    "embed": {
+      "external": {
+        "uri": "https://growinguptransgender.com/2026/10/02/leaving-the-uk-with-a-heavy-heart/",
+        "title": "Leaving the UK with a heavy heart",
+        "description": "Today, as a family, we have booked our flights and our one-way ticket out of the UK. This has not felt like a choice. This feels like fleeing to protect ourselves. For the past 7 years we have look…",
+        "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreif7s6ots2d5ldhtyrmgdgyjqrzkfiaiymbye7po7uogoljfzbogxe"
+      },
+      "$type": "app.bsky.embed.external#view"
+    },
+    "bookmarkCount": 0,
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-10-04T05:59:49.262Z",
+    "labels": []
+  }
+}
