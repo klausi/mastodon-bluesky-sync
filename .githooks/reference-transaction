@@ -8,33 +8,31 @@ if [ "$state" != "prepared" ]; then
   exit 0
 fi
 
-repo_root=$(git rev-parse --show-toplevel)
-cargo_toml="$repo_root/Cargo.toml"
-
-if [ ! -f "$cargo_toml" ]; then
-  echo "reference-transaction: Cargo.toml not found at $cargo_toml" >&2
-  exit 1
-fi
-
-cargo_version=$(sed -n 's/^version = "\([^"]*\)"$/\1/p' "$cargo_toml" | head -n 1)
-
-if [ -z "$cargo_version" ]; then
-  echo "reference-transaction: could not read package version from Cargo.toml" >&2
-  exit 1
-fi
-
 while IFS=' ' read -r old_oid new_oid ref_name; do
   case "$ref_name" in
     refs/tags/*)
-      if [ "$new_oid" = "0000000000000000000000000000000000000000" ]; then
-        continue
-      fi
+      case "$new_oid" in
+        *[!0]*) ;;
+        *) continue ;;
+      esac
 
       tag_name=${ref_name#refs/tags/}
+      # Inspect the tagged commit, not the working tree: fetch can import
+      # releases with versions different from the currently checked-out one.
+      # ^{commit} also dereferences annotated tags.
+      if ! cargo_toml=$(git show "$new_oid^{commit}:Cargo.toml" 2>/dev/null); then
+        echo "reference-transaction: could not read Cargo.toml from tag $tag_name" >&2
+        exit 1
+      fi
+      cargo_version=$(printf '%s\n' "$cargo_toml" | sed -n 's/^version = "\([^"]*\)"$/\1/p' | head -n 1)
+      if [ -z "$cargo_version" ]; then
+        echo "reference-transaction: could not read package version from tag $tag_name" >&2
+        exit 1
+      fi
       expected_tag="v$cargo_version"
 
       if [ "$tag_name" != "$expected_tag" ]; then
-        echo "reference-transaction: refusing tag $tag_name because Cargo.toml version is $cargo_version (expected $expected_tag)" >&2
+        echo "reference-transaction: refusing tag $tag_name because tagged Cargo.toml version is $cargo_version (expected $expected_tag)" >&2
         exit 1
       fi
       ;;
