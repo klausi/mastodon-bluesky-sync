@@ -394,15 +394,36 @@ pub fn bsky_post_shorten(text: &str, toot_url: &Option<String>) -> String {
     }
 
     // Remove words one by one from the end until the text is short enough.
-    // Work with the original text to preserve anchor tags.
-    let re = Regex::new(r"[^\s]+$").unwrap();
+    // Locate complete anchors so removing a word inside one can preserve its
+    // closing tag instead of leaving malformed HTML.
+    let re = Regex::new(r"(?s)<a\s[^>]*>.*?</a>|[^\s]+").unwrap();
+    let anchor_re = Regex::new(r"(?s)^(<a\s[^>]*>)(.*)</a>$").unwrap();
+    let last_word_re = Regex::new(r"[^\s]+$").unwrap();
     let mut shortened = text.trim().to_string();
     let mut with_link = shortened.clone();
 
     // Bluesky has a limit of 300 characters.
     while char_count > 300 {
-        // Remove the last word.
-        shortened = re.replace_all(&shortened, "").trim().to_string();
+        // Remove the last visible word, keeping the anchor around any text
+        // that remains. Drop an anchor once its text is empty.
+        if let Some(last_word) = re.find_iter(&shortened).last() {
+            let replacement = anchor_re.captures(last_word.as_str()).and_then(|anchor| {
+                let body = anchor[2].trim_end();
+                let remaining = last_word_re.replace(body, "");
+                let remaining = remaining.trim_end();
+                if remaining.is_empty() {
+                    None
+                } else {
+                    Some(format!("{}{remaining}</a>", &anchor[1]))
+                }
+            });
+            let start = last_word.start();
+            shortened.truncate(start);
+            if let Some(replacement) = replacement {
+                shortened.push_str(&replacement);
+            }
+            shortened = shortened.trim_end().to_string();
+        }
         if let Some(ref toot_url) = *toot_url {
             // Add a link to the toot that has the full text.
             with_link = shortened.clone() + "… " + toot_url;
@@ -1054,7 +1075,43 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         );
     }
 
-    // Test that a long video post on mastodon is euqal to a video link embed on
+    // Shortening keeps the remaining linked words and their closing tag.
+    #[test]
+    fn bluesky_shortening_preserves_words_inside_anchor() {
+        let prefix = "x".repeat(260);
+        let text = format!(
+            "{prefix} <a href=\"https://example.com/article\">one two three four five six seven eight nine ten</a>"
+        );
+        let shortened =
+            super::bsky_post_shorten(&text, &Some("https://mastodon.social/@test/123".into()));
+        assert_eq!(
+            shortened,
+            format!(
+                "{prefix} <a href=\"https://example.com/article\">one two three</a>… https://mastodon.social/@test/123"
+            )
+        );
+        let richtext = crate::bluesky_richtext::get_rich_text(&shortened);
+        assert!(richtext.grapheme_len() <= 300);
+        assert_eq!(richtext.facets.unwrap().len(), 2);
+    }
+
+    // Regression test: a synced repost must end with a link to the original
+    // toot if it is too long.
+    #[test]
+    fn mastodon_repost_links_to_original_toot() {
+        let post = read_mastodon_post_from_json("tests/mastodon_repost_link.json");
+        let options = SyncOptions {
+            sync_reblogs: true,
+            ..Default::default()
+        };
+        let posts = determine_posts(&vec![post], &Vec::new(), &options);
+        assert_eq!(
+            posts.bsky_posts[0].text,
+            "♻️ <a href=\"https://social.tchncs.de/@kuketzblog/117421042860340408\">kuketzblog</a>: Passwort geändert, Zwei-Faktor-Authentifizierung aktiviert - alles wieder sicher? Nicht unbedingt!\n\nBei einem Bekannten habe ich entdeckt, dass seine E-Mails trotz neuem Passwort weiterhin heimlich an einen Angreifer weitergeleitet wurden. Und das war noch… https://social.tchncs.de/@kuketzblog/117421042860340408"
+        );
+    }
+
+    // Test that a long video post on Mastodon is equal to a video link embed on
     // Bluesky.
     #[test]
     fn mastodon_long_video() {

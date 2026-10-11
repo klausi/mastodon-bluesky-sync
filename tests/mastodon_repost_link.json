@@ -1,0 +1,216 @@
+{
+  "id": "117421151408616456",
+  "created_at": "2026-10-11T07:43:00.823Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": null,
+  "uri": "https://mastodon.social/users/klausi/statuses/117421151408616456/activity",
+  "url": "https://mastodon.social/users/klausi/statuses/117421151408616456/activity",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "favourited": false,
+  "reblogged": false,
+  "muted": false,
+  "bookmarked": false,
+  "content": "",
+  "filtered": [],
+  "reblog": {
+    "id": "117421042887345957",
+    "created_at": "2026-10-11T07:15:24.000Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "de",
+    "uri": "https://social.tchncs.de/users/kuketzblog/statuses/117421042860340408",
+    "url": "https://social.tchncs.de/@kuketzblog/117421042860340408",
+    "replies_count": 8,
+    "reblogs_count": 96,
+    "favourites_count": 75,
+    "quotes_count": 1,
+    "edited_at": null,
+    "favourited": false,
+    "reblogged": true,
+    "muted": false,
+    "bookmarked": false,
+    "content": "<p>Passwort geändert, Zwei-Faktor-Authentifizierung aktiviert - alles wieder sicher? Nicht unbedingt!</p><p>Bei einem Bekannten habe ich entdeckt, dass seine E-Mails trotz neuem Passwort weiterhin heimlich an einen Angreifer weitergeleitet wurden. Und das war noch nicht alles. 👇</p><p><a href=\"https://www.kuketz-blog.de/e-mail-konto-gehackt-das-passwort-war-geaendert-der-angreifer-las-trotzdem-mit/\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">kuketz-blog.de/e-mail-konto-ge</span><span class=\"invisible\">hackt-das-passwort-war-geaendert-der-angreifer-las-trotzdem-mit/</span></a></p><p><a href=\"https://social.tchncs.de/tags/ITsicherheit\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>ITsicherheit</span></a> <a href=\"https://social.tchncs.de/tags/EMail\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>EMail</span></a> <a href=\"https://social.tchncs.de/tags/Kontosicherheit\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Kontosicherheit</span></a></p>",
+    "filtered": [],
+    "reblog": null,
+    "account": {
+      "id": "331706",
+      "username": "kuketzblog",
+      "acct": "kuketzblog@social.tchncs.de",
+      "display_name": "Kuketz-Blog 🛡",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2018-04-17T00:00:00.000Z",
+      "note": "<p>Kuketz-Blog: Gegen Überwachungskapitalismus ✊</p><p>Datenschutz, IT-Sicherheit und digitale Selbstbestimmung – kritisch, unabhängig und spendenfinanziert.</p><p><a href=\"https://social.tchncs.de/tags/Sicherheit\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Sicherheit</span></a> | <a href=\"https://social.tchncs.de/tags/Datenschutz\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Datenschutz</span></a> | <a href=\"https://social.tchncs.de/tags/Hacking\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Hacking</span></a> | <a href=\"https://social.tchncs.de/tags/Security\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Security</span></a> | <a href=\"https://social.tchncs.de/tags/Privacy\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Privacy</span></a> | <a href=\"https://social.tchncs.de/tags/Infosec\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Infosec</span></a> | <a href=\"https://social.tchncs.de/tags/DSGVO\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>DSGVO</span></a> | <a href=\"https://social.tchncs.de/tags/Netzpolitik\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Netzpolitik</span></a> | <a href=\"https://social.tchncs.de/tags/Karlsruhe\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Karlsruhe</span></a></p><p>Hier schreibt die Redaktion des Kuketz-Blogs:<br>/kuk <span class=\"h-card\" translate=\"no\"><a href=\"https://social.tchncs.de/@kuketz\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>kuketz</span></a></span><br>/meb <span class=\"h-card\" translate=\"no\"><a href=\"https://social.tchncs.de/@rufposten\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>rufposten</span></a></span><br>/lax <span class=\"h-card\" translate=\"no\"><a href=\"https://social.tchncs.de/@lacrosse\" class=\"u-url mention\" rel=\"nofollow noopener\" target=\"_blank\">@<span>lacrosse</span></a></span></p><p>Hilfe &amp; Support: <a href=\"https://www.kuketz-forum.de/\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-forum.de/</span><span class=\"invisible\"></span></a><br>Impressum: <a href=\"https://www.kuketz-blog.de/impressum/\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-blog.de/impressum/</span><span class=\"invisible\"></span></a><br>Toots werden nach 2 Jahren gelöscht ✅</p>",
+      "url": "https://social.tchncs.de/@kuketzblog",
+      "uri": "https://social.tchncs.de/users/kuketzblog",
+      "avatar": "https://files.mastodon.social/cache/accounts/avatars/000/331/706/original/b7ff2a0a442dd621.png",
+      "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/000/331/706/original/b7ff2a0a442dd621.png",
+      "avatar_description": "",
+      "header": "https://files.mastodon.social/cache/accounts/headers/000/331/706/original/906158fdf8df1f94.png",
+      "header_static": "https://files.mastodon.social/cache/accounts/headers/000/331/706/original/906158fdf8df1f94.png",
+      "header_description": "",
+      "followers_count": 44056,
+      "following_count": 32,
+      "statuses_count": 2583,
+      "last_status_at": "2026-10-11",
+      "hide_collections": false,
+      "show_media": true,
+      "show_media_replies": true,
+      "show_featured": true,
+      "feature_approval": {
+        "automatic": [
+          "public"
+        ],
+        "manual": [],
+        "current_user": "automatic"
+      },
+      "emojis": [],
+      "fields": [
+        {
+          "name": "Website",
+          "value": "<a href=\"https://www.kuketz-blog.de\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-blog.de</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-10-10T18:42:10.177+00:00"
+        },
+        {
+          "name": "Forum",
+          "value": "<a href=\"https://www.kuketz-forum.de\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-forum.de</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-10-10T18:42:10.772+00:00"
+        },
+        {
+          "name": "Empfehlungsecke",
+          "value": "<a href=\"https://www.kuketz-blog.de/empfehlungsecke/\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-blog.de/empfehlungsecke/</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-10-10T18:42:12.682+00:00"
+        },
+        {
+          "name": "Spenden ❤",
+          "value": "<a href=\"https://www.kuketz-blog.de/unterstuetzen/\" target=\"_blank\" rel=\"nofollow noopener\" translate=\"no\"><span class=\"invisible\">https://www.</span><span class=\"\">kuketz-blog.de/unterstuetzen/</span><span class=\"invisible\"></span></a>",
+          "verified_at": "2026-10-10T18:42:13.039+00:00"
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "itsicherheit",
+        "url": "https://mastodon.social/tags/itsicherheit"
+      },
+      {
+        "name": "email",
+        "url": "https://mastodon.social/tags/email"
+      },
+      {
+        "name": "kontosicherheit",
+        "url": "https://mastodon.social/tags/kontosicherheit"
+      }
+    ],
+    "emojis": [],
+    "tagged_collections": [],
+    "quote": null,
+    "card": {
+      "url": "https://www.kuketz-blog.de/e-mail-konto-gehackt-das-passwort-war-geaendert-der-angreifer-las-trotzdem-mit/",
+      "title": "E-Mail-Konto gehackt: Das Passwort war geändert, der Angreifer las trotzdem mit",
+      "description": "Ein unerwarteter Anruf Vor ein paar Tagen meldete sich ein Bekannter bei mir. Normalerweise ruft er an, wenn sein Computer…",
+      "language": "de",
+      "type": "link",
+      "author_name": "",
+      "author_url": "",
+      "provider_name": "",
+      "provider_url": "",
+      "html": "",
+      "width": 316,
+      "height": 316,
+      "image": "https://files.mastodon.social/cache/preview_cards/images/210/394/068/original/9162cfdd94c58fae.png",
+      "image_description": "",
+      "embed_url": "",
+      "blurhash": "UGB4jZD?Q,xns8%cIYN18xRjIdt7NLM%t3ae",
+      "published_at": null,
+      "missing_attribution": false,
+      "authors": []
+    },
+    "poll": null,
+    "quote_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "automatic"
+    }
+  },
+  "application": null,
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 619,
+    "following_count": 1184,
+    "statuses_count": 200,
+    "last_status_at": "2026-10-11",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "automatic"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "automatic"
+  }
+}
