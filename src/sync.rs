@@ -165,11 +165,7 @@ pub fn determine_posts(
             continue;
         }
         let fulltext = mastodon_toot_get_text(toot);
-        // If this is a reblog/boost then take the URL to the original toot.
-        let post = match &toot.reblog {
-            None => bsky_post_shorten(&fulltext, &toot.url),
-            Some(reblog) => bsky_post_shorten(&fulltext, &reblog.url),
-        };
+        let post = mastodon_to_bluesky_text(toot, &fulltext);
         // Skip direct toots to other Mastodon users, even if they are public.
         if post.starts_with('@') {
             continue;
@@ -227,12 +223,35 @@ pub fn determine_posts(
 ///
 /// Comparison is lenient as posts can get shortened.
 pub fn toot_and_post_are_equal(toot: &Status, bsky_post: &Object<FeedViewPostData>) -> bool {
-    // Strip markup from Mastodon toot and unify message for comparison.
-    let toot_text = unify_post_content(&mastodon_toot_get_text(toot));
-    // Populate URLs in the post text.
-    let bsky_text = unify_post_content(&bsky_post_unshorten_decode(bsky_post));
+    // Strip Mastodon markup while preserving links and including boost and quote text.
+    let mastodon_text = mastodon_toot_get_text(toot);
+    // Expand Bluesky facet URLs and include repost and quote text before shortening.
+    let bluesky_text = bsky_post_get_text(bsky_post);
+    // Unify both source representations for comparison.
+    let mastodon_normalized = unify_post_content(&mastodon_text);
+    let bluesky_normalized = unify_post_content(&bluesky_text);
 
-    toot_text == bsky_text
+    // Keep recognizing older syncs whose shortening differed from today's.
+    if mastodon_normalized == bluesky_normalized {
+        return true;
+    }
+
+    // Generate the same outgoing text used by determine_posts in each
+    // direction. Quotes and reposts are flattened before shortening, so their
+    // attribution links and combined lengths participate in these conversions.
+    let to_bluesky = mastodon_to_bluesky_text(toot, &mastodon_text);
+    if unify_post_content(&to_bluesky) == bluesky_normalized {
+        return true;
+    }
+    let to_mastodon = toot_shorten(&bluesky_text, &bsky_post.post);
+    unify_post_content(&to_mastodon) == mastodon_normalized
+}
+
+/// Shortens Mastodon text for Bluesky using the original status URL for boosts.
+fn mastodon_to_bluesky_text(toot: &Status, fulltext: &str) -> String {
+    // A boost must link to its original status.
+    let original = toot.reblog.as_deref().unwrap_or(toot);
+    bsky_post_shorten(fulltext, &original.url)
 }
 
 // Unifies bluesky text or toot text to a common format.
@@ -309,6 +328,11 @@ fn is_attribution_link(
 // Extend URLs and HTML entity decode &amp;.
 // Directly include quoted posts in the text.
 pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> String {
+    toot_shorten(&bsky_post_get_text(bsky_post), &bsky_post.post)
+}
+
+/// Decodes the complete Bluesky text, including repost attribution and quotes, before shortening.
+fn bsky_post_get_text(bsky_post: &Object<FeedViewPostData>) -> String {
     let record = bsky_sdk::api::app::bsky::feed::post::RecordData::try_from_unknown(
         bsky_post.post.record.clone(),
     )
@@ -335,7 +359,7 @@ pub fn bsky_post_unshorten_decode(bsky_post: &Object<FeedViewPostData>) -> Strin
         .trim()
         .to_string();
     }
-    toot_shorten(&text, &bsky_post.post)
+    text
 }
 
 fn bsky_post_is_repost(post: &Object<FeedViewPostData>) -> bool {
@@ -773,7 +797,7 @@ pub mod tests {
     #[test]
     fn bsky_quote_post() {
         let post = read_bsky_post_from_json("tests/bsky_quote_post.json");
-        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &SyncOptions::default());
         assert_eq!(
             posts.toots[0].text,
             "Working on this and testing quote posts
@@ -784,6 +808,7 @@ Synchronization of posts works, but I'm still testing things.
 
 https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &SyncOptions::default());
     }
 
     // Test that a correct Bluesky link is appended when posting to Mastodon.
@@ -796,6 +821,18 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             "a ".repeat(237)
         );
         assert_eq!(expected, toot_shorten(&text, &post.post));
+        let mut source = serde_json::to_value(&post).unwrap();
+        source["post"]["record"]["text"] = serde_json::json!(text);
+        source["post"]["record"]["facets"] = serde_json::json!([]);
+        source["post"]["record"]
+            .as_object_mut()
+            .unwrap()
+            .remove("embed");
+        source["post"].as_object_mut().unwrap().remove("embed");
+        let source = serde_json::from_value(source).unwrap();
+        let posts = determine_posts(&[], std::slice::from_ref(&source), &SyncOptions::default());
+        assert_eq!(posts.toots[0].text, expected);
+        assert_bluesky_mastodon_roundtrip(&source, &posts.toots[0].text, &SyncOptions::default());
     }
 
     // Test that multiple links in a post are correct.
@@ -806,7 +843,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(
             posts.toots[0].text,
             "♻️ martinthuer.at: Ich durfte auf der @univie.ac.at über die Kontrollfunktion der Medien sprechen. Wie Macht kontrolliert wird, warum das manchmal scheitert und wie das konkret funktioniert.
@@ -814,6 +851,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
 2) https://www.youtube.com/live/jATJBLcI2MA?si=7Gm1GudFuSmW2iRH
 3) https://www.youtube.com/live/fmz3vj-L9U8?si=Uzn12ksO-lDwQRqc"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // Reposts should always be synced, even if the reposted post is a reply.
@@ -824,30 +862,37 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(posts.toots.len(), 1);
         assert!(posts.toots[0].text.starts_with("♻️ bohrn-mena.at: "));
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // Test that a post with a long link gets fully posted to Mastodon.
     #[test]
     fn bsky_long_url() {
         let post = read_bsky_post_from_json("tests/bsky_long_url.json");
-        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &SyncOptions::default());
         assert_eq!(
             posts.toots[0].text,
             "Test post with a very long URL https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &SyncOptions::default());
     }
 
     // Test that a post with a long link gets fully posted to Bluesky.
     #[test]
     fn mastodon_long_url() {
         let post = read_mastodon_post_from_json("tests/mastodon_long_url.json");
-        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
             "Test toot with long link <a href=\"http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\">example.com/aaaaaaaaaaaaaaaaaa…</a>"
+        );
+        assert_mastodon_bluesky_roundtrip(
+            &post,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
         );
     }
 
@@ -855,7 +900,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
     #[test]
     fn bsky_quote_attachment() {
         let post = read_bsky_post_from_json("tests/bsky_quote_attachment.json");
-        let posts = determine_posts(&Vec::new(), &vec![post], &SyncOptions::default());
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &SyncOptions::default());
         assert_eq!(
             posts.toots[0].text,
             "Ich muss quote post attachments testen, habe hier was passendes gefunden 😀\n\n💬 patricialierzer.bsky.social:"
@@ -868,6 +913,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].attachments[0].attachment_url,
             "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:m2uq4xp53ln6ajjhjg5putln/bafkreiho5ucd4ovw3ztwrb5ogheaiybz4k54dhwrgkv7z2jbec6rr6bu44@jpeg"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &SyncOptions::default());
     }
 
     #[test]
@@ -989,7 +1035,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(
             posts.toots[0].text,
             "♻️ mjfree.bsky.social: I'm going to post this video every day so we never forget"
@@ -998,6 +1044,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].attachments[0].attachment_url,
             "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // A repost can attach its video alongside a quoted record.
@@ -1008,7 +1055,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(posts.toots.len(), 1);
         assert!(
             posts.toots[0]
@@ -1024,6 +1071,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
                 "https://video.bsky.app/watch/did%3Aplc%3Azfvhyz53gmxsjg7u7ojhrzta/bafkreiaeonjsfx254asut3tggitis2ztl3fu7eik33crttgnvi4zgb2fai/playlist.m3u8"
             )
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // Test that a video attached to a quote post is extracted correctly.
@@ -1034,7 +1082,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(
             posts.toots[0].text,
             "Testing quote post videos
@@ -1045,6 +1093,7 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             posts.toots[0].attachments[0].attachment_url,
             "https://video.bsky.app/watch/did%3Aplc%3Agkgmduxh722ocstroyi75gbg/bafkreicggiijd2kw5czpwv3xpdfcq7rwzkd5ofi735nma4xm663qvuakyy/playlist.m3u8"
         );
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // Test that a link embed is attached as link if the URL is not in the post
@@ -1056,11 +1105,12 @@ https://github.com/klausi/mastodon-bluesky-sync/releases/tag/v0.2.0"
             sync_reposts: true,
             ..Default::default()
         };
-        let posts = determine_posts(&Vec::new(), &vec![post], &sync_options);
+        let posts = determine_posts(&Vec::new(), &vec![post.clone()], &sync_options);
         assert_eq!(posts.toots[0].text, "♻️ leasusemichel.bsky.social: \n \"Wir nennen die Taten unfassbar und die Täter monströs\",schreibt  @pickinese.bsky.social. Typen, die eigentlich durchschnittlich und gewöhnlich sind.
 \"In einer globalen Pandemie sexualisierter Gewalt gegen Frauen geben wir uns anhaltend begriffsstutzig.\"
 
 https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstroes?ref=article");
+        assert_bluesky_mastodon_roundtrip(&post, &posts.toots[0].text, &sync_options);
     }
 
     // Test that a user mention on mastodon is posted as is to Bluesky. We don't
@@ -1068,10 +1118,15 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
     #[test]
     fn mastodon_user_mention() {
         let post = read_mastodon_post_from_json("tests/mastodon_mention.json");
-        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
             "Finally watched #RebelRidge recommended by @mekkaokereke a while ago... Good stuff! 🎬"
+        );
+        assert_mastodon_bluesky_roundtrip(
+            &post,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
         );
     }
 
@@ -1093,6 +1148,19 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         let richtext = crate::bluesky_richtext::get_rich_text(&shortened);
         assert!(richtext.grapheme_len() <= 300);
         assert_eq!(richtext.facets.unwrap().len(), 2);
+        let mut source = read_mastodon_post_from_json("tests/mastodon_duplicate_sync_case.json");
+        source.reblog = None;
+        source.quote = None;
+        source.in_reply_to_id = None;
+        source.content = text;
+        source.url = Some("https://mastodon.social/@test/123".into());
+        let posts = determine_posts(std::slice::from_ref(&source), &[], &SyncOptions::default());
+        assert_eq!(posts.bsky_posts[0].text, shortened);
+        assert_mastodon_bluesky_roundtrip(
+            &source,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
+        );
     }
 
     // Regression test: a synced repost must end with a link to the original
@@ -1104,11 +1172,12 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             sync_reblogs: true,
             ..Default::default()
         };
-        let posts = determine_posts(&vec![post], &Vec::new(), &options);
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &options);
         assert_eq!(
             posts.bsky_posts[0].text,
             "♻️ <a href=\"https://social.tchncs.de/@kuketzblog/117421042860340408\">kuketzblog</a>: Passwort geändert, Zwei-Faktor-Authentifizierung aktiviert - alles wieder sicher? Nicht unbedingt!\n\nBei einem Bekannten habe ich entdeckt, dass seine E-Mails trotz neuem Passwort weiterhin heimlich an einen Angreifer weitergeleitet wurden. Und das war noch… https://social.tchncs.de/@kuketzblog/117421042860340408"
         );
+        assert_mastodon_bluesky_roundtrip(&post, &posts.bsky_posts[0].text, &options);
     }
 
     // Test that a long video post on Mastodon is equal to a video link embed on
@@ -1203,14 +1272,36 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
         assert!(posts.bsky_posts.is_empty());
     }
 
+    /// Verifies that the downloaded Mastodon boost and its Bluesky copy produce no sync updates.
+    #[test]
+    fn mastodon_jpoesen_boost_and_bsky_sync_should_not_duplicate() {
+        let mastodon_post = read_mastodon_post_from_json("tests/mastodon_jpoesen_boost.json");
+        let bsky_post = read_bsky_post_from_json("tests/bsky_jpoesen_boost.json");
+        let options = SyncOptions {
+            sync_reblogs: true,
+            sync_reposts: true,
+            ..Default::default()
+        };
+
+        let posts = determine_posts(&[mastodon_post], &[bsky_post], &options);
+
+        assert!(posts.toots.is_empty(), "{:?}", posts.toots);
+        assert!(posts.bsky_posts.is_empty(), "{:?}", posts.bsky_posts);
+    }
+
     // Test that URLs get shortened for bluesky.
     #[test]
     fn mastodon_url_encoded() {
         let post = read_mastodon_post_from_json("tests/mastodon_url_encoded.json");
-        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &SyncOptions::default());
         assert_eq!(
             posts.bsky_posts[0].text,
             "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists… https://mastodon.social/@testuser/116299190222149167"
+        );
+        assert_mastodon_bluesky_roundtrip(
+            &post,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
         );
     }
 
@@ -1223,6 +1314,10 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             fulltext,
             "TRANSPHOBIA IS MISOGYNY\n\nit’s telling fascists are eager to ban transgender women, but nary a peep about transgender men. \n\nand no, it’s not because they prefer the men. they don’t expect them to be competitive. after all, their assigned sex at birth was female. \n\nfascists cannot deal with the fact transgender women not only reject their assigned male indentity. they prove it is not an immutable commodity you get with an appendage. \n\nthey prove being a bro is nothing special.\n\n💬 <a href=\"https://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0\">Independent</a>: Transgender women banned from female Olympic events in new IOC ruling\n<a href=\"https://www.independent.co.uk/sport/olympics/transgender-ban-ioc-female-category-gender-eligibility-b2946193.html?utm_source=flipboard&utm_medium=activitypub\">independent.co.uk/sport/olympi…</a>\n\nPosted into Sports @sports-Independent"
         );
+        let options = SyncOptions::default();
+        let posts = determine_posts(std::slice::from_ref(&post), &[], &options);
+        assert_eq!(posts.bsky_posts.len(), 1);
+        assert_mastodon_bluesky_roundtrip(&post, &posts.bsky_posts[0].text, &options);
     }
 
     // Test nested quote handling where the quoted post itself has a quote.
@@ -1234,17 +1329,26 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             fulltext,
             "Testing quoting myself!\n\n💬 <a href=\"https://mastodon.social/@klausi/116299578737765488\">klausi</a>: The Olympic committee finally found the #transgender gene to ban trans women from participating! \n\nI'm sure this will not backfire and no cis women will be banned by this ruling. \n\nAs we all know determining gender is easy and biology is not a complicated mess 👍👍👍\n\nhttps://flipboard.com/@independent/sports-c4jth40vz/-/a-HGhNxYJYQpqyU--gqXwEew%3Aa%3A1855170754-%2F0"
         );
+        let options = SyncOptions::default();
+        let posts = determine_posts(std::slice::from_ref(&post), &[], &options);
+        assert_eq!(posts.bsky_posts.len(), 1);
+        assert_mastodon_bluesky_roundtrip(&post, &posts.bsky_posts[0].text, &options);
     }
 
     // Integration-style regression test for HTML link conversion via determine_posts.
     #[test]
     fn mastodon_html_links_sync_to_bluesky_via_determine_posts() {
         let post = read_mastodon_post_from_json("tests/mastodon_html_links_sync.json");
-        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &SyncOptions::default());
         assert_eq!(posts.bsky_posts.len(), 1);
         assert_eq!(
             posts.bsky_posts[0].text,
             "Wir führen jetzt einen Nationalsozialismusquotienten ein. Hier liegt er bei 100%.\n\n<a href=\"https://www1.wdr.de/nrw/ruhrgebiet/gelsenkirchen/gelsenkirchen-entsetzen-afd-video-putzen-100.html?at_medium=Portal%20sites&at_campaign=wdraktuellapp&at_campaign_name=wdraktuellapp-sitesharing\">AfD lässt Migranten Straße put...</a>"
+        );
+        assert_mastodon_bluesky_roundtrip(
+            &post,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
         );
     }
     // Integration test that Mastodon links with invisible span formatting are parsed
@@ -1254,11 +1358,16 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
     #[test]
     fn mastodon_link_issue_invisible_spans() {
         let post = read_mastodon_post_from_json("tests/mastodon_link_issue.json");
-        let posts = determine_posts(&vec![post], &Vec::new(), &SyncOptions::default());
+        let posts = determine_posts(&vec![post.clone()], &Vec::new(), &SyncOptions::default());
         assert_eq!(posts.bsky_posts.len(), 1);
         assert_eq!(
             posts.bsky_posts[0].text,
             "Das großartige am Klenk ist ja, dass er einfach eine whataboutism Schmutz Kübel Kampagne aufmacht wenn er bei den sachlichen Argumenten unterliegt und gekränkt ist <a href=\"https://bsky.app/profile/klenkflorian.bsky.social/post/3mnlwuddgqc2e\">bsky.app/profile/klenkflorian.…</a>\n\nMacht der bohrn mena ein bisschen zweifelhaften Aktivismus? Vielleicht. \n\nDarf… https://mastodon.social/@klausi/116702690019085550"
+        );
+        assert_mastodon_bluesky_roundtrip(
+            &post,
+            &posts.bsky_posts[0].text,
+            &SyncOptions::default(),
         );
     }
 
@@ -1311,12 +1420,42 @@ https://www.derstandard.at/story/3000000250190/der-fall-pelicot-unfassbar-monstr
             ..Default::default()
         };
 
-        let posts = determine_posts(&vec![mastodon_post], &vec![], &sync_options);
+        let posts = determine_posts(&vec![mastodon_post.clone()], &vec![], &sync_options);
 
         assert_eq!(
             posts.bsky_posts[0].text,
             "♻️ <a href=\"https://mastodon.social/@randulo/116929387813641556\">randulo</a>: Sorry to hear this as they had the best hardware service in Europe. (And we still have three phones from them that all work.)\n\n💬 <a href=\"https://social.heise.de/@heiseonlineenglish/116929316985755360\">heiseonlineenglish</a>: End of line for OnePlus: Manufacturer withdraws from Europe and North America\n\nThe former manufacturer of the… https://mastodon.social/@randulo/116929387813641556"
         );
+        assert_mastodon_bluesky_roundtrip(&mastodon_post, &posts.bsky_posts[0].text, &sync_options);
+    }
+
+    /// Asserts that Mastodon text synced to a simulated Bluesky response produces no further updates.
+    fn assert_mastodon_bluesky_roundtrip(toot: &Status, text: &str, options: &SyncOptions) {
+        let richtext = crate::bluesky_richtext::get_rich_text(text);
+        let mut value: serde_json::Value =
+            serde_json::from_str(include_str!("../tests/bsky_jpoesen_boost.json")).unwrap();
+        value["post"]["record"]["text"] = serde_json::json!(richtext.text);
+        value["post"]["record"]["facets"] = serde_json::json!(richtext.facets);
+        let synced = serde_json::from_value(value).unwrap();
+        let pending = determine_posts(std::slice::from_ref(toot), &[synced], options);
+        assert!(pending.toots.is_empty(), "{:?}", pending.toots);
+        assert!(pending.bsky_posts.is_empty(), "{:?}", pending.bsky_posts);
+    }
+
+    /// Asserts that Bluesky text synced to a simulated Mastodon response produces no further updates.
+    fn assert_bluesky_mastodon_roundtrip(
+        post: &Object<FeedViewPostData>,
+        text: &str,
+        options: &SyncOptions,
+    ) {
+        let mut synced = read_mastodon_post_from_json("tests/mastodon_duplicate_sync_case.json");
+        synced.reblog = None;
+        synced.quote = None;
+        synced.in_reply_to_id = None;
+        synced.content = html_escape::encode_text(text).replace('\n', "<br>");
+        let pending = determine_posts(&[synced], std::slice::from_ref(post), options);
+        assert!(pending.toots.is_empty(), "{:?}", pending.toots);
+        assert!(pending.bsky_posts.is_empty(), "{:?}", pending.bsky_posts);
     }
 
     // Read static bluesky post from test file.

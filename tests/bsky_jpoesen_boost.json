@@ -1,0 +1,63 @@
+{
+  "post": {
+    "uri": "at://did:plc:i7uartkbj7ktzo4tj4rq6oyi/app.bsky.feed.post/3mxsvpz4cra2l",
+    "cid": "bafyreifgwtfxwu5kt2fn4okqbvn2yfo3jctzc7gfil6lc6m6yzksoqrzym",
+    "author": {
+      "did": "did:plc:i7uartkbj7ktzo4tj4rq6oyi",
+      "handle": "klau.si",
+      "displayName": "klausi",
+      "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i7uartkbj7ktzo4tj4rq6oyi/bafkreifyn7nrh4f56n54tkqz2pgygfatdbzyn6n65y5qzpiudkfydy2lua",
+      "associated": {
+        "chat": {
+          "allowIncoming": "following"
+        },
+        "activitySubscription": {
+          "allowSubscriptions": "followers"
+        }
+      },
+      "labels": [],
+      "createdAt": "2023-12-24T10:54:53.475Z"
+    },
+    "record": {
+      "$type": "app.bsky.feed.post",
+      "createdAt": "2026-10-14T06:20:03.557344Z",
+      "facets": [
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://social.jpoesen.com/@jpoesen/117432491207708866"
+            }
+          ],
+          "index": {
+            "byteEnd": 14,
+            "byteStart": 7
+          }
+        },
+        {
+          "features": [
+            {
+              "$type": "app.bsky.richtext.facet#link",
+              "uri": "https://social.jpoesen.com/@jpoesen/117432491207708866"
+            }
+          ],
+          "index": {
+            "byteEnd": 306,
+            "byteStart": 281
+          }
+        }
+      ],
+      "langs": [
+        "en"
+      ],
+      "text": "♻️ jpoesen: My mastodon instance of 1 user is getting hammered to its limits by AI scrapers.\n\nGigabytes of cached data and bandwidth for absolutely nothing.\n\nLow disk space. Energy spikes. Memory spikes. CPU spikes. Human labor...\n\nThe cost is truly staggering, and this is… social.jpoesen.com/@jp…"
+    },
+    "bookmarkCount": 0,
+    "replyCount": 0,
+    "repostCount": 0,
+    "likeCount": 0,
+    "quoteCount": 0,
+    "indexedAt": "2026-10-14T06:20:05.555Z",
+    "labels": []
+  }
+}

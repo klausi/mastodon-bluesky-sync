@@ -1,0 +1,163 @@
+{
+  "id": "117437784658793668",
+  "created_at": "2026-10-14T06:13:04.078Z",
+  "in_reply_to_id": null,
+  "in_reply_to_account_id": null,
+  "sensitive": false,
+  "spoiler_text": "",
+  "visibility": "public",
+  "language": null,
+  "uri": "https://mastodon.social/users/klausi/statuses/117437784658793668/activity",
+  "url": "https://mastodon.social/users/klausi/statuses/117437784658793668/activity",
+  "replies_count": 0,
+  "reblogs_count": 0,
+  "favourites_count": 0,
+  "quotes_count": 0,
+  "edited_at": null,
+  "content": "",
+  "reblog": {
+    "id": "117432491987903148",
+    "created_at": "2026-10-13T07:46:52.000Z",
+    "in_reply_to_id": null,
+    "in_reply_to_account_id": null,
+    "sensitive": false,
+    "spoiler_text": "",
+    "visibility": "public",
+    "language": "en",
+    "uri": "https://social.jpoesen.com/users/jpoesen/statuses/117432491207708866",
+    "url": "https://social.jpoesen.com/@jpoesen/117432491207708866",
+    "replies_count": 17,
+    "reblogs_count": 389,
+    "favourites_count": 445,
+    "quotes_count": 3,
+    "edited_at": "2026-10-13T08:36:08.000Z",
+    "content": "<p>My mastodon instance of 1 user is getting hammered to its limits by AI scrapers.</p><p>Gigabytes of cached data and bandwidth for absolutely nothing.</p><p>Low disk space. Energy spikes. Memory spikes. CPU spikes. Human labor...</p><p>The cost is truly staggering, and this is for a single instance belonging to a single, otherwise insignificant individual. </p><p>Imagine the scale of resource abuse, theft, and climate destruction across the internet.</p><p>Just so people can use a shitty <a href=\"https://social.jpoesen.com/tags/AI\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>AI</span></a> prompt on their shitty site.</p>",
+    "reblog": null,
+    "account": {
+      "id": "114040115938518155",
+      "username": "jpoesen",
+      "acct": "jpoesen@social.jpoesen.com",
+      "display_name": "jpoesen | 🇪🇺 | 🏳️‍🌈",
+      "locked": false,
+      "bot": false,
+      "discoverable": true,
+      "indexable": true,
+      "group": false,
+      "created_at": "2025-02-20T00:00:00.000Z",
+      "note": "<p>Overambitious underachiever.</p><p>Currently building an <a href=\"https://social.jpoesen.com/tags/opensource\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>opensource</span></a>, human-sized, AI-free <a href=\"https://social.jpoesen.com/tags/CMS\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>CMS</span></a> (#PHP + <a href=\"https://social.jpoesen.com/tags/SQLite\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>SQLite</span></a>).</p><p>I live in the Spanish countryside where we're slowly fixing an old <a href=\"https://social.jpoesen.com/tags/farm\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>farm</span></a> house &amp; try to live a low-footprint, <a href=\"https://social.jpoesen.com/tags/eco\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>eco</span></a> friendly life. </p><p>I maintain educational websites and will teach you <a href=\"https://social.jpoesen.com/tags/HTML\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>HTML</span></a>, <a href=\"https://social.jpoesen.com/tags/PHP\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>PHP</span></a>, <a href=\"https://social.jpoesen.com/tags/SQL\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>SQL</span></a>, or <a href=\"https://social.jpoesen.com/tags/Linux\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Linux</span></a> things if you're not careful.</p><p><a href=\"https://social.jpoesen.com/tags/Knowledge\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Knowledge</span></a> is power.<br><a href=\"https://social.jpoesen.com/tags/Education\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Education</span></a> is everything.</p><p><a href=\"https://social.jpoesen.com/tags/MoveSlowAndMendThings\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>MoveSlowAndMendThings</span></a> <a href=\"https://social.jpoesen.com/tags/LoveIsLove\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>LoveIsLove</span></a>. <a href=\"https://social.jpoesen.com/tags/ResistAI\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>ResistAI</span></a>. <a href=\"https://social.jpoesen.com/tags/FreePalestine\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>FreePalestine</span></a>. <a href=\"https://social.jpoesen.com/tags/SlavaUkraini\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>SlavaUkraini</span></a>. <a href=\"https://social.jpoesen.com/tags/NoPasar%C3%A1n\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>NoPasarán</span></a>.</p>",
+      "url": "https://social.jpoesen.com/@jpoesen",
+      "uri": "https://social.jpoesen.com/users/jpoesen",
+      "avatar": "https://files.mastodon.social/cache/accounts/avatars/114/040/115/938/518/155/original/27929c6cf8453636.png",
+      "avatar_static": "https://files.mastodon.social/cache/accounts/avatars/114/040/115/938/518/155/original/27929c6cf8453636.png",
+      "avatar_description": "",
+      "header": "https://files.mastodon.social/cache/accounts/headers/114/040/115/938/518/155/original/2e5cdfaf9ea88393.jpg",
+      "header_static": "https://files.mastodon.social/cache/accounts/headers/114/040/115/938/518/155/original/2e5cdfaf9ea88393.jpg",
+      "header_description": "",
+      "followers_count": 292,
+      "following_count": 199,
+      "statuses_count": 1881,
+      "last_status_at": "2026-10-16",
+      "hide_collections": false,
+      "show_media": true,
+      "show_media_replies": true,
+      "show_featured": true,
+      "feature_approval": {
+        "automatic": [
+          "public"
+        ],
+        "manual": [],
+        "current_user": "denied"
+      },
+      "emojis": [],
+      "fields": [
+        {
+          "name": "Blog",
+          "value": "<a href=\"https://jpoesen.com\" rel=\"nofollow noopener\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">jpoesen.com</span><span class=\"invisible\"></span></a>",
+          "verified_at": null
+        }
+      ]
+    },
+    "media_attachments": [],
+    "mentions": [],
+    "tags": [
+      {
+        "name": "ai",
+        "url": "https://mastodon.social/tags/ai"
+      }
+    ],
+    "emojis": [],
+    "tagged_collections": [],
+    "quote": null,
+    "card": null,
+    "poll": null,
+    "quote_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    }
+  },
+  "application": null,
+  "account": {
+    "id": "28407",
+    "username": "klausi",
+    "acct": "klausi",
+    "display_name": "klausi",
+    "locked": false,
+    "bot": false,
+    "discoverable": true,
+    "indexable": true,
+    "group": false,
+    "created_at": "2017-04-01T00:00:00.000Z",
+    "note": "<p>💻 Software Engineer</p><p>🌍 Location: Vienna, Austria <a href=\"https://mastodon.social/tags/WienLiebe\" class=\"mention hashtag\" rel=\"tag\">#<span>WienLiebe</span></a><br />🏷️ Identity: upper middle class, 80% male, white, 80% straight, cis, dya<br />💼 Work: Jobiqo, <a href=\"https://mastodon.social/tags/Drupal\" class=\"mention hashtag\" rel=\"tag\">#<span>Drupal</span></a>, <a href=\"https://mastodon.social/tags/PHP\" class=\"mention hashtag\" rel=\"tag\">#<span>PHP</span></a>, <a href=\"https://mastodon.social/tags/D7Security\" class=\"mention hashtag\" rel=\"tag\">#<span>D7Security</span></a><br />🎓 Education: Computer Science, soft skill focus on Gender Studies<br />💡 Interests: tech, politics, infosec, <a href=\"https://mastodon.social/tags/rustlang\" class=\"mention hashtag\" rel=\"tag\">#<span>rustlang</span></a>, ethics, social justice<br />🚩🏴 Politics: somewhere on the left, drawing from anarchism, communism, liberalism<br />🗣️ Languages: German, English<br />🏳️‍🌈 Pronouns: He/him or they/them<br />🏳️‍⚧️ Support: trans and nonbinary people</p>",
+    "url": "https://mastodon.social/@klausi",
+    "uri": "https://mastodon.social/users/klausi",
+    "avatar": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_static": "https://files.mastodon.social/accounts/avatars/000/028/407/original/638b002381039f45.png",
+    "avatar_description": "",
+    "header": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_static": "https://files.mastodon.social/accounts/headers/000/028/407/original/AUK6UYSC52D9.png",
+    "header_description": "",
+    "followers_count": 618,
+    "following_count": 1184,
+    "statuses_count": 202,
+    "last_status_at": "2026-10-14",
+    "hide_collections": false,
+    "show_media": true,
+    "show_media_replies": true,
+    "show_featured": true,
+    "noindex": false,
+    "feature_approval": {
+      "automatic": [
+        "public"
+      ],
+      "manual": [],
+      "current_user": "denied"
+    },
+    "emojis": [],
+    "roles": [],
+    "fields": [
+      {
+        "name": "Blog",
+        "value": "<a href=\"https://klau.si\" target=\"_blank\" rel=\"nofollow noopener me\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">klau.si</span><span class=\"invisible\"></span></a>",
+        "verified_at": "2026-04-12T18:18:16.589+00:00"
+      }
+    ]
+  },
+  "media_attachments": [],
+  "mentions": [],
+  "tags": [],
+  "emojis": [],
+  "tagged_collections": [],
+  "quote": null,
+  "card": null,
+  "poll": null,
+  "quote_approval": {
+    "automatic": [
+      "public"
+    ],
+    "manual": [],
+    "current_user": "denied"
+  }
+}
